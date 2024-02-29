@@ -1,0 +1,6 @@
+backend/db.sqlite3
+env
+
+*.pyc
+backend/static/media_root/*
+env/pyvenv.cfg
