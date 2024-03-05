@@ -3,8 +3,8 @@ from django.db import models
 # Create your models here.
 class SysUser(models.Model):
     name = models.CharField(max_length=100)
-    user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
-
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='me')
+    business = models.ForeignKey('Business', on_delete=models.CASCADE, related_name='users')
     def __str__(self) -> str:
         return self.name
 
@@ -12,7 +12,9 @@ class Business(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True, allow_unicode=True)
     
-    users = models.ManyToManyField(SysUser, related_name='businesses')
+    
+    header_image = models.ImageField(upload_to='businesses/', blank=True, null=True)
+    description = models.TextField(max_length=200, blank=True, null=True)
 
     def __str__(self) -> str:
         return self.name
@@ -62,3 +64,7 @@ class ContentSchedule(models.Model):
     reject_reason = models.TextField(max_length=200, blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='contentSchedules', blank=True)
     
+    is_sent = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-send_date', '-created_at']

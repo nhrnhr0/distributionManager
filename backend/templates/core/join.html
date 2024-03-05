@@ -1,0 +1,113 @@
+{% extends "base.html" %} {% block title %}הצטרף לתפוצה של {{biz.name}}{% endblock %} {% block content %} {% load static %}
+
+<!-- biz.header_image -->
+<img src="{{biz.header_image.url}}" class="img-fluid" alt="Header Image" />
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-lg-6 description">
+      <h1>{{biz.name}}</h1>
+      <p>{{biz.description}}</p>
+    </div>
+  </div>
+  <!-- list of all the busines categories in a responsive grid -->
+  <div class="container mt-5 leads-container">
+    <div class="row">
+      {% for category in biz.categories.all %}
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card">
+          <img src="{{category.icon.url}}" class="card-img-top" alt="Image 1" />
+          <div class="card-body">
+            <h5 class="card-title">{{category.name}}</h5>
+            <div class="buttons row">
+              <a href="{{category.slug}}/telegram/" class="btn btn-primary" target="_blank">
+                <img src="{% static 'icons8-telegram.svg' %}" alt="Telegram" width="30" height="30" />
+                Telegram</a
+              >
+              <a href="{{category.slug}}/whatsapp/" class="btn btn-success" target="_blank">
+                <img src="{% static 'icons8-whatsapp.svg' %}" alt="WhatsApp" width="30" height="30" />
+                WhatsApp</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <style>
+    .description {
+      text-align: right;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+    .description h1 {
+      font-size: 2rem;
+      text-align: center;
+    }
+    .leads-container .card {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    }
+    .leads-container .card img {
+      border-radius: 10px 10px 0 0;
+    }
+    .leads-container .card-title {
+      font-size: 1.5rem;
+    }
+    .leads-container .btn-primary {
+      background-color: #0088cc;
+      border-color: #0088cc;
+      color: white;
+
+      img {
+        filter: invert(1);
+      }
+    }
+    .leads-container .btn-primary:hover {
+      background-color: #005580;
+      border-color: #005580;
+    }
+    .leads-container .btn-success {
+      background-color: #5cb85c;
+      border-color: #5cb85c;
+
+      color: white;
+      img {
+        filter: invert(1);
+      }
+    }
+    .leads-container .btn-success:hover {
+      background-color: #4cae4c;
+      border-color: #4cae4c;
+    }
+
+    .leads-container .card-img-top {
+      width: 100%;
+      height: 15vw;
+      object-fit: cover;
+    }
+
+    .leads-container .buttons {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+    .leads-container .buttons a {
+      width: 48%;
+    }
+
+    @media screen and (max-width: 992px) {
+      .leads-container .card img {
+        height: 20vw;
+      }
+    }
+  </style>
+
+  {%endblock%}
+</div>

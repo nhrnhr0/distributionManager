@@ -1,0 +1,62 @@
+{% extends "base.html" %} {% load static %} {% block title %} שינוי/יצירת הודעה {% endblock %} {% block content %} {%if message%}
+<h1>שינוי הודעה {{message.id}}</h1>
+{%else%}
+<h1>הודעה חדשה</h1>
+{%endif%}
+<div class="container mt-5">
+  <form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %} {%if message%}
+    <input type="hidden" id="id" name="id" value="{{message.id}}" />
+    {%endif%}
+    <div class="form-group">
+      <label for="image">תמונה</label>
+      <input type="file" class="form-control-file" id="image" name="image" />
+      {%if message.image %}
+      <img width="100px" height="100px" src="{{message.image.url}}" />
+      {%else%} <img width="100px" height="100px" src="{%static 'no-image.png'%}" /> {%endif%}
+    </div>
+    <div class="form-group">
+      <label for="message">הודעה</label>
+      <textarea class="form-control" id="message" name="message" rows="3">{{message.message}}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="send_date">תאריך שליחה</label>
+      <input type="datetime-local" class="form-control" id="send_date" name="send_date" value="{{message.send_date}}" />
+    </div>
+
+    <div class="form-group">
+      <label for="categories">קטגוריות </label>
+      <select class="form-control" id="categories" name="categories" multiple>
+        {% for category in request.user.me.business.categories.all %}
+        <option value="{{category.id}}" {%if category in message.categories.all%} selected {%endif%}>{{category.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" name="action" value="save">שמור</button>
+      <button type="submit" class="btn btn-primary" name="action" value="save_and_add_another">שמור והוסף עוד</button>
+      <button type="submit" class="btn btn-primary" name="action" value="save_and_continue_editing">שמור והמשך לעריכה</button>
+    </div>
+  </form>
+</div>
+
+<link href="{%static 'css/jquery.multiselect.css' %}" rel="stylesheet" />
+
+<script src="{%static 'js/jquery.multiselect.js' %}"></script>
+<script>
+  $(document).ready(function () {
+    $("#categories").multiselect({ search: true, selectAll: true, rtl: true });
+  });
+</script>
+
+<style>
+  .container {
+    direction: rtl;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+</style>
+{%endblock%}

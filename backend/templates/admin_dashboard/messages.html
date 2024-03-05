@@ -1,0 +1,203 @@
+{% extends "base.html" %} {% load static %}{% load my_tags %}
+ {% block title %}לוח זמנים{% endblock %} {% block content %}
+
+<!-- 
+        title
+        filters | DataTable
+
+
+        table
+                message,image,send_date,created_at,updated_at,business,approve_state,approve_date,categories,is_sent
+        filters:
+                business__name,approve_state,send_date
+
+-->
+<h1>לוח זמנים</h1>
+<div class="row">
+      <div class="col-lg-2 filters">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">צור חדש</h5>
+          <a href="new/" class="btn btn-primary">צור חדש</a>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">סנן לפי</h5>
+          <form method="GET">
+            <div class="mb-3">
+              
+              <label for="approve_state" class="form-label">מצב אישור</label>
+              
+              <!-- <select class="form-select" id="approve_state" name="approve_state">
+                <option value="">הכל</option>
+                <option value="pending" {% if request.GET.approve_state == "pending" %} selected {% endif %}>ממתין לאישור</option>
+                <option value="approved" {% if request.GET.approve_state == "approved" %} selected {% endif %}>אושר</option>
+                <option value="rejected" {% if request.GET.approve_state == "rejected" %} selected {% endif %}>נדחה</option>
+              </select> -->
+              <ul>
+                
+                <li {% if not request.GET.approve_state %} class="selected" {% endif %}>
+                  <a href="?{%url_delete request 'approve_state' %}">הכל </a>
+                </li>
+                <li {% if request.GET.approve_state == "pending" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'approve_state' 'pending' %}">ממתין לאישור</a>
+                </li>
+                <li {% if request.GET.approve_state == "approved" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'approve_state' 'approved' %}">אושר</a>
+                </li>
+                <li {% if request.GET.approve_state == "rejected" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'approve_state' 'rejected' %}">נדחה</a>
+                </li>
+              </ul>
+            </div>
+            <hr>
+            <div class="mb-3">
+              <label for="send_date" class="form-label">תאריך שליחה</label>
+              <ul>
+                <li {% if not request.GET.send_date  %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'send_date' '' %}">כל תאריך</a>
+                </li>
+                <li {% if request.GET.send_date == "today" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'send_date' 'today' %}">היום</a>
+                </li>
+                <li {% if request.GET.send_date == "past_7_days" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'send_date' 'past_7_days' %}">שבוע אחרון</a>
+                </li>
+                <li {% if request.GET.send_date == "this_month" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'send_date' 'this_month' %}">חודש זה</a>
+                </li>
+                <li {% if request.GET.send_date == "isnull" %} class="selected" {% endif %}>
+                  <a href="{%url_replace request 'send_date' 'isnull' %}">ללא תאריך</a>
+                </li>
+                <li {% if request.GET.send_date == "notnull" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'send_date' 'notnull' %}">יש תאריך</a>
+                </li>
+              </ul>
+            </div>
+            <hr>
+            <div class="mb-3">
+              <label for="categories" class="form-label">נוצר בתאריך</label>
+              <ul>
+                <li {% if not request.GET.created_at %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'created_at' '' %}">כל תאריך</a>
+                </li>
+                <li {% if request.GET.created_at == "today" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'created_at' 'today' %}">היום</a>
+                </li>
+                <li {% if request.GET.created_at == "past_7_days" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'created_at' 'past_7_days' %}">שבוע אחרון</a>
+                </li>
+                <li {% if request.GET.created_at == "this_month" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'created_at' 'this_month' %}">חודש זה</a>
+                </li>
+                <li {% if request.GET.created_at == "isnull=True" %} class="selected" {% endif %}>
+                  <a href="{%url_replace request 'created_at' 'isnull=True' %}">ללא תאריך</a>
+                </li>
+                <li {% if request.GET.created_at == "isnull=False" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'created_at' 'isnull=False' %}">יש תאריך</a>
+                </li>
+              </ul>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <table id="schedule" class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>תמונה</th>
+            <th>הודעה</th>
+            <th>תאריך שליחה</th>
+            <th>תאריך יצירה</th>
+            <th>תאריך עדכון</th>
+            <th>מצב אישור</th>
+            <th>תאריך אישור</th>
+            <th>קטגוריות</th>
+            <th>נשלח</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for message in biz_messages %}
+          <tr>
+            <td>
+              <a href="{{message.id}}/change">{{message.id}}</a>
+            </td>
+
+            <td>
+              {%if message.image%}
+              <img src="{{message.image.url}}" class="img-fluid" alt="Header Image" width="100px" height="100px" />
+              {%else%}
+              <img src="{% static 'no-image.png' %}" class="img-fluid" alt="Header Image" width="100px" height="100px" />
+              {%endif%}
+            </td>
+
+            <td>{{message.message}}</td>
+            <td>{{message.send_date}}</td>
+            <td>{{message.created_at|date:"d/m/Y H:i:s"}}</td>
+            <td>{{message.updated_at|date:"d/m/Y H:i:s"}}</td>
+            <td>
+              {% include "commen/table_cells/approve_state.html" with val=message.approve_state %}
+              </td>
+            <td>{{message.approve_date|default_if_none:"--"}}</td>
+            <td>
+              <ul>
+                {% for category in message.categories.all %} <li> {{category.name}}</li> {% endfor %}
+              </ul>
+            </td>
+              
+            <td>
+              {% include "commen/table_cells/bool_cell.html" with val=message.is_sent %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+
+<style>
+  .container {
+    direction: rtl;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .filters {
+    margin-bottom: 20px;
+    position: absolute;
+  }
+  .filters ul {
+    list-style: none;
+    padding: 0;
+  }
+  .filters ul li {
+    margin-bottom: 5px;
+  }
+  .filters ul li a {
+    text-decoration: none;
+  }
+  .filters ul li.selected {
+    background-color: #f5f5f5;
+  }
+  .filters ul li.selected a {
+    color: #000;
+  }
+  .filters ul li a:hover {
+    text-decoration: underline;
+  }
+  .filters label {
+    font-weight: bold;
+  }
+</style>
+    {%endblock%}
+  
