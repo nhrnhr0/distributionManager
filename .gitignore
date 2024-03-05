@@ -4,3 +4,4 @@ env
 *.pyc
 backend/static/media_root/*
 env/pyvenv.cfg
+backend/static/*
