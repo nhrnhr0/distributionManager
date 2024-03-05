@@ -19,19 +19,30 @@ class BusinessAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Business, BusinessAdmin)
 
+class WhatsappInline(admin.TabularInline):
+    model=Category.all_whatsapp_urls.through
 class CategoryAdmin(ImportExportModelAdmin):
-    list_display = ['id', 'image_display', 'name', 'slug', 'business']
+    list_display = ['id', 'image_display', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count']
     prepopulated_fields = {'slug': ('name',)}
-    readonly_fields = ['image_display','all_whatsapp_urls', 'all_telegram_urls', ]
-    
+    readonly_fields = ['image_display', 'whatsapp_groups_count','telegram_groups_count']
+    inlines= [WhatsappInline]
     search_fields = ['name', 'business__name']
     list_filter = ['business',]
+    exclude = ['all_whatsapp_urls', 'all_telegram_urls',]
     
     def image_display(self, obj):
         if obj.icon:
             return mark_safe(f'<img src="{obj.icon.url}" width="50" height="50" />')
         return 'No Image'
     image_display.short_description = 'Icon'
+    
+    def whatsapp_groups_count(self, obj: Category):
+        return obj.all_whatsapp_urls.count()
+        pass
+    def telegram_groups_count(self, obj: Category):
+        return obj.all_telegram_urls.count()
+
+        pass
 
     pass
 admin.site.register(Category, CategoryAdmin)
@@ -47,6 +58,7 @@ admin.site.register(ContentSchedule, ContentScheduleAdmin)
 class WhatsappGroupAdmin(admin.ModelAdmin):
     list_display= ('id','name', 'chat_id', 'get_link')
     readonly_fields = ('get_link',)
+    
     pass
 admin.site.register(WhatsappGroup, WhatsappGroupAdmin)
 class TelegramGroupAdmin(admin.ModelAdmin):

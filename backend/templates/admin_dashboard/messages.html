@@ -119,13 +119,11 @@
             </td>
 
             <td>{{message.message}}</td>
-            <td>{{message.send_date|date:"d/m/Y H:i:s"}}</td>
-            <!-- <td>{{message.created_at|date:"d/m/Y H:i:s"}}</td>
-            <td>{{message.updated_at|date:"d/m/Y H:i:s"}}</td> -->
+            <td>{{message.send_date|date:"d/m/Y H:i"}}</td>
             <td>
               {% include "commen/table_cells/approve_state.html" with val=message.approve_state %}
               </td>
-            <td>{{message.approve_date|date:"d/m/Y H:i:s"}}</td>
+            <td>{{message.approve_date|date:"d/m/Y H:i"}}</td>
             <td>
               <ul>
                 {% for category in message.categories.all %} <li> {{category.name}}</li> {% endfor %}

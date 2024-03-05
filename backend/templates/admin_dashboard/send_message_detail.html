@@ -12,11 +12,7 @@
         </label>
         <!-- if the send_date passed and is_sent is False -->
 
-        {%if message.should_send %}
-        <img src="{%static 'icons8-yes.png'%}" alt="yes" />כן
-        {%else%}
-            <img src="{%static 'icons8-no.png'%}" alt="yes" />לא
-        {%endif%}
+        {% include "commen/table_cells/bool_cell.html" with val=message.should_send%}
     <div class="form-group">
       <label for="image">תמונה</label>
       {%if message.image %}
@@ -40,7 +36,7 @@
     </div>
     <div class="form-group">
       <label for="send_date">תאריך לשליחה</label>
-      {{message.send_date|date:"d/m/Y H:i:s"|default:"-"}}
+      {{message.send_date|date:"d/m/Y H:i:"|default:"-"}}
     </div>
 
     <div class="form-group">

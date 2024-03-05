@@ -83,6 +83,9 @@
           <tr>
             <th>ID</th>
             <th>תמונה</th>
+            <th>
+              האם לשלוח
+            </th>
             <th>הודעה</th>
             <th>תאריך שליחה</th>
             <th>תאריך יצירה</th>
@@ -103,6 +106,9 @@
               {%else%}
               <img src="{% static 'no-image.png' %}" class="img-fluid" alt="Header Image" width="100px" height="100px" />
               {%endif%}
+            </td>
+            <td>
+                {% include "commen/table_cells/bool_cell.html" with val=message.should_send%}
             </td>
 
             <td>{{message.message}}</td>
