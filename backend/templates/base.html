@@ -29,8 +29,6 @@
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <body>
-    {%include "header.html"%} 
-    {%include "breadcrumb.html"%}
     {% if messages %}
       <ul class="messages">
         {% for message in messages %}
@@ -43,6 +41,7 @@
         {% endfor %}
     </ul>
     {% endif %}
+    {%block extra_base%} {%endblock%}
     {% block content %}{% endblock %}
   </body>
 
