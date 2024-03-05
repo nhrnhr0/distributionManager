@@ -1,0 +1,104 @@
+{% extends "base.html" %} {% load static %} {% block title %} שליחת הודעה{% endblock %} {% block content %}
+<h1>שליחת הודעה {{message.id}}</h1>
+
+<div class="container mt-5">
+  <form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %} {%if message%}
+    <input type="hidden" id="id" name="id" value="{{message.id}}" />
+    {%endif%}
+    <div class="form-group">
+        <label for="should_send_message">
+            האם צריך לשלוח את ההודעה
+        </label>
+        <!-- if the send_date passed and is_sent is False -->
+
+        {%if message.should_send %}
+        <img src="{%static 'icons8-yes.png'%}" alt="yes" />כן
+        {%else%}
+            <img src="{%static 'icons8-no.png'%}" alt="yes" />לא
+        {%endif%}
+    <div class="form-group">
+      <label for="image">תמונה</label>
+      {%if message.image %}
+      <img width="100px" height="100px" src="{{message.image.url}}" />
+      {%else%} <img width="100px" height="100px" src="{%static 'no-image.png'%}" /> {%endif%}
+    </div>
+    <div class="form-group">
+      <label for="message">הודעה</label>
+      <textarea id="message" class="form-control" disabled name="message" rows="3">{{message.message}}</textarea>
+      <!-- button to select and copy message -->
+      <button class="btn btn-secondary" title="העתק" type="button" onclick="handle_copy_message()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+          <path
+            d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"
+          />
+          <path
+            d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label for="send_date">תאריך לשליחה</label>
+      {{message.send_date|date:"d/m/Y H:i:s"|default:"-"}}
+    </div>
+
+    <div class="form-group">
+      <label for="categories">קטגוריות </label>
+      <ul>
+        {%for category in message.categories.all%}
+        <li>
+          {{category.name}}
+          <ul>
+            {%for group in category.all_whatsapp_urls.all%}
+            <li>
+              <a target="_blank" href="{{group.get_link}}">{{group.name}}</a>
+            </li>
+            {%endfor%}
+          </ul>
+        </li>
+        {%endfor%}
+      </ul>
+    </div>
+    <div class="form-group">
+      
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" {%if message.is_sent%} checked {%endif%} id="is_sent" name="is_sent">
+        <label class="form-check-label" for="is_sent"> האם ההודעה נשלחה </label>
+    </div>
+    <div class="form-group mt-5">
+      <button type="submit" class="btn btn-primary" name="action" value="save">שמור</button>
+      <button type="submit" class="btn btn-primary" name="action" value="save_and_continue_editing">שמור והמשך עריכה</button>
+    </div>
+  </form>
+</div>
+
+<link href="{%static 'css/jquery.multiselect.css' %}" rel="stylesheet" />
+
+<script src="{%static 'js/jquery.multiselect.js' %}"></script>
+<script>
+  $(document).ready(function () {
+    $("#categories").multiselect({ search: true, selectAll: true, rtl: true });
+  });
+
+  function handle_copy_message() {
+    let textArea = document.querySelector("#message");
+    textArea.disabled = false;
+    textArea.focus();
+    textArea.select();
+    textArea.disabled = true;
+    const msg = textArea.innerHTML;
+    navigator.clipboard.writeText(msg);
+  }
+</script>
+
+<style>
+  .container {
+    direction: rtl;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+</style>
+{%endblock%}

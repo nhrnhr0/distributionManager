@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SysUser, Business, Category, ContentSchedule
+from .models import SysUser, Business, Category, ContentSchedule,TelegramGroup, WhatsappGroup
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 # Register your models here.
@@ -36,9 +36,20 @@ class CategoryAdmin(ImportExportModelAdmin):
     pass
 admin.site.register(Category, CategoryAdmin)
 class ContentScheduleAdmin(admin.ModelAdmin):
-    list_display = ['id', 'message', 'image', 'approve_telegram_id', 'created_at', 'updated_at', 'business', 'approve_state', 'approve_date', 'reject_reason']
+    list_display = ['id', 'message', 'image', 'created_at', 'updated_at', 'business', 'approve_state', 'approve_date']
     filter_horizontal = ['categories']
-    readonly_fields = ['created_at', 'updated_at', 'approve_date', 'reject_reason', 'approve_telegram_id', 'approve_state',]
+    readonly_fields = ['created_at', 'updated_at', 'approve_date', 'approve_state',]
     list_filter = ['business', 'categories', 'approve_state', 'send_date']
     pass
 admin.site.register(ContentSchedule, ContentScheduleAdmin)
+
+
+class WhatsappGroupAdmin(admin.ModelAdmin):
+    list_display= ('id','name', 'chat_id', 'get_link')
+    readonly_fields = ('get_link',)
+    pass
+admin.site.register(WhatsappGroup, WhatsappGroupAdmin)
+class TelegramGroupAdmin(admin.ModelAdmin):
+
+    pass
+admin.site.register(TelegramGroup, TelegramGroupAdmin)

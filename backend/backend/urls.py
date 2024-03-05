@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
-from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail
+from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail
 from django.contrib.auth.views import LogoutView, LoginView
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +33,9 @@ urlpatterns = [
     path('admin-dashboard/messages/', admin_dashboard_schedule, name='admin_dashboard_schedule'),
     path('admin-dashboard/messages/<int:id>/change/', admin_dashboard_message_detail, name='message_detail'),
     path('admin-dashboard/messages/new/', admin_dashboard_message_detail, name='message_new'),
+    
+    path('admin-dashboard/send-messsages/', admin_dashboard_send_messages, name='admin_dashboard_send_messages'),
+    path('admin-dashboard/send-messsages/<int:id>/send/', admin_dashboard_send_message_detail,name='admin_dashboard_send_message_detail'),
 ]
 
 

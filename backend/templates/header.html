@@ -1,5 +1,6 @@
+{% load my_tags %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Navbar</a>
+  <a class="navbar-brand" href="#"> {{request.user}} </a>
   <button
     class="navbar-toggler"
     type="button"
@@ -14,19 +15,20 @@
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
       <!-- messages, and login/logout -->
+      {%if request.user|has_group:"sender"%}
       <li class="nav-item">
-        <a class="nav-link" href="/admin-dashboard/messages/">הודעות</a>
+        <a class="nav-link" href="/admin-dashboard/messages/">עריכת הודעות</a>
       </li>
-      {%if request.user.is_authenticated%}
+      {%endif%} {%if request.user|has_group:"content editor"%}
+      <li class="nav-item">
+        <a class="nav-link" href="/admin-dashboard/send-messsages/">שליחת הודעות</a>
+      </li>
+      {%endif%} {%if request.user.is_authenticated%}
       <li class="nav-item">
         <form action="/logout/" method="post">
           {%csrf_token%}
           <button type="submit" class="btn btn-link nav-link">התנתק</button>
         </form>
-      </li>
-      {%else%}
-      <li class="nav-item">
-        <a class="nav-link" href="/admin-dashboard/login/">התחבר</a>
       </li>
       {%endif%}
     </ul>
