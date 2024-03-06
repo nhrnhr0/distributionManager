@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-
+from django.utils.safestring import mark_safe
 # Create your models here.
 class SysUser(models.Model):
     name = models.CharField(max_length=100)
@@ -19,6 +19,9 @@ class Business(models.Model):
 
     def __str__(self) -> str:
         return self.name
+    
+    def get_absolute_url(self):
+        return '/join/' + self.slug
 
 class WhatsappGroup(models.Model):
     name = models.CharField(max_length=120,blank=True,null=True)
@@ -74,7 +77,10 @@ class Category(models.Model):
                 self.all_telegram_urls.add(self.open_telegram_url)
         return super().save()
 
-
+    def image_display(self):
+        if self.icon:
+            return mark_safe(f'<img src="{self.icon.url}" width="50" height="50" />')
+        return 'No Image'
 
 # content state options: Approved, Pending, Rejected
 CONTENT_STATE = (

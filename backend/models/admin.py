@@ -9,12 +9,20 @@ class SysUserAdmin(admin.ModelAdmin):
 admin.site.register(SysUser, SysUserAdmin)
 
 
+class CategoryInline(admin.TabularInline):
+    model=Category
+    extra = 1
+    fields = ['image_display',  'icon','name', 'slug', 'open_whatsapp_url', 'open_telegram_url']
+    readonly_fields = ['image_display']
+    prepopulated_fields = {'slug': ('name',)}
+    pass
 class BusinessAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'all_users']
     prepopulated_fields = {'slug': ('name',)}
-
+    inlines = [CategoryInline,]
     def all_users(self, obj):
         return ', '.join([user.name for user in obj.users.all()])
+
 
     pass
 admin.site.register(Business, BusinessAdmin)
