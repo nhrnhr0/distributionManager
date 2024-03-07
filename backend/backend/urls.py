@@ -21,10 +21,11 @@ from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
 from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail
 from django.contrib.auth.views import LogoutView, LoginView
+# from core.views import test
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('logout/', LogoutView.as_view(),name='logout'),
-    # path('login/', LogoutView.as_view(),name='login'),
+    # path('test', test, name='test'),
     
     path('join/<str:business_slug>/', busines_join, name='business_join'),
     path('join/<str:business_slug>/<str:category_slug>/whatsapp/', busines_join_whatsapp_link, name='business_join_whatsapp'),

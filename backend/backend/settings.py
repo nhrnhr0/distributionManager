@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+
+from environs import Env
+
+env = Env()
+env.read_env()  # read .env file, if it exists
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,8 +30,8 @@ SECRET_KEY = 'django-insecure-trgynxv69d^o5u0!-qzaeqv*!0ual(-#6b_ey$_4#1g!e28zct
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['dm.boost-pop.com','127.0.0.1',]
-
+ALLOWED_HOSTS = ['dm.boost-pop.com','127.0.0.1','testing.boost-pop.com']
+CSRF_TRUSTED_ORIGINS = ['https://dm.boost-pop.com','https://testing.boost-pop.com']
 
 # Application definition
 
@@ -37,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'storages',
     
     'import_export',
     
@@ -109,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'he'
 
 TIME_ZONE = 'UTC'
 
@@ -157,3 +164,16 @@ MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media_root/')
 LOGIN_REDIRECT_URL = '/admin-dashboard/messages/'
 LOGIN_URL = '/admin/login/'
 LOGOUT_REDIRECT_URL = '/admin/login/?next=' + LOGIN_REDIRECT_URL
+
+
+AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
+
+AWS_STORAGE_BUCKET_NAME = 'django-development-bucket'
+# AWS_S3_SIGNATURE_NAME = None
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_REGION_NAME = 'us-east-2'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL =  None
+AWS_S3_VERITY = True
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

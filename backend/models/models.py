@@ -1,7 +1,13 @@
+from typing import Iterable
 from django.db import models
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 # Create your models here.
+import backend.settings as settings
+import requests
+
 class SysUser(models.Model):
     name = models.CharField(max_length=100)
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='me')
@@ -48,7 +54,17 @@ class TelegramGroup(models.Model):
     last_members_check = models.DateTimeField(blank=True,null=True)
 
     def get_link(self):
-        return 'TODO TELEGRAM'
+        return 'https://t.me/' + self.chat_id
+    
+    def save(self):
+        if self.chat_id.startswith('https://t.me/'):
+            self.chat_id = self.chat_id.replace('https://t.me/', '')
+        return super().save()
+    
+    def __str__(self) -> str:
+        return self.name +' - (' +  (''.join([c.name for c in self.all_telegram_categories.all()])) + ')'
+    
+    
     
 class Category(models.Model):
     icon = models.ImageField(upload_to='categories/', blank=True, null=True)
@@ -68,19 +84,66 @@ class Category(models.Model):
         unique_together = ('name', 'business')
         
     def save(self):
-        if self.open_whatsapp_url:
-            if not self.all_whatsapp_urls.filter(id=self.open_whatsapp_url.id).exists():
-                self.all_whatsapp_urls.add(self.open_whatsapp_url)
-                
-        if self.open_telegram_url:
-            if not self.all_telegram_urls.filter(id=self.open_telegram_url.id).exists():
-                self.all_telegram_urls.add(self.open_telegram_url)
         return super().save()
 
     def image_display(self):
         if self.icon:
             return mark_safe(f'<img src="{self.icon.url}" width="50" height="50" />')
         return 'No Image'
+    
+    def send_telegram_message(self, message: 'ContentSchedule'):
+        
+        chat_ids = self.all_telegram_urls
+        text = message.message
+        for chat_id in chat_ids.values_list('chat_id', flat=True):
+            if chat_id:
+                if message.image:
+                    telegram_url = f"https://api.telegram.org/bot{settings.env.str('TELEGRAM_BOT_TOKEN')}/sendPhoto"
+                    img_url = f'{message.image.url}'
+                    
+                    payload = {
+                        'chat_id': '@' + chat_id,
+                        'photo': img_url,
+                        'caption': text
+                    }
+                    response = requests.post(telegram_url, json=payload)
+                    
+                else:
+                    telegram_url = f"https://api.telegram.org/bot{settings.env.str('TELEGRAM_BOT_TOKEN')}/sendMessage"
+                    payload = {
+                        'chat_id': '@' + chat_id,
+                        'text': text
+                    }
+                    response = requests.post(telegram_url, json=payload)
+                if response.status_code == 200: 
+                    print("Telegram message sent successfully")
+                    print(response.text)
+                else:
+                    print(response.text)
+                    print("Failed to send Telegram message")
+        
+@receiver(post_save, sender=Category, dispatch_uid="update_open_groups")
+def update_open_groups(sender, instance, **kwargs):
+    updated = False
+    if instance.open_whatsapp_url:
+        if not instance.all_whatsapp_urls.filter(id=instance.open_whatsapp_url.id).exists():
+            instance.all_whatsapp_urls.add(instance.open_whatsapp_url)
+            updated = True
+    else:
+        instance.open_whatsapp_url = instance.all_whatsapp_urls.first()
+        if instance.open_whatsapp_url:
+            updated = True
+    
+    if instance.open_telegram_url:
+        if not instance.all_telegram_urls.filter(id=instance.open_telegram_url.id).exists():
+            instance.all_telegram_urls.add(instance.open_telegram_url)
+            updated = True
+    else:
+        instance.open_telegram_url = instance.all_telegram_urls.first()
+        if instance.open_telegram_url:
+            updated = True
+    if updated:
+        instance.save()
 
 # content state options: Approved, Pending, Rejected
 CONTENT_STATE = (
@@ -106,6 +169,12 @@ class ContentSchedule(models.Model):
     categories = models.ManyToManyField(Category, related_name='contentSchedules', blank=True)
     
     is_sent = models.BooleanField(default=False)
+    
+    def send_telgram_message(self):
+        for cat in self.categories.all():
+            cat.send_telegram_message(self)
+        self.is_sent = True
+        self.save()
     
     def should_send(self):
         if self.is_sent:

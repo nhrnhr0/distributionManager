@@ -29,20 +29,24 @@ admin.site.register(Business, BusinessAdmin)
 
 class WhatsappInline(admin.TabularInline):
     model=Category.all_whatsapp_urls.through
+    pass
+class TelegramInline(admin.TabularInline):
+    model=Category.all_telegram_urls.through
+    pass
 class CategoryAdmin(ImportExportModelAdmin):
-    list_display = ['id', 'image_display', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count']
+    list_display = ['id', 'icon', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count']
     prepopulated_fields = {'slug': ('name',)}
-    readonly_fields = ['image_display', 'whatsapp_groups_count','telegram_groups_count']
-    inlines= [WhatsappInline]
+    readonly_fields = ['whatsapp_groups_count','telegram_groups_count']
+    inlines= [WhatsappInline, TelegramInline]
     search_fields = ['name', 'business__name']
     list_filter = ['business',]
     exclude = ['all_whatsapp_urls', 'all_telegram_urls',]
     
-    def image_display(self, obj):
-        if obj.icon:
-            return mark_safe(f'<img src="{obj.icon.url}" width="50" height="50" />')
-        return 'No Image'
-    image_display.short_description = 'Icon'
+    # def image_display(self, obj):
+    #     if obj.icon:
+    #         return mark_safe(f'<img src="{obj.icon.url}" width="50" height="50" />')
+    #     return 'No Image'
+    # image_display.short_description = 'Icon'
     
     def whatsapp_groups_count(self, obj: Category):
         return obj.all_whatsapp_urls.count()

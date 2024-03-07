@@ -15,11 +15,11 @@
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
       <!-- messages, and login/logout -->
-      {%if request.user|has_group:"sender"%}
+      {%if request.user|has_group:"content editor"%}
       <li class="nav-item">
         <a class="nav-link" href="/admin-dashboard/messages/">עריכת הודעות</a>
       </li>
-      {%endif%} {%if request.user|has_group:"content editor"%}
+      {%endif%} {%if request.user|has_group:"sender"%}
       <li class="nav-item">
         <a class="nav-link" href="/admin-dashboard/send-messsages/">שליחת הודעות</a>
       </li>

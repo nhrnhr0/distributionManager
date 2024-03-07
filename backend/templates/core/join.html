@@ -15,7 +15,11 @@
       {% for category in biz.categories.all %}
       <div class="col-lg-4 col-md-6 mb-4">
         <div class="card">
+          {%if category.icon%}
           <img src="{{category.icon.url}}" class="card-img-top" alt="Image 1" />
+          {%else%}
+          <img src="{% static 'no-image.png' %}" class="card-img-top" alt="Image 1" />
+          {%endif%}
           <div class="card-body">
             <h5 class="card-title">{{category.name}}</h5>
             <div class="buttons row">

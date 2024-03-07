@@ -5,3 +5,4 @@ env
 backend/static/media_root/*
 env/pyvenv.cfg
 backend/static/*
+backend/.env
