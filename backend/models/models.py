@@ -156,7 +156,6 @@ class ContentSchedule(models.Model):
     message = models.TextField(max_length=200, blank=True, null=True)
     image = models.ImageField(upload_to='contents/', blank=True, null=True)
     send_date = models.DateTimeField(blank=True, null=True)
-    # approve_telegram_id = models.CharField(max_length=100, blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -168,16 +167,17 @@ class ContentSchedule(models.Model):
     # reject_reason = models.TextField(max_length=200, blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name='contentSchedules', blank=True)
     
-    is_sent = models.BooleanField(default=False)
+    is_whatsapp_sent = models.BooleanField(default=False)
+    is_telegram_sent = models.BooleanField(default=False)
     
     def send_telgram_message(self):
         for cat in self.categories.all():
             cat.send_telegram_message(self)
-        self.is_sent = True
+        self.is_telegram_sent = True
         self.save()
     
-    def should_send(self):
-        if self.is_sent:
+    def should_send_whatsapp(self):
+        if self.is_whatsapp_sent:
             return False
         if self.approve_state != 'A':
             return False
@@ -186,6 +186,16 @@ class ContentSchedule(models.Model):
             return True
     
         return False
-    
+    def should_send_telegram(self):
+        if self.is_telegram_sent:
+            return False
+        if self.approve_state != 'A':
+            return False
+        # if updated_at happend in the last 5 minutes
+        if self.updated_at and (timezone.now() - self.updated_at).seconds < 300:
+            return False
+        if self.send_date and self.send_date <= timezone.now():
+            return True
+        return False
     class Meta:
         ordering = ['-send_date', '-created_at']

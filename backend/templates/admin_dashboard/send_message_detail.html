@@ -59,8 +59,8 @@
     <div class="form-group">
       
       <div class="form-check">
-        <input class="form-check-input" type="checkbox" {%if message.is_sent%} checked {%endif%} id="is_sent" name="is_sent">
-        <label class="form-check-label" for="is_sent"> האם ההודעה נשלחה </label>
+        <input class="form-check-input" type="checkbox" {%if message.is_whatsapp_sent%} checked {%endif%} id="is_whatsapp_sent" name="is_whatsapp_sent">
+        <label class="form-check-label" for="is_whatsapp_sent"> האם ההודעה נשלחה </label>
     </div>
     <div class="form-group mt-5">
       <button type="submit" class="btn btn-primary" name="action" value="save">שמור</button>

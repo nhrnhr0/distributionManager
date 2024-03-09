@@ -12,14 +12,14 @@
             <div class="mb-3">
               <label for="send_date" class="form-label">האם נשלח</label>
               <ul>
-                <li {% if not request.GET.is_sent  %} class="selected" {% endif %}>
-                  <a href="?{%url_replace request 'is_sent' '' %}">הכל</a>
+                <li {% if not request.GET.is_whatsapp_sent  %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'is_whatsapp_sent' '' %}">הכל</a>
                 </li>
-                <li {% if request.GET.is_sent == "true" %} class="selected" {% endif %}>
-                  <a href="?{%url_replace request 'is_sent' 'true' %}">נשלחו</a>
+                <li {% if request.GET.is_whatsapp_sent == "true" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'is_whatsapp_sent' 'true' %}">נשלחו</a>
                 </li>
-                <li {% if request.GET.is_sent == "false" %} class="selected" {% endif %}>
-                  <a href="?{%url_replace request 'is_sent' 'false' %}">לא נשלחו</a>
+                <li {% if request.GET.is_whatsapp_sent == "false" %} class="selected" {% endif %}>
+                  <a href="?{%url_replace request 'is_whatsapp_sent' 'false' %}">לא נשלחו</a>
                 </li>
               </ul>
             </div>
@@ -120,7 +120,7 @@
               </ul>
             </td>
             <td>
-              {% include "commen/table_cells/bool_cell.html" with val=message.is_sent %}
+              {% include "commen/table_cells/bool_cell.html" with val=message.is_whatsapp_sent %}
             </td>
           </tr>
           {% endfor %}

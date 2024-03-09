@@ -124,11 +124,11 @@ def admin_dashboard_send_message_detail(request, id):
         return error_page('אין לך הרשאה למשאב זה')
     
     if request.method == 'POST':
-        is_sent = request.POST.get('is_sent', '')
+        is_sent = request.POST.get('is_whatsapp_sent', '')
         if is_sent == 'on':
-            message.is_sent = True
+            message.is_whatsapp_sent = True
         else:
-            message.is_sent = False
+            message.is_whatsapp_sent = False
         message.save()
         messages.add_message(request, messages.SUCCESS, 'הודעה עודכנה בהצלחה')
         action = request.POST.get('action')

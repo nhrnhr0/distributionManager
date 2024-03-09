@@ -24,6 +24,6 @@ def busines_join_telegram_link(request, business_slug, category_slug):
 def send_scheduled_telegram_messages():
     
     for message in ContentSchedule.objects.all():
-        if message.should_send():
+        if message.should_send_telegram():
             message.send_telgram_message()
     pass
