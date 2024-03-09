@@ -108,7 +108,7 @@
           {% for message in biz_messages %}
           <tr>
             <td>
-              <a href="{{message.id}}/change">{{message.id}}</a>
+              <a href="{{message.id}}/change">{{message.id|stringformat:"s"|slice:"-4:"}}</a>
             </td>
 
             <td>

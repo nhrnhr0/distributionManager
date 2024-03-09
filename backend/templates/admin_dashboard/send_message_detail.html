@@ -1,5 +1,5 @@
 {% extends "admin_dashboard/dashboard_base.html" %}  {% load static %} {% block title %} שליחת הודעה{% endblock %} {% block content %}
-<h1>שליחת הודעה {{message.id}}</h1>
+<h1>שליחת הודעה {{message.id|stringformat:"s"|slice:"-4:"}}</h1>
 
 <div class="container mt-5">
   <form action="" method="post" enctype="multipart/form-data">
@@ -12,7 +12,7 @@
         </label>
         <!-- if the send_date passed and is_sent is False -->
 
-        {% include "commen/table_cells/bool_cell.html" with val=message.should_send%}
+        {% include "commen/table_cells/bool_cell.html" with val=message.should_send_whatsapp%}
     <div class="form-group">
       <label for="image">תמונה</label>
       {%if message.image %}

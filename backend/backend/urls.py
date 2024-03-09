@@ -32,11 +32,11 @@ urlpatterns = [
     path('join/<str:business_slug>/<str:category_slug>/telegram/', busines_join_telegram_link, name='business_join_telegram'),
     
     path('admin-dashboard/messages/', admin_dashboard_schedule, name='admin_dashboard_schedule'),
-    path('admin-dashboard/messages/<int:id>/change/', admin_dashboard_message_detail, name='message_detail'),
+    path('admin-dashboard/messages/<uuid:id>/change/', admin_dashboard_message_detail, name='message_detail'),
     path('admin-dashboard/messages/new/', admin_dashboard_message_detail, name='message_new'),
     
     path('admin-dashboard/send-messsages/', admin_dashboard_send_messages, name='admin_dashboard_send_messages'),
-    path('admin-dashboard/send-messsages/<int:id>/send/', admin_dashboard_send_message_detail,name='admin_dashboard_send_message_detail'),
+    path('admin-dashboard/send-messsages/<uuid:id>/send/', admin_dashboard_send_message_detail,name='admin_dashboard_send_message_detail'),
 ]
 
 

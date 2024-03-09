@@ -1,5 +1,5 @@
 {% extends "admin_dashboard/dashboard_base.html" %} {% load static %} {% block title %} שינוי/יצירת הודעה {% endblock %} {% block content %} {%if message%}
-<h1>שינוי הודעה {{message.id}}</h1>
+<h1>שינוי הודעה {{message.id|stringformat:"s"|slice:"-4:"}}</h1>
 {%else%}
 <h1>הודעה חדשה</h1>
 {%endif%}

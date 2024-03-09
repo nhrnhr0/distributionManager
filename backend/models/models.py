@@ -7,6 +7,7 @@ from django.dispatch import receiver
 # Create your models here.
 import backend.settings as settings
 import requests
+import uuid
 
 class SysUser(models.Model):
     name = models.CharField(max_length=100)
@@ -153,6 +154,7 @@ CONTENT_STATE = (
 )
 
 class ContentSchedule(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     message = models.TextField(max_length=200, blank=True, null=True)
     image = models.ImageField(upload_to='contents/', blank=True, null=True)
     send_date = models.DateTimeField(blank=True, null=True)
