@@ -30,7 +30,7 @@ def apply_date_filter(queryset, date_filter, field_name):
 @login_required
 def admin_dashboard_schedule(request):
     if request.user.groups.filter(name='content editor').count() == 0:
-        return error_page("למשתמש אין הרשאת עריכה לעסק")
+        return error_page(request,"למשתמש אין הרשאת עריכה לעסק")
     biz = request.user.me.business
     # filter based on query params
     messages = ContentSchedule.objects.filter(business=biz)
@@ -48,14 +48,32 @@ def admin_dashboard_schedule(request):
     return render(request, 'admin_dashboard/messages.html', {'biz_messages': messages})
 
 @login_required
+def admin_dashboard_message_detail_update_send_date(request, id):
+    if request.user.groups.filter(name='content editor').count() == 0:
+        return error_page(request,"למשתמש אין הרשאת עריכה לעסק")
+    try:
+        message = ContentSchedule.objects.get(id=id)
+    except ContentSchedule.DoesNotExist:
+        return error_page(request,'משאב זה לא נמצא')
+    if message.business != request.user.me.business:
+        return error_page(request,'משאב זה אינו שייך לך')
+    if request.method == 'POST':
+        send_date = request.POST.get('send_date')
+        message.send_date = send_date
+        message.save()
+        # return 200 ok
+        return HttpResponse('ok')
+    return error_page(request,'Method not allowed')
+
+@login_required
 def admin_dashboard_message_detail(request, id=None):
     if request.user.groups.filter(name='content editor').count() == 0:
-        return error_page("למשתמש אין הרשאת עריכה לעסק")
+        return error_page(request,"למשתמש אין הרשאת עריכה לעסק")
     message = None
     if id:
         message = ContentSchedule.objects.get(id=id)
         if message.business != request.user.me.business:
-            return error_page('משאב זה אינו שייך לך')
+            return error_page(request,'משאב זה אינו שייך לך')
     if request.method == 'POST':
         #image,message,send_date,categories
         id = request.POST.get('id')
@@ -69,7 +87,7 @@ def admin_dashboard_message_detail(request, id=None):
                 obj = ContentSchedule.objects.get(id=id)
                 obj.message = message
                 obj.send_date = send_date
-                if obj.image:
+                if image:
                     obj.image = image
             else:
                 obj = ContentSchedule.objects.create(
@@ -105,23 +123,24 @@ def admin_dashboard_message_detail(request, id=None):
 @login_required
 def admin_dashboard_send_messages(request):
     if request.user.groups.filter(name='sender').count() == 0:
-        return error_page("למשתמש אין הרשאת שליחה לעסק")
+        return error_page(request,"למשתמש אין הרשאת שליחה לעסק")
     biz = request.user.me.business
     biz_messages =  ContentSchedule.objects.filter(business=biz,approve_state='A')
     return render(request, "admin_dashboard/send_messages.html", {'biz_messages': biz_messages})
 
 
 
-def error_page(error_message):
-    return HttpResponse(error_message)
+def error_page(request,error_message):
+    # return 500 error page
+    return render(request, '500.html', {'error_message': error_message})
 
 @login_required
 def admin_dashboard_send_message_detail(request, id):
     if request.user.groups.filter(name='sender').count() == 0:
-        return error_page("למשתמש אין הרשאת שליחה לעסק")
+        return error_page(request,"למשתמש אין הרשאת שליחה לעסק")
     message = ContentSchedule.objects.get(id=id)
     if message.business != request.user.me.business:
-        return error_page('אין לך הרשאה למשאב זה')
+        return error_page(request,'אין לך הרשאה למשאב זה')
     
     if request.method == 'POST':
         is_sent = request.POST.get('is_whatsapp_sent', '')

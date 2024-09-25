@@ -30,8 +30,8 @@ SECRET_KEY = 'django-insecure-trgynxv69d^o5u0!-qzaeqv*!0ual(-#6b_ey$_4#1g!e28zct
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['dm.boost-pop.com','127.0.0.1','testing.boost-pop.com']
-CSRF_TRUSTED_ORIGINS = ['https://dm.boost-pop.com','https://testing.boost-pop.com']
+ALLOWED_HOSTS = ['dm.boost-pop.com','127.0.0.1','testing.boost-pop.com', '*']
+CSRF_TRUSTED_ORIGINS = ['https://dm.boost-pop.com','https://testing.boost-pop.com', 'https://home-desktop-8000.ms-global.co.il']
 
 # Application definition
 

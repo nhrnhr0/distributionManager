@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
-from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail
+from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail,admin_dashboard_message_detail_update_send_date
 from django.contrib.auth.views import LogoutView, LoginView
 # from core.views import test
 urlpatterns = [
@@ -31,12 +31,13 @@ urlpatterns = [
     path('join/<str:business_slug>/<str:category_slug>/whatsapp/', busines_join_whatsapp_link, name='business_join_whatsapp'),
     path('join/<str:business_slug>/<str:category_slug>/telegram/', busines_join_telegram_link, name='business_join_telegram'),
     
-    path('admin-dashboard/messages/', admin_dashboard_schedule, name='admin_dashboard_schedule'),
-    path('admin-dashboard/messages/<uuid:id>/change/', admin_dashboard_message_detail, name='message_detail'),
-    path('admin-dashboard/messages/new/', admin_dashboard_message_detail, name='message_new'),
+    # path('admin-dashboard/messages/', admin_dashboard_schedule, name='admin_dashboard_schedule'),
+    # path('admin-dashboard/messages/<uuid:id>/change/', admin_dashboard_message_detail, name='message_detail'),
+    # path('admin-dashboard/messages/<uuid:id>/update-send-date/', admin_dashboard_message_detail_update_send_date, name='message_update_send_date'),
+    # path('admin-dashboard/messages/new/', admin_dashboard_message_detail, name='message_new'),
     
-    path('admin-dashboard/send-messsages/', admin_dashboard_send_messages, name='admin_dashboard_send_messages'),
-    path('admin-dashboard/send-messsages/<uuid:id>/send/', admin_dashboard_send_message_detail,name='admin_dashboard_send_message_detail'),
+    # path('admin-dashboard/send-messsages/', admin_dashboard_send_messages, name='admin_dashboard_send_messages'),
+    # path('admin-dashboard/send-messsages/<uuid:id>/send/', admin_dashboard_send_message_detail,name='admin_dashboard_send_message_detail'),
 ]
 
 
