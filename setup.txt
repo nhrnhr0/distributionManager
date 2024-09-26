@@ -31,33 +31,26 @@ GRANT ALL PRIVILEGES ON SCHEMA public TO gm_db_user;
 \q
 
 
-git clone https://github.com/nhrnhr0/signageApp.git
-cd signageApp
+git clone https://github.com/nhrnhr0/distributionManager.git
+cd distributionManager
 git checkout merge_server
 
 python3 -m venv env
 source env/bin/activate
-# create .env file
 cd backend
+# create .env file
 pip install -r requirements.txt
+cd ..
 python manage.py migrate
 python manage.py collectstatic
 python manage.py createsuperuser
-sudo cp ../setup/bizbiz_screen_gunicorn.conf /etc/supervisor/conf.d/bizbiz_screen_gunicorn.conf
-sudo cp ../setup/bizbiz_screen_celery.conf /etc/supervisor/conf.d/bizbiz_screen_celery.conf
+sudo cp ../setup/gm_gunicorn_django.conf /etc/supervisor/conf.d/gm_gunicorn_django.conf
 sudo mkdir -p /var/log/gunicorn
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl restart bizbiz_screen_gunicorn
 
-cd ..
-sudo apt install npm
-cd frontend
-npm install
-# create .env file in frontend
-npm run build
-sudo cp ../setup/bizbiz_screen_nginx_django.conf /etc/nginx/conf.d/bizbiz_screen_nginx_django.conf
-sudo cp ../setup/bizbiz_screen_nginx_svelte.conf /etc/nginx/conf.d/bizbiz_screen_nginx_svelte.conf
+sudo cp ../setup/gm_nginx_django.conf /etc/nginx/conf.d/gm_nginx_django.conf
 
 sudo systemctl restart nginx
 
