@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount, WeeklyMessagesResponsesCount
+from .models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount, MessagesResponsesCount, CallsResponsesCount
 from models.models import WhatsappGroup
 # Register your models here.
 
@@ -17,7 +17,7 @@ class TelegramGroupSizeCountInline(admin.TabularInline):
 
 
 class DaylyGroupSizeCountAdmin(admin.ModelAdmin):
-    list_display = ['business', 'created_at']
+    list_display = ['business', 'date']
     inlines = [WhatsappGroupSizeCountInline, TelegramGroupSizeCountInline]
     
     pass
@@ -33,7 +33,12 @@ class TelegramGroupSizeCountAdmin(admin.ModelAdmin):
     pass
 admin.site.register(TelegramGroupSizeCount, TelegramGroupSizeCountAdmin)
 
-class WeeklyMessagesResponsesCountAdmin(admin.ModelAdmin):
+class MessagesResponsesCountAdmin(admin.ModelAdmin):
     list_display = ['business', 'date', 'count']
     pass
-admin.site.register(WeeklyMessagesResponsesCount, WeeklyMessagesResponsesCountAdmin)
+admin.site.register(MessagesResponsesCount, MessagesResponsesCountAdmin)
+
+class CallsResponsesCountAdmin(admin.ModelAdmin):
+    list_display = ['business', 'date', 'count']
+    pass
+admin.site.register(CallsResponsesCount, CallsResponsesCountAdmin)

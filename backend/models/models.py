@@ -30,7 +30,7 @@ class Business(models.Model):
     
     header_image = models.ImageField(upload_to='businesses/', blank=True, null=True)
     footer_image = models.ImageField(upload_to='businesses/', blank=True, null=True)
-    description = models.TextField(max_length=200, blank=True, null=True)
+    description = models.TextField(max_length=20000, blank=True, null=True)
     
     # qrs = models.ManyToManyField('BusinessQR', related_name='businesses')
 
