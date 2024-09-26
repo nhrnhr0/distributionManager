@@ -48,7 +48,7 @@ sudo cp ../setup/gm_gunicorn_django.conf /etc/supervisor/conf.d/gm_gunicorn_djan
 sudo mkdir -p /var/log/gunicorn
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl restart bizbiz_screen_gunicorn
+sudo supervisorctl restart gm_gunicorn_django
 
 sudo cp ../setup/gm_nginx_django.conf /etc/nginx/conf.d/gm_nginx_django.conf
 
