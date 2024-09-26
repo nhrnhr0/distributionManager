@@ -1,7 +1,21 @@
 {% extends "admin_dashboard/dashboard_base.html" %} {% load static %}{% load my_tags %}
+{%block scripts%}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales-all.global.min.js"></script>
+{%endblock%}
  {% block title %}עריכת הודעות{% endblock %} {% block content %}
  
 <h1>עריכת הודעות</h1>
+<!-- if url?calnder_view=false or None -->
+{% if not request.GET.calnder_view %}
+  <a href="?{%url_replace request 'calnder_view' 'true' %}">תצוגת לוח שנה</a>
+{%else%}
+  <a href="?{%url_delete request 'calnder_view' %}">תצוגת רשימה</a>
+{%endif%}
+
+{%if request.GET.calnder_view%}
+  {%include "admin_dashboard/messages_calender.html" with biz_messages=biz_messages%}
+{%else%}
 <div class="row">
       <div class="col-lg-2 filters">
       <div class="card">
@@ -138,10 +152,16 @@
           {% endfor %}
         </tbody>
       </table>
-    </div>
+</div>
 
   </div>
 </div>
+
+{%endif%}
+    
+{%endblock%}
+{%block styles%}
+
 
 
 <style>

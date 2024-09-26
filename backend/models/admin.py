@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SysUser, Business, Category, ContentSchedule,TelegramGroup, WhatsappGroup
+from .models import SysUser, Business, Category, ContentSchedule,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 # Register your models here.
@@ -8,6 +8,18 @@ class SysUserAdmin(admin.ModelAdmin):
     pass
 admin.site.register(SysUser, SysUserAdmin)
 
+class LeadsClicksAdmin(admin.ModelAdmin):
+    list_display = ['id', 'business', 'qr', 'created_at']
+    
+    list_filter = ['business', 'qr', 'created_at']
+    
+    pass
+admin.site.register(LeadsClicks, LeadsClicksAdmin)
+
+class CategoriesClicksAdmin(admin.ModelAdmin):
+    list_display = ['id', 'business', 'category', 'qr', 'created_at']
+    
+admin.site.register(CategoriesClicks, CategoriesClicksAdmin)
 
 class CategoryInline(admin.TabularInline):
     model=Category
@@ -16,10 +28,25 @@ class CategoryInline(admin.TabularInline):
     readonly_fields = ['image_display']
     prepopulated_fields = {'slug': ('name',)}
     pass
+
+class BusinessQRCategoriesAdmin(admin.ModelAdmin):
+    list_display = ['name',]
+    pass
+admin.site.register(BusinessQRCategories, BusinessQRCategoriesAdmin)
+class BusinessQRInline(admin.TabularInline):
+    model=BusinessQR
+    fields = ('get_html_link', 'name', 'category', 'html_qr_img')
+    readonly_fields = ('get_html_link','html_qr_img',)
+    
+    # def link(self, obj):
+    #     l = obj.get_link()
+    #     return mark_safe(f'<a href="{l}" target="_blank">{l}</a>')
+    # link.short_description = 'Link'
+    pass
 class BusinessAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'all_users']
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [CategoryInline,]
+    inlines = [CategoryInline,BusinessQRInline]
     def all_users(self, obj):
         return ', '.join([user.name for user in obj.users.all()])
 
@@ -70,10 +97,12 @@ admin.site.register(ContentSchedule, ContentScheduleAdmin)
 class WhatsappGroupAdmin(admin.ModelAdmin):
     list_display= ('id','name', 'chat_id', 'get_link')
     readonly_fields = ('get_link',)
-    
+    search_fields = ['name', 'chat_id']
     pass
 admin.site.register(WhatsappGroup, WhatsappGroupAdmin)
 class TelegramGroupAdmin(admin.ModelAdmin):
-
+    list_display= ('id','name', 'chat_id', 'get_link')
+    readonly_fields = ('get_link',)
+    search_fields = ['name', 'chat_id']
     pass
 admin.site.register(TelegramGroup, TelegramGroupAdmin)

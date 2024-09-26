@@ -1,0 +1,133 @@
+<div class="grid">
+  <div class="row">
+    <!-- 3 pandels 2 smnall on the side and big calender in the middle -->
+    <div class="col-lg-2">
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">הודעות ללא תאריך</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div id="calendar"></div>
+    </div>
+    <div class="col-lg-2">
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title">כמה נשלח מכל קטגוריה</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="data">
+  {% for message in biz_messages %}
+  <div
+    id="{{message.id}}"
+    data-message="{{message.message}}"
+    data-send_date="{{message.send_date|date:'Y-m-d H:i:s'}}"
+    data-categories="{% for category in message.categories.all %}{{category.name}}{% if not forloop.last %},{% endif %}{% endfor %}"
+  ></div>
+  {% endfor %}
+</div>
+
+<script>
+  let randomColors = {};
+  function getRandomColor(str) {
+    let hash = 0;
+    str.split("").forEach((char) => {
+      hash = char.charCodeAt(0) + ((hash << 5) - hash);
+    });
+    let colour = "#";
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xff;
+      colour += value.toString(16).padStart(2, "0");
+    }
+    return colour;
+  }
+  debugger;
+  let events = init_events();
+  document.addEventListener("DOMContentLoaded", function () {
+    var calendarEl = document.getElementById("calendar");
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      locale: "he",
+      initialView: "dayGridMonth",
+      nowIndicator: true,
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+      },
+      navLinks: true, // can click day/week names to navigate views
+      editable: true,
+      selectable: true,
+      selectMirror: true,
+      dayMaxEvents: true, // allow "more" link when too many events
+      eventClick: function (info) {
+        console.log("Event " + info.event.title + " was clicked");
+        // prompt to ask the user of to move the to message edit page or not
+        if (confirm("האם לעבור לעריכת ההודעה? \n" + info.event.title)) {
+          window.location.href = "/admin-dashboard/messages/" + info.event.extendedProps.message_id + "/change/";
+        }
+      },
+      eventDrop: function (info) {
+        // info.event holds the event that was moved
+        // You can access info.event.id, info.event.title, etc.
+        // info.oldEvent holds the event's previous state
+        // You can access info.oldEvent.start, info.oldEvent.end, etc.
+        console.log("Event " + info.event.title + " was moved to " + info.event.start);
+        // You can put your custom logic here to handle the event move.
+        update_message_send_date(info.event.extendedProps.message_id, moment(info.event.start).format("YYYY-MM-DD HH:mm:ss"));
+      },
+      events: events,
+    });
+    calendar.render();
+  });
+
+  function init_events() {
+    let events = [];
+    let data = document.getElementById("data");
+    let messages = data.getElementsByTagName("div");
+    for (let i = 0; i < messages.length; i++) {
+      let message = messages[i];
+      let message_id = message.id;
+      let message_text = message.getAttribute("data-message");
+      let send_date = message.getAttribute("data-send_date");
+      let categories = message.getAttribute("data-categories").split(",");
+      for (let j = 0; j < categories.length; j++) {
+        let category = categories[j];
+        let event = {
+          extendedProps: {
+            message_id: message_id,
+          },
+          title: category + " - " + message_text,
+          start: send_date,
+          allDay: false,
+          groupId: message_id,
+          color: getRandomColor(category),
+        };
+        events.push(event);
+      }
+    }
+    return events;
+  }
+
+  function update_message_send_date(message_id, new_date) {
+    console.log("update_message_send_date", message_id, new_date);
+    $.ajax({
+      url: "/admin-dashboard/messages/" + message_id + "/update-send-date/",
+      type: "POST",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        send_date: new_date,
+      },
+      success: function (data) {
+        console.log("update_message_send_date success", data);
+      },
+      error: function (error) {
+        console.log("update_message_send_date error", error);
+      },
+    });
+  }
+</script>
