@@ -14,6 +14,7 @@ import os
 import requests
 from io import BytesIO
 from django.core.files import File
+from core.utils import generate_small_uuid
 
 class SysUser(models.Model):
     name = models.CharField(max_length=100)
@@ -28,6 +29,7 @@ class Business(models.Model):
     
     
     header_image = models.ImageField(upload_to='businesses/', blank=True, null=True)
+    footer_image = models.ImageField(upload_to='businesses/', blank=True, null=True)
     description = models.TextField(max_length=200, blank=True, null=True)
     
     # qrs = models.ManyToManyField('BusinessQR', related_name='businesses')
@@ -66,11 +68,10 @@ class CategoriesClicks(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='categories_clicks')
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='categories_clicks')
     qr = models.ForeignKey('BusinessQR', on_delete=models.CASCADE, related_name='categories_clicks', null=True, blank=True)
-    group_type = models.CharField(max_length=100, choices=CATEGORY_GROUP)
+    group_type = models.CharField(max_length=100, choices=CATEGORY_GROUP, default=CATEGORY_GROUP_WHATSAPP)
 
 class BusinessQR(models.Model):
-    def generate_small_uuid():
-        return str(uuid.uuid4())[:6]
+    
     name = models.CharField(max_length=100)
     category = models.ForeignKey(BusinessQRCategories, on_delete=models.CASCADE, related_name='qrs')
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='qrs')
@@ -167,7 +168,7 @@ class Category(models.Model):
         return self.name + ' - ' + self.business.name
     
     class Meta:
-        unique_together = ('name', 'business')
+        unique_together = ('slug', 'business')
         
     def save(self):
         return super().save()

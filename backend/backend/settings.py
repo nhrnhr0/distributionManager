@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'core',
     'models',
     'admin_dashboard',
+    'counting',
 ]
 
 MIDDLEWARE = [

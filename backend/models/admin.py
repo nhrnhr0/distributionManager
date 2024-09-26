@@ -97,10 +97,12 @@ admin.site.register(ContentSchedule, ContentScheduleAdmin)
 class WhatsappGroupAdmin(admin.ModelAdmin):
     list_display= ('id','name', 'chat_id', 'get_link')
     readonly_fields = ('get_link',)
-    
+    search_fields = ['name', 'chat_id']
     pass
 admin.site.register(WhatsappGroup, WhatsappGroupAdmin)
 class TelegramGroupAdmin(admin.ModelAdmin):
-
+    list_display= ('id','name', 'chat_id', 'get_link')
+    readonly_fields = ('get_link',)
+    search_fields = ['name', 'chat_id']
     pass
 admin.site.register(TelegramGroup, TelegramGroupAdmin)
