@@ -89,12 +89,38 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_TYPE = env.str('DATABASE_TYPE')
+DATABASE_NAME = env.str('DATABASE_NAME', default='')
+DATABASE_USER = env.str('DATABASE_USER', default='')
+DATABASE_PASSWORD = env.str('DATABASE_PASSWORD', default='')
+DATABASE_HOST = env.str('DATABASE_HOST', default='')
+DATABASE_PORT = env.str('DATABASE_PORT', default='')
+
+if DATABASE_TYPE == 'postgresql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DATABASE_NAME,
+            'USER': DATABASE_USER,
+            'PASSWORD': DATABASE_PASSWORD,
+            'HOST': DATABASE_HOST,
+            'PORT': DATABASE_PORT,
+        }
     }
-}
+elif DATABASE_TYPE == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation

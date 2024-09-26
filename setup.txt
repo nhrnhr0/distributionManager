@@ -1,0 +1,73 @@
+# add swap space 1GB
+https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-20-04
+    sudo swapon --show
+    free -h
+    sudo fallocate -l 1G /swapfile
+    ls -lh /swapfile
+    sudo chmod 600 /swapfile
+    ls -lh /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    sudo swapon --show
+    free -h
+    sudo cp /etc/fstab /etc/fstab.bak
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+sudo apt update
+sudo apt upgrade
+sudo apt install supervisor
+sudo apt install python3-venv
+sudo apt-get install redis
+sudo apt install nginx
+sudo apt install ffmpeg
+
+# postgresql: https://medium.com/@pantaanish/setting-up-postgresql-on-an-ec2-instance-a-step-by-step-guide-9be2e3348fdb
+sudo apt install postgresql postgresql-contrib
+sudo -u postgres psql
+CREATE USER gm_db_user WITH PASSWORD '<password>';
+CREATE DATABASE gm_db;
+GRANT ALL PRIVILEGES ON DATABASE gm_db TO gm_db_user;
+\c gm_db
+GRANT ALL PRIVILEGES ON SCHEMA public TO gm_db_user;
+\q
+
+
+git clone https://github.com/nhrnhr0/signageApp.git
+cd signageApp
+git checkout merge_server
+
+python3 -m venv env
+source env/bin/activate
+# create .env file
+cd backend
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic
+python manage.py createsuperuser
+sudo cp ../setup/bizbiz_screen_gunicorn.conf /etc/supervisor/conf.d/bizbiz_screen_gunicorn.conf
+sudo cp ../setup/bizbiz_screen_celery.conf /etc/supervisor/conf.d/bizbiz_screen_celery.conf
+sudo mkdir -p /var/log/gunicorn
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart bizbiz_screen_gunicorn
+
+cd ..
+sudo apt install npm
+cd frontend
+npm install
+# create .env file in frontend
+npm run build
+sudo cp ../setup/bizbiz_screen_nginx_django.conf /etc/nginx/conf.d/bizbiz_screen_nginx_django.conf
+sudo cp ../setup/bizbiz_screen_nginx_svelte.conf /etc/nginx/conf.d/bizbiz_screen_nginx_svelte.conf
+
+sudo systemctl restart nginx
+
+# connect cloudflare DNS to the server
+
+# certbot
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo certbot --nginx
+
+
+sudo nano /etc/nginx/nginx.conf
+#change user to ubuntu
