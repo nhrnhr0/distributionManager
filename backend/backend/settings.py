@@ -15,6 +15,8 @@ import os
 
 from environs import Env
 
+BACKEND_DOMAIN = 'https://home-desktop-8000.ms-global.co.il'
+
 env = Env()
 env.read_env()  # read .env file, if it exists
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -166,14 +168,14 @@ LOGIN_URL = '/admin/login/'
 LOGOUT_REDIRECT_URL = '/admin/login/?next=' + LOGIN_REDIRECT_URL
 
 
-AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
+# AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
+# AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
 
-AWS_STORAGE_BUCKET_NAME = 'django-development-bucket'
-# AWS_S3_SIGNATURE_NAME = None
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_REGION_NAME = 'us-east-2'
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL =  None
-AWS_S3_VERITY = True
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_STORAGE_BUCKET_NAME = 'django-development-bucket'
+# # AWS_S3_SIGNATURE_NAME = None
+# AWS_QUERYSTRING_AUTH = False
+# AWS_S3_REGION_NAME = 'us-east-2'
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_DEFAULT_ACL =  None
+# AWS_S3_VERITY = True
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

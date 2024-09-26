@@ -8,6 +8,12 @@ from django.dispatch import receiver
 import backend.settings as settings
 import requests
 import uuid
+from django.utils.translation import gettext as _
+import qrcode
+import os
+import requests
+from io import BytesIO
+from django.core.files import File
 
 class SysUser(models.Model):
     name = models.CharField(max_length=100)
@@ -23,6 +29,8 @@ class Business(models.Model):
     
     header_image = models.ImageField(upload_to='businesses/', blank=True, null=True)
     description = models.TextField(max_length=200, blank=True, null=True)
+    
+    # qrs = models.ManyToManyField('BusinessQR', related_name='businesses')
 
     def __str__(self) -> str:
         return self.name
@@ -30,6 +38,83 @@ class Business(models.Model):
     def get_absolute_url(self):
         return '/join/' + self.slug
 
+
+
+class BusinessQRCategories(models.Model):
+    name = models.CharField(max_length=100)
+    
+    def __str__(self) -> str:
+        return self.name
+    
+
+class LeadsClicks(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='leads_clicks')
+    qr = models.ForeignKey('BusinessQR', on_delete=models.CASCADE, related_name='leads_clicks', null=True, blank=True)
+    
+    
+    
+class CategoriesClicks(models.Model):
+    CATEGORY_GROUP = (
+        ('whatsapp', 'whatsapp'),
+        ('telegram', 'telegram'),
+    )
+    CATEGORY_GROUP_WHATSAPP = 'whatsapp'
+    CATEGORY_GROUP_TELEGRAM = 'telegram'
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='categories_clicks')
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='categories_clicks')
+    qr = models.ForeignKey('BusinessQR', on_delete=models.CASCADE, related_name='categories_clicks', null=True, blank=True)
+    group_type = models.CharField(max_length=100, choices=CATEGORY_GROUP)
+
+class BusinessQR(models.Model):
+    def generate_small_uuid():
+        return str(uuid.uuid4())[:6]
+    name = models.CharField(max_length=100)
+    category = models.ForeignKey(BusinessQRCategories, on_delete=models.CASCADE, related_name='qrs')
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='qrs')
+    qr_code = models.CharField(max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    qr_img = models.ImageField(upload_to='qrs/', blank=True, null=True)
+    class Meta:
+        unique_together = ('name', 'business', 'category')
+    
+    def __str__(self) -> str:
+        return self.category.name + ' - '+  self.name
+    
+    def get_link(self):
+        if self.qr_code:
+            # return path('join/<str:business_slug>/', busines_join, name='business_join') with business_slug = self.business.slug and add ?c=self.id
+            return settings.BACKEND_DOMAIN +  '/join/' + self.business.slug + '/?c=' + str(self.qr_code)
+    def html_qr_img(self):
+        if self.qr_img:
+            return mark_safe(f'<img src="{self.qr_img.url}" width="50" height="50" />')
+        return 'No Image'
+    html_qr_img.short_description = 'QR Image'
+    # when id is created, set the qr_img to the qr image
+    def save(self):
+        # qr_dir = 'qrs/'
+        # if not os.path.exists(qr_dir):
+        #     os.makedirs(qr_dir)
+
+        if not self.qr_img and self.qr_code:
+            # Create the QR code
+            link = self.get_link()
+            if link:
+                qr_code_img = qrcode.make(link)
+                
+                # Save the QR code to an in-memory file
+                img_io = BytesIO()
+                qr_code_img.save(img_io, format='PNG')
+                img_io.seek(0)
+                filename = f'{self.qr_code}.png'
+                # Save the image to the model's ImageField (qr_img)
+                self.qr_img.save(filename, File(img_io), save=False)
+        return super().save()
+    
+    def get_html_link(self):
+        return mark_safe(f'<a href="{self.get_link()}">{self.get_link()}</a>')
+    get_html_link.short_description = 'Link'
 class WhatsappGroup(models.Model):
     name = models.CharField(max_length=120,blank=True,null=True)
     chat_id = models.CharField(max_length=120)

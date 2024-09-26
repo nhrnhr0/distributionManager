@@ -6,7 +6,7 @@
   <div class="row">
     <div class="col-lg-6 description">
       <h1>{{biz.name}}</h1>
-      <p>{{biz.description}}</p>
+      <p>{{biz.description|linebreaks}}</p>
     </div>
   </div>
   <!-- list of all the busines categories in a responsive grid -->
@@ -23,14 +23,20 @@
           <div class="card-body">
             <h5 class="card-title">{{category.name}}</h5>
             <div class="buttons row">
-              <a href="{{category.slug}}/telegram/" class="btn btn-primary" target="_blank">
-                <img src="{% static 'icons8-telegram.svg' %}" alt="Telegram" width="30" height="30" />
-                Telegram</a
-              >
-              <a href="{{category.slug}}/whatsapp/" class="btn btn-success" target="_blank">
-                <img src="{% static 'icons8-whatsapp.svg' %}" alt="WhatsApp" width="30" height="30" />
-                WhatsApp</a
-              >
+              <!-- if the category dose not have Open whatsapp url we do not show the whatsapp buttuon, same to telegram -->
+              {% if category.open_telegram_url %}
+                <a href="{{category.slug}}/telegram/?c={{ request.GET.c }}" class="btn btn-primary" target="_blank">
+                  <img src="{% static 'icons8-telegram.svg' %}" alt="Telegram" width="30" height="30" />
+                  Telegram</a
+                >
+              {% endif %}
+
+              {% if category.open_whatsapp_url %}
+                <a href="{{category.slug}}/whatsapp/?c={{ request.GET.c }}" class="btn btn-success" target="_blank">
+                  <img src="{% static 'icons8-whatsapp.svg' %}" alt="WhatsApp" width="30" height="30" />
+                  WhatsApp</a
+                >
+              {% endif %}
             </div>
           </div>
         </div>
@@ -98,7 +104,7 @@
 
     .leads-container .buttons {
       display: flex;
-      justify-content: space-between;
+      justify-content: space-around;
       flex-direction: row;
       flex-wrap: nowrap;
     }
