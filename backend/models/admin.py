@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import SysUser, Business, Category, ContentSchedule,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
+from django.utils.translation import gettext_lazy as _
 # Register your models here.
 class SysUserAdmin(admin.ModelAdmin):
     list_display = ['name', 'user']
@@ -78,12 +79,14 @@ class CategoryAdmin(ImportExportModelAdmin):
     def whatsapp_groups_count(self, obj: Category):
         return obj.all_whatsapp_urls.count()
         pass
+    whatsapp_groups_count.short_description = _('whatsapp groups amount')
+        
     def telegram_groups_count(self, obj: Category):
         return obj.all_telegram_urls.count()
-
         pass
-
+    telegram_groups_count.short_description = _('telegram groups amount')
     pass
+
 admin.site.register(Category, CategoryAdmin)
 class ContentScheduleAdmin(admin.ModelAdmin):
     list_display = ['id', 'message', 'image', 'created_at', 'updated_at', 'business', 'approve_state', 'approve_date']

@@ -62,5 +62,10 @@ sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo certbot --nginx
 
 
-sudo nano /etc/nginx/nginx.conf
+# sudo nano /etc/nginx/nginx.conf for nginx to access the static files
 #change user to ubuntu
+
+
+# translation dev:
+django-admin makemessages -l he --no-obsolete
+django-admin compilemessages
