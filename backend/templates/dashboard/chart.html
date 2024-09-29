@@ -1,0 +1,75 @@
+<div style="width: 90%; height: 700px; margin: 50px auto;">
+    <canvas id="flowChart"></canvas>
+</div>
+
+<script>
+    const ctx = document.getElementById('flowChart').getContext('2d');
+
+    // Provided data
+    const dataFlow = results_data;
+
+
+    const flows = {};
+
+    // Generate aggregated flows for leads
+    dataFlow.forEach(item => {
+      if (item.type === "כניסה לאתר") {
+        const key = `${item.qr_category} ← ${item.qr || ''}`;
+        flows[key] = (flows[key] || 0) + item.count;
+      } else if (item.type === "לחיצה על קטגוריה") {
+        const key = `${item.qr || ''} ← ${item.category}`;
+        flows[key] = (flows[key] || 0) + item.count;
+      }
+    });
+
+    // Add flows for group sizes
+    all_whatsapps_json.forEach(item => {
+      const key = `קטגוריה ${item.category.slice(-1)} ← ${item.group}`;
+      flows[key] = (flows[key] || 0) + item.count;
+    });
+
+    const processedData = Object.entries(flows).map(([key, value]) => {
+      const [from, to] = key.split(' ← ');
+      return { from, to, flow: value, label: key };
+    });
+
+    const data = {
+      datasets: [{
+        label: 'User Flows',
+        data: processedData,
+        colorFrom: (d) => {
+          return 'gray';
+        },
+        colorTo: (d) => {
+          return 'gray';
+        },
+        colorFlow: 'lightgray'
+      }]
+    };
+
+    const config = {
+      type: 'sankey',
+      data: data,
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.raw.label}: ${context.raw.flow}`
+            }
+          }
+        },
+        layout: {
+          padding: {
+            left: 50,
+            right: 50,
+            top: 50,
+            bottom: 50
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false, // Allow it to adjust the height dynamically
+      }
+    };
+
+    new Chart(ctx, config);
+  </script>

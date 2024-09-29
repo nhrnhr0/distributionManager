@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
 from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail,admin_dashboard_message_detail_update_send_date
 from django.contrib.auth.views import LogoutView, LoginView
+from dashboard.views import dashboard_index
 # from core.views import test
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,6 +31,8 @@ urlpatterns = [
     path('join/<str:business_slug>/', busines_join, name='business_join'),
     path('join/<str:business_slug>/<str:category_slug>/whatsapp/', busines_join_whatsapp_link, name='business_join_whatsapp'),
     path('join/<str:business_slug>/<str:category_slug>/telegram/', busines_join_telegram_link, name='business_join_telegram'),
+    
+    path('dashboard/', dashboard_index, name='dashboard'),
     
     # path('admin-dashboard/messages/', admin_dashboard_schedule, name='admin_dashboard_schedule'),
     # path('admin-dashboard/messages/<uuid:id>/change/', admin_dashboard_message_detail, name='message_detail'),

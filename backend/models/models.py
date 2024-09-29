@@ -134,7 +134,7 @@ class WhatsappGroup(models.Model):
         return super().save()
     
     def __str__(self) -> str:
-        return self.name +' - (' +  (''.join([c.name for c in self.all_whatsapp_categories.all()])) + ')'
+        return self.name +' - (' +  (''.join([c.name for c in self.whatsapp_categories.all()])) + ')'
 
     class Meta:
         verbose_name = _('WhatsApp group')
@@ -155,7 +155,7 @@ class TelegramGroup(models.Model):
         return super().save()
     
     def __str__(self) -> str:
-        return self.name +' - (' +  (''.join([c.name for c in self.all_telegram_categories.all()])) + ')'
+        return self.name +' - (' +  (''.join([c.name for c in self.telegram_categories.all()])) + ')'
 
     class Meta:
         verbose_name = _('Telegram group')
@@ -168,8 +168,8 @@ class Category(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='categories', verbose_name=_('business'))
     open_whatsapp_url = models.ForeignKey(to=WhatsappGroup, on_delete=models.SET_NULL, related_name='open_whatsapp_categories', null=True, blank=True, verbose_name=_('open WhatsApp URL'))
     open_telegram_url = models.ForeignKey(to=TelegramGroup, on_delete=models.SET_NULL, related_name='open_telegram_categories', null=True, blank=True, verbose_name=_('open Telegram URL'))
-    all_whatsapp_urls = models.ManyToManyField(to=WhatsappGroup, related_name='all_whatsapp_categories', verbose_name=_('all WhatsApp URLs'))
-    all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='all_telegram_categories', verbose_name=_('all Telegram URLs'))
+    all_whatsapp_urls = models.ManyToManyField(to=WhatsappGroup, related_name='whatsapp_categories', verbose_name=_('all WhatsApp URLs'))
+    all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='telegram_categories', verbose_name=_('all Telegram URLs'))
     
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name

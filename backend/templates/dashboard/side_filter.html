@@ -1,0 +1,65 @@
+
+
+<!-- filter based on business, start and end date, and qrs -->
+<div class="card">
+  <div class="card-header">
+    <h5>סינון</h5>
+  </div>
+  <div class="card-body">
+    <form action method="get">
+      <div class="mb-3">
+        <label for="business" class="form-label">עסק</label>
+        <select name="business" id="business" class="form-select">
+          <option value>כל העסקים</option>
+          {% for biz in businesses %}
+          <option value="{{biz.id}}" {% if request.GET.business ==
+            biz.id|stringformat:"s" %} selected {% endif
+            %}>{{biz.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="start_date" class="form-label">מתאריך</label>
+        <input type="date" name="start_date" id="start_date"
+          class="form-control" value="{{request.GET.start_date}}">
+      </div>
+      <div class="mb-3">
+        <label for="end_date" class="form-label">עד תאריך</label>
+        <input type="date" name="end_date" id="end_date" class="form-control"
+          value="{{request.GET.end_date}}">
+      </div>
+      <div class="mb-3">
+        <label for="qrs" class="form-label">קודי QR</label>
+        <select name="qrs" id="qrs" class="form-select" multiple>
+          {#if qrs_list != None %}
+          {% for qr in qrs_list %}
+          <option value="{{qr.id}}" {% if qr.id|stringformat:"s" in
+            request.GET.qrs|default:"" %} selected {% endif
+            %}>{{qr.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">סנן</button>
+      <button type="button" class="btn btn-secondary"
+        onclick="window.location='?';">נקה</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // make sure the qrs is initialized with the queryparams
+  // http://127.0.0.1:8000/dashboard/?business=1&start_date=&end_date=&qrs=1&qrs=2&qrs=3
+  init_qrs_select_url_params();
+
+  function init_qrs_select_url_params() {
+    const qrs = document.getElementById('qrs');
+  const qrs_list = new URLSearchParams(window.location.search).getAll('qrs');
+  qrs_list.forEach(qr => {
+    const option = qrs.querySelector(`option[value="${qr}"]`);
+    if (option) {
+      option.selected = true;
+    }
+  });
+  }
+
+</script>

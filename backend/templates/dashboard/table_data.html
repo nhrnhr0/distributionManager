@@ -1,0 +1,73 @@
+
+
+<!-- dispaly the leads and categories_clicks data -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>כניסות לאתר</h5>
+                </div>
+                <div class="card-body">
+                    <div id="table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+
+    // Function to handle pivot table updates
+    function handlePivotUpdate(config) {
+        console.log("User updated the pivot table");
+        console.log("Rows:", config.rows);
+        console.log("Cols:", config.cols);
+        console.log("Values:", config.vals);
+        // add them all to the local storage table_config and update the page URL without reloading
+        config = {
+            rows: config.rows,
+            cols: config.cols,
+            vals: config.vals,
+        }
+        
+        window.localStorage.setItem('table_config', JSON.stringify(config));
+
+    }
+
+$(function() {
+    // load table config from URL query params and set it to the pivot table if exists
+    
+    const table_config = window.localStorage.getItem('table_config');
+    if (table_config) {
+        $('#table').pivotUI(
+            translated_results, {
+                vals: ["כמות"],               // The value to aggregate (adjust as needed)
+                aggregatorName: "Integer Sum",         // The aggregation function to use (adjust as needed)
+                rendererName: "Table",          // The renderer to use (adjust as needed)
+                onRefresh: function(config) {
+                    handlePivotUpdate(config);   // Call function when the pivot table is updated
+                },
+                ...JSON.parse(table_config)
+            }
+            
+        );
+    }
+    else {
+        $('#table').pivotUI(
+            translated_results,{
+                vals: ["כמות"],               // The value to aggregate (adjust as needed)
+                aggregatorName: "Integer Sum",         // The aggregation function to use (adjust as needed)
+                rendererName: "Table",          // The renderer to use (adjust as needed)
+                onRefresh: function(config) {
+                    handlePivotUpdate(config);   // Call function when the pivot table is updated
+                },
+            }
+        );
+    }
+})
+
+    
+</script>
