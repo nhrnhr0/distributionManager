@@ -15,14 +15,14 @@ import os
 
 from environs import Env
 
-BACKEND_DOMAIN = 'https://home-desktop-8000.ms-global.co.il'
+
 
 env = Env()
 env.read_env()  # read .env file, if it exists
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+BACKEND_DOMAIN = env.str('BACKEND_DOMAIN', default='')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -31,9 +31,9 @@ SECRET_KEY = 'django-insecure-trgynxv69d^o5u0!-qzaeqv*!0ual(-#6b_ey$_4#1g!e28zct
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=True)
-
-ALLOWED_HOSTS = ['dm.boost-pop.com','127.0.0.1','testing.boost-pop.com', '*']
-CSRF_TRUSTED_ORIGINS = ['https://dm.boost-pop.com','https://testing.boost-pop.com', 'https://home-desktop-8000.ms-global.co.il']
+BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT = BACKEND_DOMAIN.split('//')[-1].split(':')[0]
+ALLOWED_HOSTS = [BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT,]
+CSRF_TRUSTED_ORIGINS = [BACKEND_DOMAIN,]
 
 # Application definition
 
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'models',
     'admin_dashboard',
     'counting',
+    'dashboard',
 ]
 
 MIDDLEWARE = [

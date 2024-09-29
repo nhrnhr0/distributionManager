@@ -19,7 +19,31 @@ class TelegramGroupSizeCountInline(admin.TabularInline):
 class DaylyGroupSizeCountAdmin(admin.ModelAdmin):
     list_display = ['business', 'date']
     inlines = [WhatsappGroupSizeCountInline, TelegramGroupSizeCountInline]
+    actions = ['download_csv',]
     
+    def download_csv(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        import io
+        f = io.StringIO()
+        writer = csv.writer(f)
+        writer.writerow(['business', 'date', 'category','group', 'group type'])
+        queryset = queryset.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set')
+        for s in queryset:
+            for w in s.whatsappgroupsizecount_set.all():
+                category = w.group.whatsapp_categories.first()
+                category_name = category.name if category else None
+                for c in range(w.count):
+                    writer.writerow([s.business, s.date, category_name, w.group, 'whatsapp'])
+            for t in s.telegramgroupsizecount_set.all():
+                category = t.group.telegram_categories.first()
+                category_name = category.name if category else None
+                for c in range(t.count):
+                    writer.writerow([s.business, s.date, category_name, t.group, 'telegram'])
+        f.seek(0)
+        response = HttpResponse(f, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=dayly_group_size_count.csv'
+        return response
     pass
 admin.site.register(DaylyGroupSizeCount, DaylyGroupSizeCountAdmin)
 

@@ -61,7 +61,7 @@ sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo certbot --nginx
 
-
+ 
 # sudo nano /etc/nginx/nginx.conf for nginx to access the static files
 #change user to ubuntu
 
@@ -69,3 +69,7 @@ sudo certbot --nginx
 # translation dev:
 django-admin makemessages -l he --no-obsolete
 django-admin compilemessages
+
+
+# startup a postgress docker container for development
+docker run --name gm_postgres -e POSTGRES_PASSWORD=bnrbtnbcv -e POSTGRES_USER=gm_db_user -e POSTGRES_DB=gm_db -d -p 5432:5432 postgres

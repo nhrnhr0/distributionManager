@@ -11,14 +11,44 @@ admin.site.register(SysUser, SysUserAdmin)
 
 class LeadsClicksAdmin(admin.ModelAdmin):
     list_display = ['id', 'business', 'qr', 'created_at']
-    
+    actions = ['download_csv',]
     list_filter = ['business', 'qr', 'created_at']
+    def download_csv(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        import io
+        f = io.StringIO()
+        writer = csv.writer(f)
+        writer.writerow(['id', 'business', 'qr','qr_category', 'created_at'])
+        for s in queryset:
+            writer.writerow([s.id, s.business, s.qr.name if s.qr else None, s.qr.category if s.qr else 'אורגני', s.created_at])
+        f.seek(0)
+        response = HttpResponse(f, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=leads_clicks.csv'
+        return response
+    download_csv.short_description = 'Download CSV'
+    
     
     pass
 admin.site.register(LeadsClicks, LeadsClicksAdmin)
 
 class CategoriesClicksAdmin(admin.ModelAdmin):
     list_display = ['id', 'business', 'category', 'qr', 'created_at']
+    actions = ['download_csv',]
+    def download_csv(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        import io
+        f = io.StringIO()
+        writer = csv.writer(f)
+        writer.writerow(['id', 'business', 'category', 'qr','qr_category', 'created_at'])
+        for s in queryset:
+            writer.writerow([s.id, s.business, s.category.name, s.qr.name if s.qr else None, s.qr.category if s.qr else 'אורגני', s.created_at])
+        f.seek(0)
+        response = HttpResponse(f, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=categories_clicks.csv'
+        return response
+    download_csv.short_description = 'Download CSV'
     
 admin.site.register(CategoriesClicks, CategoriesClicksAdmin)
 
