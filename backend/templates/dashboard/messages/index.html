@@ -1,0 +1,21 @@
+{% extends "dashboard/messages/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - הודעות{% endblock %}
+{% block extra_head %}
+    <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.js"></script>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey"></script>
+{% endblock %}
+{% block content %}
+    <script>
+        const all_messages_json = JSON.parse("{{ all_messages_json|escapejs }}");
+        console.log('all_messages_json', all_messages_json);
+    </script>
+    <div style="display: flex;">
+        <div style="flex: 1;">{% include "dashboard/messages/side_filter.html" %}</div>
+        <div style="flex: 3;">{% include "dashboard/messages/data_display.html" %}</div>
+    </div>
+{% endblock %}

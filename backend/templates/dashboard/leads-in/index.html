@@ -1,0 +1,52 @@
+{% extends "dashboard/leads-in/base.html" %} {% load static %}{% load my_tags %}
+{% block title %}דאשבורד - לידים נכנסים{% endblock %}
+{%block extra_head%}
+<script
+    src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.js"></script>
+<link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey"></script>
+{%endblock%}
+{% block content %}
+<script>
+    const leads_clicks_json = JSON.parse("{{ leads_clicks_json|escapejs }}");
+    console.log('leads_clicks_json', leads_clicks_json);
+
+    const categories_clicks_json = JSON.parse("{{ categories_clicks_json|escapejs }}");
+    console.log('categories_clicks_json', categories_clicks_json);
+
+    const all_whatsapps_json = JSON.parse("{{ all_whatsapps_json|escapejs }}");
+    console.log('all_whatsapps_json', all_whatsapps_json);
+
+    const all_telegrams_json = JSON.parse("{{ all_telegrams_json|escapejs }}");
+    console.log('all_telegrams_json', all_telegrams_json);
+
+    // const data = merge all the lists together
+    const results_data = leads_clicks_json.concat(categories_clicks_json, all_whatsapps_json, all_telegrams_json);
+    console.log('data', results_data);
+
+    const translated_results = results_data.map((item) => {
+        return {
+            'עסק': item.business,
+            'קטגוריה': item.category,
+            'QR': item.qr,
+            'QR אבא': item.qr_category,
+            'כמות': item.count,
+            'סוג ליד': item.type,
+            'סוג קבוצה': item.group_type,
+        }
+    });
+</script>
+
+<div style="display: flex;">
+    <div style="flex: 1;">
+        {% include "dashboard/leads-in/side_filter.html" %}
+    </div>
+    <div style="flex: 3;">
+        {% include "dashboard/leads-in/table_data.html" %}
+        {%include "dashboard/leads-in/chart.html"%}
+    </div>
+</div>
+
+{% endblock %}
