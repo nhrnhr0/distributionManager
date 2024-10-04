@@ -216,16 +216,12 @@ def update_open_groups(sender, instance, **kwargs):
 
 
 
+# message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
 class BizMessages(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
     message = models.TextField(_('message'), max_length=20000)
-    send_at = models.DateTimeField(_('send at'), null=True, blank=True)
-    is_sent = models.BooleanField(_('is sent'), default=False)
     
-    categories = models.ManyToManyField(Category, related_name='messages', verbose_name=_('categories'), blank=True)
-    # whatsapp_groups = models.ManyToManyField(WhatsappGroup, related_name='messages', verbose_name=_('whatsapp groups'), blank=True)
-    # telegram_groups = models.ManyToManyField(TelegramGroup, related_name='messages', verbose_name=_('telegram groups'), blank=True)
     
     def __str__(self) -> str:
         return self.message
@@ -234,12 +230,20 @@ class BizMessages(models.Model):
         verbose_name = _('business message')
         verbose_name_plural = _('business messages')
         
-    
+class MessageCategory(models.Model):
+    message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'))
+    send_at = models.DateTimeField(_('send at'), default=timezone.now)
+    is_sent = models.BooleanField(_('is sent'), default=False)
+    class Meta:
+        verbose_name = _('message category')
+        verbose_name_plural = _('message categories')
+# the links we insert in the message
 class MessageLink(models.Model):
     link = models.URLField(_('link'), max_length=2000)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='links', verbose_name=_('message'))
     description = models.CharField(_('description'), max_length=100, blank=True, null=True)
-    
+
 class MessageLinkTracker(models.Model):
     uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     link = models.ForeignKey(MessageLink, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('link'))

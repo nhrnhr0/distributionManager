@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks,MessageLink,BizMessages
+from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks,MessageLink,BizMessages,MessageCategory
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 from django.utils.translation import gettext_lazy as _
@@ -137,13 +137,26 @@ admin.site.register(TelegramGroup, TelegramGroupAdmin)
 
 class MessageLinkInline(admin.TabularInline):
     model=MessageLink
+    # list_display = ['id', 'link','message','insert_link']
+    fieldsets = (
+        (None, {
+            'fields': ('link','description', 'insert_link')
+        }),
+    )
+    
+    # readonly_fields = ['insert_link']
+    extra = 1
+    pass
+
+class MessageCategoryInline(admin.TabularInline):
+    model=MessageCategory
     extra = 1
     pass
 
 class BizMessagesAdmin(admin.ModelAdmin):
-    list_display = ['id', 'business', 'message', 'send_at', 'is_sent']
-    filter_horizontal = ['categories']
-    inlines = [MessageLinkInline]
+    list_display = ['id', 'business', 'message',]
+    
+    inlines = [MessageLinkInline, MessageCategoryInline,]
     pass
 admin.site.register(BizMessages, BizMessagesAdmin)
 class MessageLinkAdmin(admin.ModelAdmin):
