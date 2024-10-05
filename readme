@@ -1,0 +1,22 @@
+run on development
+# run docker desktop
+# https://www.docker.com/products/docker-desktop/
+
+create .env file in backend/.env
+```
+DEBUG=True
+DATABASE_TYPE='postgresql'
+DATABASE_HOST='db'
+DATABASE_PORT='5432'
+DATABASE_USER='gm_db_user'
+DATABASE_PASSWORD='bnrbtnbcv'
+DATABASE_NAME='gm_db'
+BACKEND_DOMAIN='http://127.0.0.1:8000'
+```
+
+docker-compose up --build
+go to
+http://127.0.0.1:8000
+
+# reset:
+docker-compose down -v

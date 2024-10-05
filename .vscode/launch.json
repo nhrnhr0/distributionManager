@@ -15,6 +15,24 @@
             "django": true,
             "autoStartBrowser": false,
             "cwd": "${workspaceFolder}\\backend",
+        },
+        {
+            "name": "Docker: Run Django",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run",
+            "python": {
+                "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/app"
+                }
+                ],
+                "projectType": "django"
+            },
+            "dockerOptions": {
+                "containerName": "distribution_manager_backend",
+            }
         }
     ]
 }
