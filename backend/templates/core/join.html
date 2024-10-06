@@ -1,13 +1,25 @@
-{% extends "base.html" %} {% block title %}הצטרף לתפוצה של {{biz.name}}{% endblock %} {% block content %} {% load static %}
+{% extends "base.html" %}
+{% block title %}
+הצטרף לתפוצה של {{biz.name}}
+{%endblock %}
+{% block extra_head %}
+<!-- favicon -->
+{% if biz.favicon %}
+<link rel="icon" href="{{biz.favicon.url }}" type="image/x-icon" />
+{% endif %}
+{%endblock%}
+{% block content %} {% load static %}
 
 <!-- biz.header_image -->
 {% if biz.header_image %}
-  <img src="{{biz.header_image.url}}" class="img-fluid" alt="Header Image" />
+<img src="{{biz.header_image.url}}" class="img-fluid" alt="Header Image" />
 {% endif %}
 <div class="container mt-5">
   <div class="row">
     <div class="col-lg-6 description">
-      <h1>{{biz.name}}</h1>
+      {%if biz.display_name %}
+      <h1>{{biz.display_name}}</h1>
+      {%endif%}
       <p>{{biz.description|linebreaks}}</p>
     </div>
   </div>
@@ -20,24 +32,27 @@
           {%if category.icon%}
           <img src="{{category.icon.url}}" class="card-img-top" alt="Image 1" />
           {%else%}
-          <img src="{% static 'no-image.png' %}" class="card-img-top" alt="Image 1" />
+          <img src="{% static 'no-image.png' %}" class="card-img-top"
+            alt="Image 1" />
           {%endif%}
           <div class="card-body">
             <h5 class="card-title">{{category.name}}</h5>
             <div class="buttons row">
               <!-- if the category dose not have Open whatsapp url we do not show the whatsapp buttuon, same to telegram -->
               {% if category.open_telegram_url %}
-                <a href="{{category.slug}}/telegram/?c={{ request.GET.c }}" class="btn btn-primary" target="_blank">
-                  <img src="{% static 'icons8-telegram.svg' %}" alt="Telegram" width="30" height="30" />
-                  Telegram</a
-                >
+              <a href="{{category.slug}}/telegram/?c={{ request.GET.c }}"
+                class="btn btn-primary" target="_blank">
+                <img src="{% static 'icons8-telegram.svg' %}" alt="Telegram"
+                  width="30" height="30" />
+                Telegram</a>
               {% endif %}
 
               {% if category.open_whatsapp_url %}
-                <a href="{{category.slug}}/whatsapp/?c={{ request.GET.c }}" class="btn btn-success" target="_blank">
-                  <img src="{% static 'icons8-whatsapp.svg' %}" alt="WhatsApp" width="30" height="30" />
-                  WhatsApp</a
-                >
+              <a href="{{category.slug}}/whatsapp/?c={{ request.GET.c }}"
+                class="btn btn-success" target="_blank">
+                <img src="{% static 'icons8-whatsapp.svg' %}" alt="WhatsApp"
+                  width="30" height="30" />
+                WhatsApp</a>
               {% endif %}
             </div>
           </div>
@@ -47,7 +62,7 @@
     </div>
   </div>
   {% if biz.footer_image %}
-    <img src="{{biz.footer_image.url}}" class="img-fluid" alt="Footer Image" />
+  <img src="{{biz.footer_image.url}}" class="img-fluid" alt="Footer Image" />
   {% endif %}
 
   <style>
@@ -73,6 +88,7 @@
     }
     .leads-container .card-title {
       font-size: 1.5rem;
+      text-align: center;
     }
     .leads-container .btn-primary {
       background-color: #0088cc;

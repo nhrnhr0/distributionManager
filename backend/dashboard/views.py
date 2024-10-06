@@ -1,11 +1,42 @@
 from django.shortcuts import render
 from models.models import Business
-from models.models import LeadsClicks, CategoriesClicks, BusinessQR
+from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 from django.db.models import Count
 import json
 # Create your views here.
+def dashboard_messages(request):
+    businesses = Business.objects.all()
+    all_messages = BizMessages.objects.all()
+    
+    selected_busines = request.GET.get('business', None)
+    if selected_busines:
+        all_messages = all_messages.filter(business__id=selected_busines)
+        
+    all_messages_json = []
+    # created_at,business,message,send_at,is_sent,categories
+    for message in all_messages:
+        all_messages_json.append({
+            'id': message.id,
+            'created_at': message.created_at,
+            'business': message.business.name,
+            'message': message.message,
+            'send_at': message.send_at,
+            'is_sent': message.is_sent,
+            'categories': message.categories.all().values_list('name', flat=True),})
+    
+    all_messages_json = json.dumps(all_messages_json, default=str)
+    
+    return render(request, 'dashboard/messages/index.html', {
+        'businesses': businesses,
+        'all_messages': all_messages,
+        'all_messages_json': all_messages_json,
+    })
+
 def dashboard_index(request):
+    return render(request, 'dashboard/index.html', {})
+
+def dashboard_leads_in(request):
     businesses = Business.objects.all()
     
     # queryparams filters
@@ -110,7 +141,7 @@ def dashboard_index(request):
     all_telegrams_json = json.dumps(all_telegrams_json, default=str)
     leads_clicks_json = json.dumps(leads_clicks_json, default=str)
     categories_clicks_json = json.dumps(categories_clicks_json, default=str)
-    return render(request, 'dashboard/index.html', {
+    return render(request, 'dashboard/leads-in/index.html', {
         # filters options qs
         'businesses': businesses,
         'qrs_list': qrs_list,

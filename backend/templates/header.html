@@ -8,8 +8,7 @@
     data-target="#navbarNav"
     aria-controls="navbarNav"
     aria-expanded="false"
-    aria-label="Toggle navigation"
-  >
+    aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
@@ -21,7 +20,8 @@
       </li>
       {%endif%} {%if request.user|has_group:"sender"%}
       <li class="nav-item">
-        <a class="nav-link" href="/admin-dashboard/send-messsages/">שליחת הודעות</a>
+        <a class="nav-link" href="/admin-dashboard/send-messsages/">שליחת
+          הודעות</a>
       </li>
       {%endif%} {%if request.user.is_authenticated%}
       <li class="nav-item">

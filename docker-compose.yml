@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: gm_db
+      POSTGRES_USER: gm_db_user
+      POSTGRES_PASSWORD: bnrbtnbcv
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - gm_net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    command: >
+      ./wait-for-it.sh db:5432 --timeout=50 --strict -- sh -c "sleep 3 && python backend/manage.py migrate && python backend/manage.py collectstatic --noinput && python backend/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - gm_net
+
+volumes:
+  postgres_data:
+
+
+networks:
+  gm_net:
+    driver: bridge

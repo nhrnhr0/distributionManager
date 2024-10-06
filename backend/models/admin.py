@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SysUser, Business, Category, ContentSchedule,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks
+from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks,MessageLink,BizMessages,MessageCategory
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 from django.utils.translation import gettext_lazy as _
@@ -118,13 +118,6 @@ class CategoryAdmin(ImportExportModelAdmin):
     pass
 
 admin.site.register(Category, CategoryAdmin)
-class ContentScheduleAdmin(admin.ModelAdmin):
-    list_display = ['id', 'message', 'image', 'created_at', 'updated_at', 'business', 'approve_state', 'approve_date']
-    filter_horizontal = ['categories']
-    readonly_fields = ['created_at', 'updated_at', 'approve_date', 'approve_state',]
-    list_filter = ['business', 'categories', 'approve_state', 'send_date']
-    pass
-admin.site.register(ContentSchedule, ContentScheduleAdmin)
 
 
 class WhatsappGroupAdmin(admin.ModelAdmin):
@@ -139,3 +132,36 @@ class TelegramGroupAdmin(admin.ModelAdmin):
     search_fields = ['name', 'chat_id']
     pass
 admin.site.register(TelegramGroup, TelegramGroupAdmin)
+
+
+
+class MessageLinkInline(admin.TabularInline):
+    model=MessageLink
+    # list_display = ['id', 'link','message','insert_link']
+    fieldsets = (
+        (None, {
+            'fields': ('link','description', 'insert_link')
+        }),
+    )
+    
+    # readonly_fields = ['insert_link']
+    extra = 1
+    pass
+
+class MessageCategoryInline(admin.TabularInline):
+    model=MessageCategory
+    extra = 1
+    pass
+
+class BizMessagesAdmin(admin.ModelAdmin):
+    list_display = ['id', 'business', 'message',]
+    
+    inlines = [MessageLinkInline, MessageCategoryInline,]
+    pass
+admin.site.register(BizMessages, BizMessagesAdmin)
+class MessageLinkAdmin(admin.ModelAdmin):
+    list_display = ['id', 'link','message',]
+    pass
+admin.site.register(MessageLink, MessageLinkAdmin)
+# MessageLinkTracker
+# MessageLinkClick

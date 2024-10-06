@@ -26,10 +26,12 @@ class SysUser(models.Model):
 
 class Business(models.Model):
     name = models.CharField(_('name'), max_length=100)
+    display_name = models.CharField(_('display name'), max_length=100, blank=True, null=True)
     slug = models.SlugField(_('slug'), max_length=100, unique=True, allow_unicode=True)
     header_image = models.ImageField(_('header image'), upload_to='businesses/', blank=True, null=True)
     footer_image = models.ImageField(_('footer image'), upload_to='businesses/', blank=True, null=True)
     description = models.TextField(_('description'), max_length=20000, blank=True, null=True)
+    favicon = models.ImageField(_('favicon'), upload_to='businesses/', blank=True, null=True)
     
     def __str__(self) -> str:
         return self.name
@@ -186,34 +188,8 @@ class Category(models.Model):
         if self.icon:
             return mark_safe(f'<img src="{self.icon.url}" width="50" height="50" />')
         return _('No Image')
+    image_display.short_description = _('Icon')
     
-    def send_telegram_message(self, message: 'ContentSchedule'):
-        chat_ids = self.all_telegram_urls
-        text = message.message
-        for chat_id in chat_ids.values_list('chat_id', flat=True):
-            if chat_id:
-                if message.image:
-                    telegram_url = f"https://api.telegram.org/bot{settings.env.str('TELEGRAM_BOT_TOKEN')}/sendPhoto"
-                    img_url = f'{message.image.url}'
-                    payload = {
-                        'chat_id': '@' + chat_id,
-                        'photo': img_url,
-                        'caption': text
-                    }
-                    response = requests.post(telegram_url, json=payload)
-                else:
-                    telegram_url = f"https://api.telegram.org/bot{settings.env.str('TELEGRAM_BOT_TOKEN')}/sendMessage"
-                    payload = {
-                        'chat_id': '@' + chat_id,
-                        'text': text
-                    }
-                    response = requests.post(telegram_url, json=payload)
-                if response.status_code == 200: 
-                    print("Telegram message sent successfully")
-                    print(response.text)
-                else:
-                    print(response.text)
-                    print("Failed to send Telegram message")
 
 @receiver(post_save, sender=Category, dispatch_uid="update_open_groups")
 def update_open_groups(sender, instance, **kwargs):
@@ -238,53 +214,46 @@ def update_open_groups(sender, instance, **kwargs):
     if updated:
         instance.save()
 
-CONTENT_STATE = (
-    ('A', _('Approved')),
-    ('P', _('Pending')),
-    ('R', _('Rejected')),
-)
 
-class ContentSchedule(models.Model):
-    id = models.UUIDField(_('ID'), primary_key=True, default=uuid.uuid4, editable=False)
-    message = models.TextField(_('message'), max_length=200, blank=True, null=True)
-    image = models.ImageField(_('image'), upload_to='contents/', blank=True, null=True)
-    send_date = models.DateTimeField(_('send date'), blank=True, null=True)
+
+# message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
+class BizMessages(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
-    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='contentSchedules', verbose_name=_('business'))
-    approve_state = models.CharField(_('approve state'), max_length=1, choices=CONTENT_STATE, default='P')
-    approve_date = models.DateTimeField(_('approve date'), blank=True, null=True)
-    categories = models.ManyToManyField(Category, related_name='contentSchedules', blank=True, verbose_name=_('categories'))
-    is_whatsapp_sent = models.BooleanField(_('is WhatsApp sent'), default=False)
-    is_telegram_sent = models.BooleanField(_('is Telegram sent'), default=False)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
+    message = models.TextField(_('message'), max_length=20000)
     
-    def send_telgram_message(self):
-        for cat in self.categories.all():
-            cat.send_telegram_message(self)
-        self.is_telegram_sent = True
-        self.save()
     
-    def should_send_whatsapp(self):
-        if self.is_whatsapp_sent:
-            return False
-        if self.approve_state != 'A':
-            return False
-        if self.send_date and self.send_date <= timezone.now():
-            return True
-        return False
-    
-    def should_send_telegram(self):
-        if self.is_telegram_sent:
-            return False
-        if self.approve_state != 'A':
-            return False
-        if self.updated_at and (timezone.now() - self.updated_at).seconds < 300:
-            return False
-        if self.send_date and self.send_date <= timezone.now():
-            return True
-        return False
+    def __str__(self) -> str:
+        return self.message
     
     class Meta:
-        ordering = ['-send_date', '-created_at']
-        verbose_name = _('content schedule')
-        verbose_name_plural = _('content schedules')
+        verbose_name = _('business message')
+        verbose_name_plural = _('business messages')
+        
+class MessageCategory(models.Model):
+    message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'))
+    send_at = models.DateTimeField(_('send at'), default=timezone.now)
+    is_sent = models.BooleanField(_('is sent'), default=False)
+    class Meta:
+        verbose_name = _('message category')
+        verbose_name_plural = _('message categories')
+# the links we insert in the message
+class MessageLink(models.Model):
+    link = models.URLField(_('link'), max_length=2000)
+    message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='links', verbose_name=_('message'))
+    description = models.CharField(_('description'), max_length=100, blank=True, null=True)
+
+class MessageLinkTracker(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    link = models.ForeignKey(MessageLink, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('link'))
+    whatsapp_group = models.ForeignKey(WhatsappGroup, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('group'))
+    telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('group'))
+    group_type = models.CharField(_('group type'), max_length=100, choices=CategoriesClicks.CATEGORY_GROUP, default=CategoriesClicks.CATEGORY_GROUP_WHATSAPP)
+    
+class MessageLinkClick(models.Model):
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    tracker = models.ForeignKey(MessageLinkTracker, on_delete=models.CASCADE, related_name='clicks', verbose_name=_('tracker'))
+    ip = models.GenericIPAddressField(_('IP'), blank=True, null=True)
+    user_agent = models.TextField(_('user agent'), blank=True, null=True)
+    referer = models.URLField(_('referer'), blank=True, null=True)
