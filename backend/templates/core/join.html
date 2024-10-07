@@ -1,14 +1,9 @@
-{% extends "base.html" %}
-{% block title %}
-הצטרף לתפוצה של {{biz.name}}
-{%endblock %}
-{% block extra_head %}
+{% extends "base.html" %} {% block title %} הצטרף לתפוצה של {{biz.name}}
+{%endblock %} {% block extra_head %}
 <!-- favicon -->
 {% if biz.favicon %}
 <link rel="icon" href="{{biz.favicon.url }}" type="image/x-icon" />
-{% endif %}
-{%endblock%}
-{% block content %} {% load static %}
+{% endif %} {%endblock%} {% block content %} {% load static %}
 
 <!-- biz.header_image -->
 {% if biz.header_image %}
@@ -32,27 +27,44 @@
           {%if category.icon%}
           <img src="{{category.icon.url}}" class="card-img-top" alt="Image 1" />
           {%else%}
-          <img src="{% static 'no-image.png' %}" class="card-img-top"
-            alt="Image 1" />
+          <img
+            src="{% static 'no-image.png' %}"
+            class="card-img-top"
+            alt="Image 1"
+          />
           {%endif%}
           <div class="card-body">
             <h5 class="card-title">{{category.name}}</h5>
             <div class="buttons row">
-              <!-- if the category dose not have Open whatsapp url we do not show the whatsapp buttuon, same to telegram -->
-              {% if category.open_telegram_url %}
-              <a href="{{category.slug}}/telegram/?c={{ request.GET.c }}"
-                class="btn btn-primary" target="_blank">
-                <img src="{% static 'icons8-telegram.svg' %}" alt="Telegram"
-                  width="30" height="30" />
-                Telegram</a>
-              {% endif %}
-
+              <!-- if the category does not have Open whatsapp url we do not show the whatsapp button, same to telegram -->
               {% if category.open_whatsapp_url %}
-              <a href="{{category.slug}}/whatsapp/?c={{ request.GET.c }}"
-                class="btn btn-success" target="_blank">
-                <img src="{% static 'icons8-whatsapp.svg' %}" alt="WhatsApp"
-                  width="30" height="30" />
-                WhatsApp</a>
+              <a
+                href="{{category.slug}}/whatsapp/?c={{ request.GET.c }}"
+                class="btn btn-success"
+                target="_blank"
+              >
+                <img
+                  src="{% static 'icons8-whatsapp.svg' %}"
+                  alt="WhatsApp"
+                  width="30"
+                  height="30"
+                />
+                WhatsApp</a
+              >
+              {% endif %} {% if category.open_telegram_url %}
+              <a
+                href="{{category.slug}}/telegram/?c={{ request.GET.c }}"
+                class="btn btn-primary"
+                target="_blank"
+              >
+                <img
+                  src="{% static 'icons8-telegram.svg' %}"
+                  alt="Telegram"
+                  width="30"
+                  height="30"
+                />
+                Telegram</a
+              >
               {% endif %}
             </div>
           </div>
@@ -64,8 +76,7 @@
   {% if biz.footer_image %}
   <img src="{{biz.footer_image.url}}" class="img-fluid" alt="Footer Image" />
   {% endif %}
-
-  <style>
+  <!--   <style>
     .description {
       text-align: right;
       background-color: white;
@@ -74,44 +85,46 @@
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
       width: 100%;
     }
+
     .description h1 {
       font-size: 2rem;
       text-align: center;
     }
+
     .leads-container .card {
       border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
     }
+
     .leads-container .card img {
       border-radius: 10px 10px 0 0;
     }
+
     .leads-container .card-title {
       font-size: 1.5rem;
       text-align: center;
     }
+
     .leads-container .btn-primary {
       background-color: #0088cc;
       border-color: #0088cc;
       color: white;
-
-      img {
-        filter: invert(1);
-      }
+      padding: 10px 15px; /* הקטנת גובה הכפתור */
     }
+
     .leads-container .btn-primary:hover {
       background-color: #005580;
       border-color: #005580;
     }
+
     .leads-container .btn-success {
       background-color: #5cb85c;
       border-color: #5cb85c;
-
       color: white;
-      img {
-        filter: invert(1);
-      }
+      padding: 10px 15px; /* הקטנת גובה הכפתור */
     }
+
     .leads-container .btn-success:hover {
       background-color: #4cae4c;
       border-color: #4cae4c;
@@ -119,7 +132,7 @@
 
     .leads-container .card-img-top {
       width: 100%;
-      height: 15vw;
+      height: auto; /* שינוי הגובה לאוטומטי כדי לשפר את ההתאמה למסכים קטנים */
       object-fit: cover;
     }
 
@@ -129,13 +142,111 @@
       flex-direction: row;
       flex-wrap: nowrap;
     }
+
     .leads-container .buttons a {
       width: 48%;
+      margin-bottom: 10px; /* מרווח קל בין הכפתורים לשיפור המראה */
     }
 
     @media screen and (max-width: 992px) {
       .leads-container .card img {
-        height: 20vw;
+        height: auto; /* התאמת גובה התמונה למסכים קטנים */
+      }
+
+      .leads-container .buttons {
+        flex-direction: column; /* שינוי לכיוון אנכי במכשירים קטנים */
+        align-items: center; /* יישור במרכז */
+      }
+
+      .leads-container .buttons a {
+        width: 90%; /* הרחבת הכפתורים למסכים קטנים */
+        margin-bottom: 10px;
+      }
+    }
+  </style> -->
+  <style>
+    .description {
+      text-align: right;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+
+    .description h1 {
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .leads-container .card {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .leads-container .card img {
+      border-radius: 10px 10px 0 0;
+    }
+
+    .leads-container .card-title {
+      font-size: 1.7rem; /* הגדלת הפונט לכותרות */
+      text-align: center;
+      margin-bottom: 10px; /* הוספת מרווח לכותרות */
+    }
+
+    .leads-container .btn-primary,
+    .leads-container .btn-success {
+      border-radius: 8px; /* עיגול פינות הכפתורים */
+      padding: 12px 18px; /* הקטנת גובה הכפתור */
+      transition: transform 0.1s ease; /* הוספת אפקט לחיצה */
+    }
+
+    .leads-container .btn-primary:hover,
+    .leads-container .btn-success:hover {
+      transform: translateY(-2px); /* אפקט hover להבלטה */
+    }
+
+    .leads-container .btn-primary:active,
+    .leads-container .btn-success:active {
+      transform: translateY(2px); /* אפקט לחיצה */
+    }
+
+    .leads-container .card-img-top {
+      width: 100%;
+      height: auto; /* שינוי הגובה לאוטומטי כדי לשפר את ההתאמה למסכים קטנים */
+      object-fit: cover;
+    }
+
+    .leads-container .buttons {
+      display: flex;
+      justify-content: space-around;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+
+    .leads-container .buttons a {
+      width: 48%;
+      margin-bottom: 12px; /* הגדלת המרווח בין הכפתורים */
+    }
+
+    @media screen and (max-width: 992px) {
+      .leads-container .card img {
+        height: auto; /* התאמת גובה התמונה למסכים קטנים */
+      }
+
+      .leads-container .buttons {
+        flex-direction: column; /* שינוי לכיוון אנכי במכשירים קטנים */
+        align-items: center; /* יישור במרכז */
+      }
+
+      .leads-container .buttons a {
+        width: 90%; /* הרחבת הכפתורים למסכים קטנים */
+        margin-bottom: 15px; /* הגדלת המרווח בין הכפתורים במכשירים קטנים */
+      }
+
+      .leads-container .card-title {
+        font-size: 1.5rem; /* התאמת גודל הפונט לכותרות במסכים קטנים */
       }
     }
   </style>
