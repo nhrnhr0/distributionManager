@@ -1,10 +1,94 @@
 from django.shortcuts import render
 from models.models import Business
-from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages
+from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages, Category
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 from django.db.models import Count
 import json
+import pytz
+from datetime import datetime
+# from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+def dashboard_message_edit(request, uid):
+    message = BizMessages.objects.get(uid=uid)
+    businesses = Business.objects.all()
+    categories = Category.objects.all()
+    
+    if request.method == 'POST':
+        data = request.body
+        data = json.loads(data) #
+#         {'links': [{...}, {...}], 'categories': [{...}, {...}], 'business': '', 'messageTxt': 'שלום לכולם'}
+# special variables
+# function variables
+# 'links' =
+# [{'description': 'hey', 'url': 'https://google.com', 'isDeleted': False, 'id': '1'}, {'description': 'hey2', 'url': 'https://www.mermaidchart.com/app/projects/842a03e9-2bf9-4e4d-9025-c260edfb900f/diagra...1-4a40-a19d-0fbfff22f823/version/v0.1/edit', 'isDeleted': False}]
+# special variables
+# function variables
+# 0 =
+# {'description': 'hey', 'url': 'https://google.com', 'isDeleted': False, 'id': '1'}
+# 1 =
+# {'description': 'hey2', 'url': 'https://www.mermaidchart.com/app/projects/842a03e9-2bf9-4e4d-9025-c260edfb900f/diagra...1-4a40-a19d-0fbfff22f823/version/v0.1/edit', 'isDeleted': False}
+# len() =
+# 2
+# 'categories' =
+# [{'category': '', 'sendAt': '', 'isSent': False, 'isDeleted': False}, {'category': '', 'sendAt': '2024-10-23T20:34', 'isSent': True, 'isDeleted': False}]
+# special variables
+# function variables
+# 0 =
+# {'category': '', 'sendAt': '', 'isSent': False, 'isDeleted': False}
+# 1 =
+# {'category': '', 'sendAt': '2024-10-23T20:34', 'isSent': True, 'isDeleted': False}
+# len() =
+# 2
+# 'business' =
+# ''
+# 'messageTxt' =
+# 'שלום לכולם'
+# len() =
+# 4
+        # first delete all links with id and isDeleted = True
+        for link in data['links']:
+            if link.get('id') and link['isDeleted']:
+                message.links.get(id=link['id']).delete()
+        # then update or create the rest
+        for link in data['links']:
+            if link.get('id') and not link['isDeleted']:
+                l = {'description': link['description'], 'url': link['url']}
+                message.links.filter(id=link['id']).update(**l)
+            elif not link['isDeleted']:
+                l = {'description': link['description'], 'url': link['url']}
+                message.links.create(**l)
+
+        # first delete all categories with id and isDeleted = True
+        for category in data['categories']:
+            if category.get('id') and category['isDeleted']:
+                message.categories.get(id=category['id']).delete()
+        # then update or create the rest
+        tz = pytz.timezone('Asia/Jerusalem')
+
+        for category in data['categories']:
+            if category.get('id') and not category['isDeleted']:
+                if category['sendAt']:
+                    category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
+                    aware_dt = tz.localize(category['sendAt'])
+                    category['sendAt'] = aware_dt
+                c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
+                message.categories.filter(id=category['id']).update(**c)
+            elif not category['isDeleted']:
+                if category['sendAt']:
+                    category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
+                    aware_dt = tz.localize(category['sendAt'])
+                    category['sendAt'] = aware_dt
+                    
+                c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
+                message.categories.create(**c)
+    
+    return render(request, 'dashboard/messages/edit.html', {
+        'message': message,
+        'businesses': businesses,
+        'categories': categories,
+    })
+
+
 def dashboard_messages(request):
     businesses = Business.objects.all()
     all_messages = BizMessages.objects.all()
@@ -13,24 +97,9 @@ def dashboard_messages(request):
     if selected_busines:
         all_messages = all_messages.filter(business__id=selected_busines)
         
-    all_messages_json = []
-    # created_at,business,message,send_at,is_sent,categories
-    for message in all_messages:
-        all_messages_json.append({
-            'id': message.id,
-            'created_at': message.created_at,
-            'business': message.business.name,
-            'message': message.message,
-            'send_at': message.send_at,
-            'is_sent': message.is_sent,
-            'categories': message.categories.all().values_list('name', flat=True),})
-    
-    all_messages_json = json.dumps(all_messages_json, default=str)
-    
     return render(request, 'dashboard/messages/index.html', {
         'businesses': businesses,
         'all_messages': all_messages,
-        'all_messages_json': all_messages_json,
     })
 
 def dashboard_index(request):
@@ -45,13 +114,13 @@ def dashboard_leads_in(request):
     end_date = request.GET.get('end_date', None)
     qrs = request.GET.get('qrs', None)
 
-    leads = LeadsClicks.objects.all()
-    categories_clicks = CategoriesClicks.objects.all()
+    leads = LeadsClicks.objects.select_related('business', 'qr', 'qr__category').all()
+    categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category',).all()
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
-    qrs_list = None# BusinessQR.objects.all()
+    qrs_list = BusinessQR.objects.all()
     if busines:
         leads = leads.filter(business__id=busines)
-        qrs_list = BusinessQR.objects.filter(business__id=busines)
+        qrs_list = qrs_list.objects.filter(business__id=busines)
         categories_clicks = categories_clicks.filter(business__id=busines)
         group_size_count = group_size_count.filter(business__id=busines)
     if start_date:
@@ -69,8 +138,8 @@ def dashboard_leads_in(request):
     #     all_whatsapps_arr.extend(item.whatsappgroupsizecount_set.all())
     #     all_telegrams_arr.extend(item.telegramgroupsizecount_set.all())
     group_size_count_ids = group_size_count.values_list('id', flat=True)
-    all_whatsapps_qs = WhatsappGroupSizeCount.objects.filter(session__id__in=group_size_count_ids)
-    all_telegrams_qs = TelegramGroupSizeCount.objects.filter(session__id__in=group_size_count_ids)
+    all_whatsapps_qs = WhatsappGroupSizeCount.objects.prefetch_related('group__whatsapp_categories').select_related('session').filter(session__id__in=group_size_count_ids)
+    all_telegrams_qs = TelegramGroupSizeCount.objects.prefetch_related('group__telegram_categories').select_related('session').filter(session__id__in=group_size_count_ids)
     
     # keep only the last count of each group
     all_whatsapps_qs = all_whatsapps_qs.order_by('group', '-session__date').distinct('group')

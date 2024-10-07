@@ -1,0 +1,261 @@
+<!-- class BizMessages(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
+    messageTxt = models.TextField(_('message'), max_length=20000)
+    
+    
+    def __str__(self) -> str:
+        return self.message
+    
+    class Meta:
+        verbose_name = _('business message')
+        verbose_name_plural = _('business messages')
+        
+class MessageCategory(models.Model):
+    message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'))
+    send_at = models.DateTimeField(_('send at'), default=timezone.now)
+    is_sent = models.BooleanField(_('is sent'), default=False)
+    class Meta:
+        verbose_name = _('message category')
+verbose_name_plural = _('message categories') -->
+{% extends "dashboard/messages/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - הודעות{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>עריכת הודעה</h1>
+        <form method="post" id="edit-message-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="business">עסק</label>
+                <select name="business" id="business" class="form-control">
+                    {% for business in businesses %}
+                        <option value="{{ business.uid }}"
+                                {% if business.uid == message.business.uid %}selected{% endif %}>{{ business }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="messageTxt">הודעה</label>
+                <textarea name="messageTxt" id="messageTxt" class="form-control">{{ message.messageTxt }}</textarea>
+            </div>
+            <!-- adding links to the message -->
+            <table class="table table-bordered table-striped table-hover mt-3"
+                   id="links-table">
+                <thead>
+                    <tr>
+                        <!-- תיאור, לינק, פעולות -->
+                        <th>תיאור</th>
+                        <th>לינק</th>
+                        <th>מחק</th>
+                        <th>הוסף לינק להודעה</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <a href="#" class="btn btn-primary" onclick="addNewLink()">הוסף לינק</a>
+                        </td>
+                    </tr>
+                    {% for link in message.links.all %}
+                        <tr>
+                            <td>
+                                <input type="text"
+                                       name="description"
+                                       value="{{ link.description }}"
+                                       class="form-control">
+                            </td>
+                            <td>
+                                <input type="text" name="url" value="{{ link.url }}" class="form-control">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="delete" id="delete-{{ link.id }}">
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-secondary" onclick="addLink(event)">הוסף</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- adding categories with option to add new or delete existing -->
+            <table class="table table-bordered table-striped table-hover mt-3"
+                   id="categories-table">
+                <thead>
+                    <tr>
+                        <th>קטגוריה</th>
+                        <th>תאריך שליחה</th>
+                        <th>נשלח</th>
+                        <th>מחק</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <a href="#" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</a>
+                        </td>
+                    </tr>
+                    {% for category in message.categories.all %}
+                        <tr>
+                            <td>
+                                <select name="category" class="form-control">
+                                    <option value="">בחר קטגוריה</option>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat.id }}"
+                                                {% if cat.id == category.category.id %}selected{% endif %}>{{ cat }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="datetime-local"
+                                       name="send_at"
+                                       value="{{ category.send_at|date:'Y-m-d\TH:i' }}"
+                                       class="form-control">
+                            </td>
+                            <td>
+                                <input type="checkbox"
+                                       name="is_sent"
+                                       {% if category.is_sent %}checked{% endif %}>
+                            </td>
+                            <td>
+                                <input type="checkbox" name="delete" id="delete-{{ category.id }}">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">שמור</button>
+        </form>
+        <a href="{% url 'dashboard_messages' %}" class="btn btn-secondary">חזור</a>
+    </div>
+    <script>
+        function addNewCategory() {
+            const table = document.querySelector('#categories-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>
+                    <select name="category" class="form-control">
+                        <option value="">בחר קטגוריה</option>
+                        {% for cat in categories %}<option value="{{ cat.id }}">{{ cat }}</option>{% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="datetime-local" name="send_at" class="form-control">
+                </td>
+                <td>
+                    <input type="checkbox" name="is_sent">
+                </td>
+                <td>
+                    <input type="checkbox" name="delete" id="delete-{{ category.id }}">
+                </td>
+            `;
+            table.appendChild(newRow);
+        }
+
+        function addLink(e) {
+            e.preventDefault();
+            console.log('addLink', e);;
+            // add to messageTxt the link placeholder [link:{{ id }}] where the cursor is located
+            const textarea = document.getElementById('messageTxt');
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos, textarea.value.length);
+            // get the closest desc to the button
+            const desc = e.target.closest('tr').querySelector('input[name="description"]').value;
+            textarea.value = textBefore + `[link:${desc}]` + textAfter;
+
+            // select the textarea value we just added
+            textarea.setSelectionRange(cursorPos + 6, cursorPos + 6 + desc.length);
+        }
+
+        function addNewLink() {
+            const table = document.querySelector('#links-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>
+                    <input type="text" name="description" class="form-control">
+                </td>
+                <td>
+                    <input type="text" name="url" class="form-control">
+                </td>
+                <td>
+                    <input type="checkbox" name="delete">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-secondary" onclick="addLink(event)">הוסף</button>
+                </td>
+            `;
+            table.appendChild(newRow);
+        }
+
+
+        // on submit, collect all the links and categories and form info and POST to the server
+        const form = document.querySelector('#edit-message-form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            debugger;
+            const links = []; // description, url, is_deleted
+            const categories = []; // category, send_at, is_sent, is_deleted
+            const form = new FormData(this);
+            const linksTable = document.querySelector('#links-table tbody');
+            const categoriesTable = document.querySelector('#categories-table tbody');
+            for (let i = 1; i < linksTable.children.length; i++) {
+                const row = linksTable.children[i];
+                const description = row.querySelector('input[name="description"]').value;
+                const url = row.querySelector('input[name="url"]').value;
+                const isDeleted = row.querySelector('input[name="delete"]').checked;
+                const id = row.querySelector('input[name="delete"]').id.split('-')[1];
+
+                links.push({
+                    description,
+                    url,
+                    isDeleted,
+                    id
+                });
+            }
+
+
+            for (let i = 1; i < categoriesTable.children.length; i++) {
+                const row = categoriesTable.children[i];
+                const category = row.querySelector('select[name="category"]').value;
+                const sendAt = row.querySelector('input[name="send_at"]').value;
+                const isSent = row.querySelector('input[name="is_sent"]').checked;
+                const isDeleted = row.querySelector('input[name="delete"]').checked;
+                const id = row.querySelector('input[name="delete"]').id.split('-')[1];
+                categories.push({
+                    category,
+                    sendAt,
+                    isSent,
+                    isDeleted,
+                    id
+                });
+            }
+
+            console.log('links', links);
+            console.log('categories', categories);
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    links: links,
+                    categories: categories,
+                    business: form.get('business'),
+                    messageTxt: form.get('messageTxt'),
+                }),
+            }).then(response => {
+                if (response.ok) {
+                    //window.location.href = `{% url 'dashboard_messages' %}`;
+                }
+            });
+
+
+        });
+    </script>
+{% endblock %}

@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    
+    'debug_toolbar',
     'storages',
     
     'import_export',
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -65,6 +68,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+if DEBUG is False:
+    del MIDDLEWARE[0]
+
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -207,3 +215,9 @@ LOGOUT_REDIRECT_URL = '/admin/login/?next=' + LOGIN_REDIRECT_URL
 # AWS_DEFAULT_ACL =  None
 # AWS_S3_VERITY = True
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]

@@ -1,66 +1,69 @@
-
-
 <!-- dispaly the leads and categories_clicks data -->
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    הודעות
-                </div>
+                <div class="card-header">הודעות</div>
                 <div class="card-body">
-                    <div id="table"></div>
+                    <div id="table">
+                        <!-- all_messages:
+                         class BizMessages(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
+    messageTxt = models.TextField(_('message'), max_length=20000)
+    
+    
+    def __str__(self) -> str:
+        return self.message
+    
+    class Meta:
+        verbose_name = _('business message')
+        verbose_name_plural = _('business messages')
+        
+class MessageCategory(models.Model):
+    message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'))
+    send_at = models.DateTimeField(_('send at'), default=timezone.now)
+    is_sent = models.BooleanField(_('is sent'), default=False)
+    class Meta:
+        verbose_name = _('message category')
+        verbose_name_plural = _('message categories')
+# the links we insert in the message -->
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>עסק</th>
+                                    <th>הודעה</th>
+                                    <th>קטגוריות</th>
+                                    <th>תאריך שליחה</th>
+                                    <th>נשלח</th>
+                                    <th>נוצר</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in all_messages %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'message_edit' message.uid %}">{{ message.uid }}</a>
+                                        </td>
+                                        <td>{{ message.business }}</td>
+                                        <td>{{ message.messageTxt }}</td>
+                                        <td>
+                                            {% for category in message.categories.all %}{{ category.category }},{% endfor %}
+                                        </td>
+                                        <td>{{ message.send_at }}</td>
+                                        <td>{{ message.is_sent }}</td>
+                                        <td>{{ message.created_at }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-
-    // Function to handle pivot table updates
-    function handlePivotUpdate(config) {
-        console.log("User updated the pivot table");
-        console.log("Rows:", config.rows);
-        console.log("Cols:", config.cols);
-        console.log("Values:", config.vals);
-        // add them all to the local storage table_config and update the page URL without reloading
-        config = {
-            rows: config.rows,
-            cols: config.cols,
-            vals: config.vals,
-        }
-        
-        window.localStorage.setItem('table_config', JSON.stringify(config));
-
-    }
-
-$(function() {
-    // load table config from URL query params and set it to the pivot table if exists
-    
-    const table_config = window.localStorage.getItem('table_config_messages');
-    if (table_config) {
-        $('#table').pivotUI(
-            all_messages_json, {
-                rendererName: "Table",          // The renderer to use (adjust as needed)
-                onRefresh: function(config) {
-                    handlePivotUpdate(config);   // Call function when the pivot table is updated
-                },
-                ...JSON.parse(table_config)
-            }
-            
-        );
-    }
-    else {
-        $('#table').pivotUI(
-            all_messages_json,{
-                rendererName: "Table",          // The renderer to use (adjust as needed)
-                onRefresh: function(config) {
-                    handlePivotUpdate(config);   // Call function when the pivot table is updated
-                },
-            }
-        );
-    }
-})
-
-</script>
+<script></script>

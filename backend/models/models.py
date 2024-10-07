@@ -218,13 +218,14 @@ def update_open_groups(sender, instance, **kwargs):
 
 # message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
 class BizMessages(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
-    message = models.TextField(_('message'), max_length=20000)
+    messageTxt = models.TextField(_('message'), max_length=20000)
     
     
     def __str__(self) -> str:
-        return self.message
+        return self.messageTxt
     
     class Meta:
         verbose_name = _('business message')
@@ -232,15 +233,15 @@ class BizMessages(models.Model):
         
 class MessageCategory(models.Model):
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'))
-    send_at = models.DateTimeField(_('send at'), default=timezone.now)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'), blank=True, null=True)
+    send_at = models.DateTimeField(_('send at'), default=timezone.now, blank=True, null=True)
     is_sent = models.BooleanField(_('is sent'), default=False)
     class Meta:
         verbose_name = _('message category')
         verbose_name_plural = _('message categories')
 # the links we insert in the message
 class MessageLink(models.Model):
-    link = models.URLField(_('link'), max_length=2000)
+    url = models.URLField(_('url'), max_length=2000)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='links', verbose_name=_('message'))
     description = models.CharField(_('description'), max_length=100, blank=True, null=True)
 
