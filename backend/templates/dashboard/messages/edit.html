@@ -33,9 +33,10 @@ verbose_name_plural = _('message categories') -->
             <div class="form-group">
                 <label for="business">עסק</label>
                 <select name="business" id="business" class="form-control">
+                    <option value="">בחר עסק</option>
                     {% for business in businesses %}
-                        <option value="{{ business.uid }}"
-                                {% if business.uid == message.business.uid %}selected{% endif %}>{{ business }}</option>
+                        <option value="{{ business.id }}"
+                                {% if business.id == message.business.id %}selected{% endif %}>{{ business }}</option>
                     {% endfor %}
                 </select>
             </div>

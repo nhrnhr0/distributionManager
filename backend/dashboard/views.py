@@ -81,7 +81,11 @@ def dashboard_message_edit(request, uid):
                     
                 c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
                 message.categories.create(**c)
-    
+
+        message.business_id = data['business']
+        message.message = data['messageTxt']
+        message.save()
+        
     return render(request, 'dashboard/messages/edit.html', {
         'message': message,
         'businesses': businesses,

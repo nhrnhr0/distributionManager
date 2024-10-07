@@ -220,7 +220,7 @@ def update_open_groups(sender, instance, **kwargs):
 class BizMessages(models.Model):
     uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'), blank=True, null=True)
     messageTxt = models.TextField(_('message'), max_length=20000)
     
     
