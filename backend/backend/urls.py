@@ -68,3 +68,7 @@ if settings.DEBUG:
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
+
+
+admin.autodiscover()
+admin.site.enable_nav_sidebar = False
