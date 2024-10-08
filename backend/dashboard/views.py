@@ -1,13 +1,57 @@
 from django.shortcuts import render
 from models.models import Business
-from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages, Category
+from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages, Category,MessageCategory
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 from django.db.models import Count
 import json
 import pytz
 from datetime import datetime
+from django.contrib import messages
+from core.decoretors import admin_required
+
+from django.shortcuts import redirect
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+
+@admin_required
+def dashboard_message_new(request):
+    # create new empty message with empty links and categories and return the uid
+    if request.method == 'POST':
+        message = BizMessages.objects.create()
+        return redirect('message_edit', uid=message.uid)
+    
+
+@admin_required
+def dashboard_message_send_edit(request, uid):
+    message_cat = MessageCategory.objects.get(uid=uid)
+    
+    if request.method == 'POST':
+        data = request.POST        
+        is_sent = data.get('is_sent') == 'on'
+        message_cat.is_sent = is_sent
+        message_cat.save()
+        
+        msg = "השינויים נשמרו בהצלחה"
+        messages.success(request, msg)
+        return redirect('message_edit_send', uid=message_cat.uid)
+        
+    return render(request, 'dashboard/messages/send/send_edit.html', {
+        'message_cat': message_cat,
+    })
+    pass
+
+@admin_required
+def dashboard_message_send(request):
+    messages_cats = MessageCategory.objects.all()
+    # order by, first the ones that are not sent, then the ones that are sent
+    # and then by the send_at date, as close as possible to now and blank dates last
+    messages_cats = messages_cats.order_by('is_sent', 'send_at')
+    
+    return render(request, 'dashboard/messages/send/index.html', {
+        'all_message_categories': messages_cats,
+    })
+
+@admin_required
 def dashboard_message_edit(request, uid):
     message = BizMessages.objects.get(uid=uid)
     businesses = Business.objects.all()
@@ -15,36 +59,7 @@ def dashboard_message_edit(request, uid):
     
     if request.method == 'POST':
         data = request.body
-        data = json.loads(data) #
-#         {'links': [{...}, {...}], 'categories': [{...}, {...}], 'business': '', 'messageTxt': 'שלום לכולם'}
-# special variables
-# function variables
-# 'links' =
-# [{'description': 'hey', 'url': 'https://google.com', 'isDeleted': False, 'id': '1'}, {'description': 'hey2', 'url': 'https://www.mermaidchart.com/app/projects/842a03e9-2bf9-4e4d-9025-c260edfb900f/diagra...1-4a40-a19d-0fbfff22f823/version/v0.1/edit', 'isDeleted': False}]
-# special variables
-# function variables
-# 0 =
-# {'description': 'hey', 'url': 'https://google.com', 'isDeleted': False, 'id': '1'}
-# 1 =
-# {'description': 'hey2', 'url': 'https://www.mermaidchart.com/app/projects/842a03e9-2bf9-4e4d-9025-c260edfb900f/diagra...1-4a40-a19d-0fbfff22f823/version/v0.1/edit', 'isDeleted': False}
-# len() =
-# 2
-# 'categories' =
-# [{'category': '', 'sendAt': '', 'isSent': False, 'isDeleted': False}, {'category': '', 'sendAt': '2024-10-23T20:34', 'isSent': True, 'isDeleted': False}]
-# special variables
-# function variables
-# 0 =
-# {'category': '', 'sendAt': '', 'isSent': False, 'isDeleted': False}
-# 1 =
-# {'category': '', 'sendAt': '2024-10-23T20:34', 'isSent': True, 'isDeleted': False}
-# len() =
-# 2
-# 'business' =
-# ''
-# 'messageTxt' =
-# 'שלום לכולם'
-# len() =
-# 4
+        data = json.loads(data) 
         # first delete all links with id and isDeleted = True
         for link in data['links']:
             if link.get('id') and link['isDeleted']:
@@ -83,9 +98,12 @@ def dashboard_message_edit(request, uid):
                 message.categories.create(**c)
 
         message.business_id = data['business']
-        message.message = data['messageTxt']
+        message.messageTxt = data['messageTxt']
         message.save()
-        
+    
+    if request.method == 'DELETE':
+        message.delete()
+        return redirect('dashboard_messages')
     return render(request, 'dashboard/messages/edit.html', {
         'message': message,
         'businesses': businesses,
@@ -93,6 +111,7 @@ def dashboard_message_edit(request, uid):
     })
 
 
+@admin_required
 def dashboard_messages(request):
     businesses = Business.objects.all()
     all_messages = BizMessages.objects.all()
@@ -106,9 +125,13 @@ def dashboard_messages(request):
         'all_messages': all_messages,
     })
 
+
+
+@admin_required
 def dashboard_index(request):
     return render(request, 'dashboard/index.html', {})
 
+@admin_required
 def dashboard_leads_in(request):
     businesses = Business.objects.all()
     

@@ -4,7 +4,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">הודעות</div>
-                <div class="card-body">
+                <div class="card-body" stlye="padding-top: 0px;"
                     <div id="table">
                         <!-- all_messages:
                          class BizMessages(models.Model):
@@ -30,6 +30,12 @@ class MessageCategory(models.Model):
         verbose_name = _('message category')
         verbose_name_plural = _('message categories')
 # the links we insert in the message -->
+                        <form method="post"
+                              action="{% url 'message_new' %}"
+                              class="form-inline mt-2 mb-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">הוסף הודעה חדשה</button>
+                        </form>
                         <table class="table table-bordered table-striped table-hover">
                             <thead>
                                 <tr>
@@ -51,10 +57,29 @@ class MessageCategory(models.Model):
                                         <td>{{ message.business }}</td>
                                         <td>{{ message.messageTxt }}</td>
                                         <td>
-                                            {% for category in message.categories.all %}{{ category.category }},{% endfor %}
+                                            <ul>
+                                                {% for category in message.categories.all %}<li>{{ category.category.name }}</li>{% endfor %}
+                                            </ul>
                                         </td>
-                                        <td>{{ message.send_at }}</td>
-                                        <td>{{ message.is_sent }}</td>
+                                        <td>
+                                            <ul>
+                                                {% for category in message.categories.all %}<li>{{ category.send_at }}</li>{% endfor %}
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul>
+                                                {% for category in message.categories.all %}
+                                                    <li style="color:
+                                                               {% if category.is_sent %}
+                                                                   green
+                                                               {% else %}
+                                                                   red
+                                                               {% endif %}">
+                                                        <a href="{% url 'message_edit_send' category.uid %}">{{ category.is_sent|yesno:"כן,לא" }}</a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
                                         <td>{{ message.created_at }}</td>
                                     </tr>
                                 {% endfor %}

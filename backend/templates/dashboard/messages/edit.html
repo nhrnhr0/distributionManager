@@ -130,14 +130,33 @@ verbose_name_plural = _('message categories') -->
                 </tbody>
             </table>
             <button type="submit" class="btn btn-primary">שמור</button>
-        </form>
-        <a href="{% url 'dashboard_messages' %}" class="btn btn-secondary">חזור</a>
-    </div>
-    <script>
-        function addNewCategory() {
-            const table = document.querySelector('#categories-table tbody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
+            <button type="button" class="btn btn-danger" onclick="deleteBtn(event)">מחק</button>
+        </button>
+    </form>
+    <a href="{% url 'dashboard_messages' %}" class="btn btn-secondary mt-5">חזור</a>
+</div>
+<script>
+    function deleteBtn(e) {
+        e.preventDefault();
+        if (confirm('האם אתה בטוח שברצונך למחוק את ההודעה?')) {
+            fetch(window.location.href, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            }).then(response => {
+                if (response.ok) {
+                    window.location = "{% url 'dashboard_messages' %}";
+                }
+            });
+        }
+    }
+
+    function addNewCategory() {
+        const table = document.querySelector('#categories-table tbody');
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
                 <td>
                     <select name="category" class="form-control">
                         <option value="">בחר קטגוריה</option>
@@ -154,29 +173,29 @@ verbose_name_plural = _('message categories') -->
                     <input type="checkbox" name="delete" id="delete-{{ category.id }}">
                 </td>
             `;
-            table.appendChild(newRow);
-        }
+        table.appendChild(newRow);
+    }
 
-        function addLink(e) {
-            e.preventDefault();
-            console.log('addLink', e);;
-            // add to messageTxt the link placeholder [link:{{ id }}] where the cursor is located
-            const textarea = document.getElementById('messageTxt');
-            const cursorPos = textarea.selectionStart;
-            const textBefore = textarea.value.substring(0, cursorPos);
-            const textAfter = textarea.value.substring(cursorPos, textarea.value.length);
-            // get the closest desc to the button
-            const desc = e.target.closest('tr').querySelector('input[name="description"]').value;
-            textarea.value = textBefore + `[link:${desc}]` + textAfter;
+    function addLink(e) {
+        e.preventDefault();
+        console.log('addLink', e);;
+        // add to messageTxt the link placeholder [link:{{ id }}] where the cursor is located
+        const textarea = document.getElementById('messageTxt');
+        const cursorPos = textarea.selectionStart;
+        const textBefore = textarea.value.substring(0, cursorPos);
+        const textAfter = textarea.value.substring(cursorPos, textarea.value.length);
+        // get the closest desc to the button
+        const desc = e.target.closest('tr').querySelector('input[name="description"]').value;
+        textarea.value = textBefore + `[link:${desc}]` + textAfter;
 
-            // select the textarea value we just added
-            textarea.setSelectionRange(cursorPos + 6, cursorPos + 6 + desc.length);
-        }
+        // select the textarea value we just added
+        textarea.setSelectionRange(cursorPos + 6, cursorPos + 6 + desc.length);
+    }
 
-        function addNewLink() {
-            const table = document.querySelector('#links-table tbody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
+    function addNewLink() {
+        const table = document.querySelector('#links-table tbody');
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
                 <td>
                     <input type="text" name="description" class="form-control">
                 </td>
@@ -190,73 +209,75 @@ verbose_name_plural = _('message categories') -->
                     <button type="button" class="btn btn-secondary" onclick="addLink(event)">הוסף</button>
                 </td>
             `;
-            table.appendChild(newRow);
+        table.appendChild(newRow);
+    }
+
+
+    // on submit, collect all the links and categories and form info and POST to the server
+    const form = document.querySelector('#edit-message-form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        debugger;
+        const links = []; // description, url, is_deleted
+        const categories = []; // category, send_at, is_sent, is_deleted
+        const form = new FormData(this);
+        const linksTable = document.querySelector('#links-table tbody');
+        const categoriesTable = document.querySelector('#categories-table tbody');
+        for (let i = 1; i < linksTable.children.length; i++) {
+            const row = linksTable.children[i];
+            const description = row.querySelector('input[name="description"]').value;
+            const url = row.querySelector('input[name="url"]').value;
+            const isDeleted = row.querySelector('input[name="delete"]').checked;
+            const id = row.querySelector('input[name="delete"]').id.split('-')[1];
+
+            links.push({
+                description,
+                url,
+                isDeleted,
+                id
+            });
         }
 
 
-        // on submit, collect all the links and categories and form info and POST to the server
-        const form = document.querySelector('#edit-message-form');
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            debugger;
-            const links = []; // description, url, is_deleted
-            const categories = []; // category, send_at, is_sent, is_deleted
-            const form = new FormData(this);
-            const linksTable = document.querySelector('#links-table tbody');
-            const categoriesTable = document.querySelector('#categories-table tbody');
-            for (let i = 1; i < linksTable.children.length; i++) {
-                const row = linksTable.children[i];
-                const description = row.querySelector('input[name="description"]').value;
-                const url = row.querySelector('input[name="url"]').value;
-                const isDeleted = row.querySelector('input[name="delete"]').checked;
-                const id = row.querySelector('input[name="delete"]').id.split('-')[1];
-
-                links.push({
-                    description,
-                    url,
-                    isDeleted,
-                    id
-                });
-            }
-
-
-            for (let i = 1; i < categoriesTable.children.length; i++) {
-                const row = categoriesTable.children[i];
-                const category = row.querySelector('select[name="category"]').value;
-                const sendAt = row.querySelector('input[name="send_at"]').value;
-                const isSent = row.querySelector('input[name="is_sent"]').checked;
-                const isDeleted = row.querySelector('input[name="delete"]').checked;
-                const id = row.querySelector('input[name="delete"]').id.split('-')[1];
-                categories.push({
-                    category,
-                    sendAt,
-                    isSent,
-                    isDeleted,
-                    id
-                });
-            }
-
-            console.log('links', links);
-            console.log('categories', categories);
-            fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({
-                    links: links,
-                    categories: categories,
-                    business: form.get('business'),
-                    messageTxt: form.get('messageTxt'),
-                }),
-            }).then(response => {
-                if (response.ok) {
-                    //window.location.href = `{% url 'dashboard_messages' %}`;
-                }
+        for (let i = 1; i < categoriesTable.children.length; i++) {
+            const row = categoriesTable.children[i];
+            const category = row.querySelector('select[name="category"]').value;
+            const sendAt = row.querySelector('input[name="send_at"]').value;
+            const isSent = row.querySelector('input[name="is_sent"]').checked;
+            const isDeleted = row.querySelector('input[name="delete"]').checked;
+            const id = row.querySelector('input[name="delete"]').id.split('-')[1];
+            categories.push({
+                category,
+                sendAt,
+                isSent,
+                isDeleted,
+                id
             });
+        }
 
-
+        console.log('links', links);
+        console.log('categories', categories);
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                links: links,
+                categories: categories,
+                business: form.get('business'),
+                messageTxt: form.get('messageTxt'),
+            }),
+        }).then(response => {
+            debugger;
+            if (response.ok) {
+                // reload the page
+                window.location.reload();
+            }
         });
-    </script>
+
+
+    });
+</script>
 {% endblock %}

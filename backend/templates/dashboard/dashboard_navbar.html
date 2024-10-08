@@ -1,47 +1,47 @@
 {% load my_tags %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'dashboard_index' %}"> {{request.user}}
-    </a>
-    <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation">
+    <a class="navbar-brand" href="{% url 'dashboard_index' %}">{{ request.user }}</a>
+    <button class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="collapse navbar-collapse justify-content-between"
+         id="navbarNav">
         <ul class="navbar-nav">
-            <!-- messages, and login/logout -->
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard_leads_in' %}"
-                    {%if request.path == '/dashboard/leads-in'%}
-                    style="font-weight: bold;text-decoration: underline;"
-                    {%endif%}>
-                    לידים נכנסים
-                </a>
+                <a class="nav-link"
+                   href="{% url 'dashboard_leads_in' %}"
+                   {% if request.path == '/dashboard/leads-in' %}style="font-weight: bold;text-decoration: underline;"{% endif %}>לידים נכנסים</a>
             </li>
-
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard_messages' %}"
-                    {%if request.path == '/dashboard/messages'%}
-                    style="font-weight: bold;text-decoration: underline;"
-                    {%endif%}>
-                    הודעות
-                </a>
+                <a class="nav-link"
+                   href="{% url 'dashboard_messages' %}"
+                   {% if request.path == '/dashboard/messages' %}style="font-weight: bold;text-decoration: underline;"{% endif %}>הודעות</a>
             </li>
-
-            {%if request.user.is_authenticated%}
             <li class="nav-item">
-                <form action="{% url 'logout' %}" method="post">
-                    {%csrf_token%}
-                    <button type="submit"
-                        class="btn btn-link nav-link">התנתק</button>
-                </form>
+                <a class="nav-link"
+                   href="{% url 'message_send' %}"
+                   {% if request.path == '/dashboard/messages/send' %}style="font-weight: bold;text-decoration: underline;"{% endif %}>שלח הודעה</a>
             </li>
-            {%endif%}
+        </ul>
+        <ul class="navbar-nav">
+            {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <form action="{% url 'logout' %}" method="post" class="form-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link nav-link">התנתק</button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}?next={{ request.path }}">התחבר</a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </nav>

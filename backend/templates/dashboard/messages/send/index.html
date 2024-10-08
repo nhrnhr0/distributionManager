@@ -1,0 +1,11 @@
+{% extends "dashboard/messages/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - הודעות{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+    <div style="display: flex;">
+        <div style="flex: 1;">{% include "dashboard/messages/send/send_side_filter.html" %}</div>
+        <div style="flex: 3;">{% include "dashboard/messages/send/send_data_display.html" %}</div>
+    </div>
+{% endblock %}
