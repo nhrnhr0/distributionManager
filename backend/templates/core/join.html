@@ -125,10 +125,11 @@
       transform: translateY(2px); /* אפקט לחיצה */
     }
 
+    /* עיצוב לתמונות במסכי מחשב */
     .leads-container .card-img-top {
       width: 100%;
-      height: auto; /* שינוי הגובה לאוטומטי כדי לשפר את ההתאמה למסכים קטנים */
-      object-fit: cover;
+      height: 200px; /* גובה קבוע עבור התמונות במסכים גדולים */
+      object-fit: contain; /*  שמירה על יחסי הגודל של התמונה ללא חיתוך*/
     }
 
     .leads-container .buttons {
@@ -143,6 +144,7 @@
       margin-bottom: 12px; /* הגדלת המרווח בין הכפתורים */
     }
 
+    /* התאמות מיוחדות למסכים קטנים */
     @media screen and (max-width: 992px) {
       .leads-container .card img {
         height: auto; /* התאמת גובה התמונה למסכים קטנים */
