@@ -1,0 +1,145 @@
+<div style="width: 90%; height: 700px; margin: 50px auto;">
+    <canvas id="flowChart"></canvas>
+</div>
+<script>
+    const ctx = document.getElementById('flowChart').getContext('2d');
+
+    // Provided data
+    const dataFlow = results_data;
+    // const dataFlow = [{
+    //     id: 5,
+    //     business: "ג חיון",
+    //     category: "קטגוריה 1",
+    //     group_type: "telegram",
+    //     date: "2024-10-07 23:37:32.810797+00:00",
+    //     count: 1,
+    //     link: "מוצר 2"
+    // }, {
+    //     id: 6,
+    //     business: "ג חיון",
+    //     category: "קטגוריה 1",
+    //     group_type: "telegram",
+    //     date: "2024-10-06 23:37:32.810797+00:00",
+    //     count: 1,
+    //     link: "מוצר 2"
+    // }, {
+    //     id: 7,
+    //     business: "ג חיון",
+    //     category: "קטגוריה 2",
+    //     group_type: "whatsapp",
+    //     date: "2024-10-06 23:37:32.810797+00:00",
+    //     count: 1,
+    //     link: "מוצר 1"
+    // }, {
+    //     id: 8,
+    //     business: "ג חיון",
+    //     category: "קטגוריה 2",
+    //     group_type: "telegram",
+    //     date: "2024-10-06 23:37:32.810797+00:00",
+    //     count: 1,
+    //     link: "מוצר 1"
+    // }];
+
+    // Aggregate the flows for leads based on the data
+    const data = {};
+    let biz_sums = {};
+    let link_sums = {};
+    for (let i = 0; i < dataFlow.length; i++) {
+        const item = dataFlow[i];
+        const biz = item.business;
+        const cat = item.category;
+        const group = item.group_type == 'whatsapp' ? 'וואצאפ' : 'טלגרם';
+        const link = item.link;
+        const count = item.count;
+
+        data[biz] = data[biz] || {};
+        data[biz][cat] = data[biz][cat] || {};
+        data[biz][cat][group] = data[biz][cat][group] || {};
+        data[biz][cat][group][link] = data[biz][cat][group][link] || 0;
+        data[biz][cat][group][link] += count;
+
+        biz_sums[biz] = biz_sums[biz] || {};
+        biz_sums[biz]['sum'] = biz_sums[biz]['sum'] || 0;
+        biz_sums[biz]['sum'] += count;
+
+        biz_sums[biz][cat] = biz_sums[biz][cat] || {};
+        biz_sums[biz][cat]['sum'] = biz_sums[biz][cat]['sum'] || 0;
+        biz_sums[biz][cat]['sum'] += count;
+
+        biz_sums[biz][cat][group] = biz_sums[biz][cat][group] || {};
+        biz_sums[biz][cat][group]['sum'] = biz_sums[biz][cat][group]['sum'] || 0;
+        biz_sums[biz][cat][group]['sum'] += count;
+
+        link_sums[link] = link_sums[link] || 0;
+        link_sums[link] += count;
+
+    }
+
+    console.log('data', data);
+
+    // Create the flows from business -> category -> group -> link
+    let flows = [];
+    for (const biz in data) {
+        for (const cat in data[biz]) {
+            for (const group in data[biz][cat]) {
+                for (const link in data[biz][cat][group]) {
+                    const flow_count = data[biz][cat][group][link];
+
+                    // Flow from business to category
+                    const biz_sum = biz_sums[biz]['sum'];
+                    const cat_sum = biz_sums[biz][cat]['sum'];
+                    const group_sum = biz_sums[biz][cat][group]['sum'];
+                    const link_sum = link_sums[link];
+
+                    flows.push({
+                        from: biz + '(' + biz_sum + ')',
+                        to: cat + '(' + cat_sum + ')',
+                        flow: flow_count,
+                        label: `${biz} ← ${cat}`
+                    });
+
+                    // Flow from category to group
+                    flows.push({
+                        from: cat + '(' + cat_sum + ')',
+                        to: group + '(' + group_sum + ')',
+                        flow: flow_count,
+                        label: `${cat} ← ${group}`
+                    });
+
+                    // Flow from group to link
+                    flows.push({
+                        from: group + '(' + group_sum + ')',
+                        to: link + '(' + link_sum + ')',
+                        flow: flow_count,
+                        label: `${group} ← ${link}`
+                    });
+                }
+            }
+        }
+    }
+
+    console.log('flows', flows);
+
+    // Create Sankey chart using Chart.js with Sankey plugin
+    const myChart = new Chart(ctx, {
+        type: 'sankey',
+        data: {
+            datasets: [{
+                label: 'Flow of Leads',
+                data: flows,
+                colorFrom: 'gray',
+                colorTo: 'gray',
+                borderWidth: 2,
+                borderColor: 'black',
+                nodeWidth: 30
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+</script>

@@ -1,0 +1,121 @@
+{% extends "dashboard/messages/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - הודעות{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>עריכת שליחת הודעה</h1>
+        <form method="POST" action="{% url 'message_edit_send' message_cat.uid %}">
+            {% csrf_token %}
+            <!-- {{ message_cat.uid }} -->
+            <!-- disaply
+               business name
+                the category
+                the message with the links
+                the send at date
+                the is sent status (editable)
+                -->
+            <input type="hidden" name="message_cat_uid" value="{{ message_cat.uid }}">
+            <div class="form-group">
+                <label for="business">עסק</label>
+                <input type="text"
+                       class="form-control"
+                       id="business"
+                       name="business"
+                       value="{{ message_cat.message.business }}"
+                       disabled>
+            </div>
+            <div class="form-group">
+                <label for="category">קטגוריה</label>
+                <input type="text"
+                       class="form-control"
+                       id="category"
+                       name="category"
+                       value="{{ message_cat.category.name }}"
+                       disabled>
+            </div>
+            <div class="form-group">
+                <label for="send_at">תאריך שליחה</label>
+                <input type="datetime-local"
+                       class="form-control"
+                       id="send_at"
+                       name="send_at"
+                       value="{{ message_cat.send_at|date:'Y-m-d\TH:i' }}"
+                       disabled>
+            </div>
+            <div class="form-group" style="display:flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label for="message">הודעה לוואצאפ</label>
+                    <textarea class="form-control"
+                              id="message_whatsapp"
+                              name="message_whatsapp"
+                              rows="5"
+                              readonly>{{ message_cat.get_generated_message_whatsapp }}</textarea>
+                    <!-- COPY button -->
+                    <button type="button"
+                            class="btn btn-secondary mt-1"
+                            onclick="copyToClipboard('message_whatsapp')">העתק</button>
+                </div>
+                <div style="flex: 1;">
+                    <label for="message">הודעה לטלגרם</label>
+                    <textarea class="form-control"
+                              id="message_telegram"
+                              name="message_telegram"
+                              rows="5"
+                              readonly>{{ message_cat.get_generated_message_telegram }}</textarea>
+                    <!-- COPY button -->
+                    <button type="button"
+                            class="btn btn-secondary mt-1"
+                            onclick="copyToClipboard('message_telegram')">העתק</button>
+                </div>
+            </div>
+            <div class="form-group" style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label for="whatsapp">קישורים לקבוצות וואצאפ</label>
+                    <ul>
+                        {% for link in message_cat.category.all_whatsapp_urls.all %}
+                            <li>
+                                <a href="/{{ link }}" target="_blank">{{ link.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="flex: 1;">
+                    <label for="telegram">קישורים לקבוצות טלגרם</label>
+                    <ul>
+                        {% for link in message_cat.category.all_telegram_urls.all %}
+                            <li>
+                                <a href="/{{ link }}" target="_blank">{{ link.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="checkbox"
+                       class="form-check-input"
+                       id="is_sent"
+                       name="is_sent"
+                       {% if message_cat.is_sent %}checked{% endif %}>
+                <label for="is_sent">נשלח</label>
+            </div>
+            <button type="submit" class="btn btn-primary mt-5">שמור</button>
+        </form>
+    </div>
+    <script>
+        function copyToClipboard(id) {
+            /* Get the text field */
+            debugger;
+
+            var copyText = document.getElementById(id);
+
+            /* Select the text field */
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+            /* Copy the text inside the text field */
+            document.execCommand("copy");
+        }
+    </script>
+{% endblock %}

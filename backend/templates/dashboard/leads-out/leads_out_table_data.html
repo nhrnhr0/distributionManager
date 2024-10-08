@@ -1,0 +1,150 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>יציאות מהקבוצות</h5>
+                </div>
+                <div class="card-body">
+                    <!-- שיחות חוזרות -->
+                    <!-- כמות, גדילה, אחוזי גדילה -->
+                    <!-- צאטים חוזרים -->
+                    <!-- כמות, גדילה, אחוזי גדילה -->
+                    <div class="d-flex" style="gap: 20px;">
+                        <div id="returning-calls">
+                            <h5>
+                                שיחות חוזרות
+                                ({{ calls_info.counts }} ספירות)
+                            </h5>
+                            <table class="table table-striped">
+                                <tr>
+                                    <th>כמות</th>
+                                    <th>גדילה</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ calls_info.amount }}</td>
+                                    <td>{{ calls_info.growth }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div id="returning-chats">
+                            <h5>
+                                צאטים חוזרים
+                                ({{ chats_info.counts }} ספירות)
+                            </h5>
+                            <table class="table table-striped">
+                                <tr>
+                                    <th>כמות</th>
+                                    <th>גדילה</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ chats_info.amount }}</td>
+                                    <td>{{ chats_info.growth }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Function to handle pivot table updates
+    function handlePivotUpdate(config) {
+        console.log("User updated the pivot table");
+        console.log("Rows:", config.rows);
+        console.log("Cols:", config.cols);
+        console.log("Values:", config.vals);
+        // add them all to the local storage table_config and update the page URL without reloading
+        config = {
+            rows: config.rows,
+            cols: config.cols,
+            vals: config.vals,
+        }
+
+        window.localStorage.setItem('table_config_leads_out', JSON.stringify(config));
+
+    }
+
+    $(function() {
+        // load table config from URL query params and set it to the pivot table if exists
+
+        const table_config = window.localStorage.getItem('table_config_leads_out');
+        if (table_config) {
+            $('#table').pivotUI(
+                translated_results, {
+                    vals: ["כמות"], // The value to aggregate (adjust as needed)
+                    aggregatorName: "Integer Sum", // The aggregation function to use (adjust as needed)
+                    rendererName: "Table", // The renderer to use (adjust as needed)
+                    onRefresh: function(config) {
+                        handlePivotUpdate(config); // Call function when the pivot table is updated
+                    },
+                    ...JSON.parse(table_config)
+                }
+
+            );
+        } else {
+            $('#table').pivotUI(
+                translated_results, {
+                    vals: ["כמות"], // The value to aggregate (adjust as needed)
+                    aggregatorName: "Integer Sum", // The aggregation function to use (adjust as needed)
+                    rendererName: "Table", // The renderer to use (adjust as needed)
+                    onRefresh: function(config) {
+                        handlePivotUpdate(config); // Call function when the pivot table is updated
+                    },
+                }
+            );
+        }
+    })
+</script>
+<style>
+    .table {
+        direction: rtl;
+        width: fit-content;
+
+    }
+
+    .table th {
+        text-align: right;
+        border: 1px solid black;
+    }
+
+    .table td {
+        text-align: right;
+        border: 1px solid black;
+    }
+
+    .returning-calls {
+        display: flex;
+        margin-bottom: 20px;
+        gap: 20px;
+    }
+
+    .returning-calls h5 {
+        margin: 0;
+    }
+
+    .returning-calls-amount,
+    .returning-calls-growth,
+    .returning-calls-growth-percentage {
+        text-align: center;
+    }
+
+    .returning-chats {
+        display: flex;
+        margin-bottom: 20px;
+        gap: 20px;
+    }
+
+    .returning-chats h5 {
+        margin: 0;
+    }
+
+    .returning-chats-amount,
+    .returning-chats-growth,
+    .returning-chats-growth-percentage {
+        text-align: center;
+    }
+</style>

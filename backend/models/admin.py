@@ -140,7 +140,7 @@ class MessageLinkInline(admin.TabularInline):
     # list_display = ['id', 'link','message','insert_link']
     fieldsets = (
         (None, {
-            'fields': ('link','description', 'insert_link')
+            'fields': ('url','description',)
         }),
     )
     
@@ -154,13 +154,13 @@ class MessageCategoryInline(admin.TabularInline):
     pass
 
 class BizMessagesAdmin(admin.ModelAdmin):
-    list_display = ['id', 'business', 'message',]
+    list_display = ['id', 'business', 'messageTxt',]
     
     inlines = [MessageLinkInline, MessageCategoryInline,]
     pass
 admin.site.register(BizMessages, BizMessagesAdmin)
 class MessageLinkAdmin(admin.ModelAdmin):
-    list_display = ['id', 'link','message',]
+    list_display = ['id', 'url','message',]
     pass
 admin.site.register(MessageLink, MessageLinkAdmin)
 # MessageLinkTracker

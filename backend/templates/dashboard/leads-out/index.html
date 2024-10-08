@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block title %}דאשבורד - לידים נכנסים{% endblock %}
+{% block extra_head %}
+    <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.js"></script>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey"></script>
+{% endblock %}
+{% block content %}
+    <script>
+        const results_data = JSON.parse("{{ links_clicks_json|escapejs }}");
+        const translated_results = results_data.map((item) => {
+            return {
+                'ID': item.id,
+                'עסק': item.business,
+                'קטגוריה': item.category,
+                'סוג קבוצה': item.group_type,
+                'תאריך': item.date,
+                'כמות': item.count,
+                'לינק': item.link,
+            }
+        });
+        console.log('translated_results', translated_results);
+    </script>
+    <div style="display: flex;">
+        <div style="flex: 1;">{% include "dashboard/leads-out/leads_out_side_filter.html" %}</div>
+        <div style="flex: 3;">
+            {% include "dashboard/leads-out/leads_out_table_data.html" %}
+            {% include "dashboard/leads-out/leads_out_chart.html" %}
+        </div>
+    </div>
+{% endblock %}

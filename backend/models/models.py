@@ -164,6 +164,7 @@ class TelegramGroup(models.Model):
         verbose_name_plural = _('Telegram groups')
 
 class Category(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, editable=False, unique=True)
     icon = models.ImageField(_('icon'), upload_to='categories/', blank=True, null=True)
     name = models.CharField(_('name'), max_length=100)
     slug = models.SlugField(_('slug'), max_length=100, allow_unicode=True)
@@ -218,42 +219,67 @@ def update_open_groups(sender, instance, **kwargs):
 
 # message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
 class BizMessages(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'))
-    message = models.TextField(_('message'), max_length=20000)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'), blank=True, null=True)
+    messageTxt = models.TextField(_('message'), max_length=20000)
     
     
     def __str__(self) -> str:
-        return self.message
+        return self.messageTxt
     
     class Meta:
         verbose_name = _('business message')
         verbose_name_plural = _('business messages')
         
 class MessageCategory(models.Model):
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'))
-    send_at = models.DateTimeField(_('send at'), default=timezone.now)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'), blank=True, null=True)
+    send_at = models.DateTimeField(_('send at'), default=timezone.now, blank=True, null=True)
     is_sent = models.BooleanField(_('is sent'), default=False)
     class Meta:
         verbose_name = _('message category')
         verbose_name_plural = _('message categories')
+        
+    def get_generated_message_whatsapp(self):
+        message = self.message.messageTxt
+        DMN = settings.BACKEND_DOMAIN.replace('http://', '').replace('https://', '')
+        for link in self.message.links.all():
+            # replace [link:<description>] with redirect url /r/?c=<category_uid>&m=<message_uid>&l=<link_uid>
+            new_link = settings.BACKEND_DOMAIN + '/r/?c=' + self.category.uid + '&l=' + link.uid + '&t=w'
+            message = message.replace(f'[link:{link.description}]', new_link)
+        return message
+    
+    def get_generated_message_telegram(self):
+        message = self.message.messageTxt
+        DMN = settings.BACKEND_DOMAIN.replace('http://', '').replace('https://', '')
+        for link in self.message.links.all():
+            # replace [link:<description>] with redirect url /r/?c=<category_uid>&m=<message_uid>&l=<link_uid>
+            new_link = settings.BACKEND_DOMAIN + '/r/?c=' + self.category.uid + '&l=' + link.uid + '&t=t'
+            message = message.replace(f'[link:{link.description}]', new_link)
+        return message
+    
 # the links we insert in the message
 class MessageLink(models.Model):
-    link = models.URLField(_('link'), max_length=2000)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid,  editable=False, unique=True)
+    url = models.URLField(_('url'), max_length=2000)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='links', verbose_name=_('message'))
     description = models.CharField(_('description'), max_length=100, blank=True, null=True)
 
-class MessageLinkTracker(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
-    link = models.ForeignKey(MessageLink, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('link'))
-    whatsapp_group = models.ForeignKey(WhatsappGroup, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('group'))
-    telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('group'))
-    group_type = models.CharField(_('group type'), max_length=100, choices=CategoriesClicks.CATEGORY_GROUP, default=CategoriesClicks.CATEGORY_GROUP_WHATSAPP)
+# class MessageLinkTracker(models.Model):
+#     uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+#     link = models.ForeignKey(MessageLink, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('link'))
+#     whatsapp_group = models.ForeignKey(WhatsappGroup, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('group'))
+#     telegram_group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, related_name='trackers', verbose_name=_('group'))
+#     group_type = models.CharField(_('group type'), max_length=100, choices=CategoriesClicks.CATEGORY_GROUP, default=CategoriesClicks.CATEGORY_GROUP_WHATSAPP)
     
 class MessageLinkClick(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
-    tracker = models.ForeignKey(MessageLinkTracker, on_delete=models.CASCADE, related_name='clicks', verbose_name=_('tracker'))
+    msg = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='clicks', verbose_name=_('message'))
+    link = models.ForeignKey(MessageLink, on_delete=models.CASCADE, related_name='clicks', verbose_name=_('link'))
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='clicks', verbose_name=_('category'))
+    group_type = models.CharField(_('group type'), max_length=100, choices=CategoriesClicks.CATEGORY_GROUP, default=CategoriesClicks.CATEGORY_GROUP_WHATSAPP)
     ip = models.GenericIPAddressField(_('IP'), blank=True, null=True)
     user_agent = models.TextField(_('user agent'), blank=True, null=True)
-    referer = models.URLField(_('referer'), blank=True, null=True)
+    

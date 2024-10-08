@@ -1,0 +1,41 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">הודעות לשליחה</div>
+                <div class="card-body">
+                    <div id="table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">UID</th>
+                                    <th scope="col">קטגוריה</th>
+                                    <th scope="col">תאריך שליחה</th>
+                                    <th scope="col">נשלח</th>
+                                    <th scope="col">טקסט ההודעה</th>
+                                    <th scope="col">עסק</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for msg in all_message_categories %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'message_edit_send' msg.uid %}">{{ msg.uid }}</a>
+                                        </td>
+                                        <td>{{ msg.category.name }}</td>
+                                        <td>{{ msg.send_at }}</td>
+                                        <td>
+                                            <div style="color: {% if msg.is_sent %}green{% else %}red{% endif %};">{{ msg.is_sent|yesno:"כן,לא" }}</div>
+                                        </td>
+                                        <td>{{ msg.message.messageTxt|truncatechars:35 }}</td>
+                                        <td>{{ msg.message.business }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

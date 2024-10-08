@@ -1,0 +1,20 @@
+<!-- {{ request.breadcrumbs }} = [{'name': 'dashboard_index', 'url': '/dashboard/', 'label': 'Dashboard'}, {'name': 'dashboard_messages', 'url': '/dashboard/messages/', 'label': 'הודעות'}] -->
+{% load static %}
+<nav aria-label="breadcrumb" class="breadcrumb-nav mt-2">
+    <ol class="breadcrumb">
+        {% for crumb in request.breadcrumbs %}
+            <li class="breadcrumb-item">
+                {% if forloop.last %}
+                    {{ crumb.label }}
+                {% else %}
+                    <a href="{{ crumb.url }}">{{ crumb.label }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+</nav>
+<style>
+    .breadcrumb-nav {
+        padding-right: 20px;
+    }
+</style>

@@ -1,5 +1,32 @@
 from django.shortcuts import render, redirect
-from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks
+from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks, MessageLink, MessageLinkClick
+
+def redirector(request):
+    category_uid = request.GET.get('c')
+    link_uid = request.GET.get('l')
+    group_type = request.GET.get('t')
+    
+    link = MessageLink.objects.filter(uid=link_uid).first()
+    category = Category.objects.filter(uid=category_uid).first()
+    group_type = CategoriesClicks.CATEGORY_GROUP_WHATSAPP if group_type == 'whatsapp' else CategoriesClicks.CATEGORY_GROUP_TELEGRAM
+    ip = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT')
+    if link:
+        # add click
+        
+        click = MessageLinkClick(
+            msg=link.message,
+            category=category,
+            link=link,
+            group_type=group_type,
+            ip=ip,
+            user_agent=user_agent)
+        click.save()
+        pass
+    
+    
+        return redirect(link.url, permanent=True)
+
 # Create your views here.
 def busines_join(request, business_slug):
     biz = Business.objects.get(slug=business_slug)
