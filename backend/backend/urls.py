@@ -41,8 +41,8 @@ urlpatterns = [
     path('dashboard/messages/new/', dashboard_message_new, name='message_new'),
     path('dashboard/messages/edit/<str:uid>/', dashboard_message_edit, name='message_edit'),
     path('dashboard/messages/delete/<str:uid>/', dashboard_message_edit, name='message_delete'),
-    path('dashboard/messages/send/', dashboard_message_send, name='message_send'),
-    path('dashboard/messages/send/<str:uid>/', dashboard_message_send_edit, name='message_edit_send'),
+    path('dashboard/messages-send/', dashboard_message_send, name='message_send'),
+    path('dashboard/messages-send/<str:uid>/', dashboard_message_send_edit, name='message_edit_send'),
     
     path('r/', redirector, name='redirector'),
     

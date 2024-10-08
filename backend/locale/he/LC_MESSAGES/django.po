@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-26 15:19+0300\n"
+"POT-Creation-Date: 2024-10-08 03:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,52 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % "
 "1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
+
+#: .\core\middleware.py:5
+msgid "Dashboard"
+msgstr "דשבורד"
+
+#: .\core\middleware.py:6
+msgid "Leads In"
+msgstr "לידים נכנסים"
+
+#: .\core\middleware.py:7
+msgid "Messages"
+msgstr "הודעות"
+
+#: .\core\middleware.py:8
+msgid "New Message"
+msgstr "הודעה חדשה"
+
+#: .\core\middleware.py:9
+msgid "Edit Message"
+msgstr "עריכת הודעה"
+
+#: .\core\middleware.py:10
+msgid "Send Message"
+msgstr "שלח הודעה"
+
+#: .\core\middleware.py:11
+msgid "Edit Send Message"
+msgstr "עריכת שליחת הודעה"
+
+#: .\core\middleware.py:12
+#, fuzzy
+#| msgid "Business"
+msgid "Join Business"
+msgstr "הצטרף לעסק"
+
+#: .\core\middleware.py:13
+msgid "Join Business Whatsapp"
+msgstr "הצטרף לעסק בוואטסאפ"
+
+#: .\core\middleware.py:14
+msgid "Join Business Telegram"
+msgstr "הצטרף לעסק בטלגרם"
+
+#: .\core\middleware.py:15
+msgid "Redirector"
+msgstr "מפנה"
 
 #: .\counting\models.py:9 .\counting\models.py:44 .\counting\models.py:57
 msgid "Business"
@@ -83,17 +129,17 @@ msgstr "Calls Responses Count"
 msgid "Calls Responses Counts"
 msgstr "Calls Responses Counts"
 
-#: .\models\admin.py:82
+#: .\models\admin.py:112
 msgid "whatsapp groups amount"
 msgstr "קבוצות וואטסאפ"
 
-#: .\models\admin.py:87
+#: .\models\admin.py:117
 msgid "telegram groups amount"
 msgstr "קבוצות טלגרם"
 
-#: .\models\models.py:20 .\models\models.py:28 .\models\models.py:45
-#: .\models\models.py:82 .\models\models.py:123 .\models\models.py:144
-#: .\models\models.py:166
+#: .\models\models.py:20 .\models\models.py:28 .\models\models.py:47
+#: .\models\models.py:84 .\models\models.py:125 .\models\models.py:146
+#: .\models\models.py:169
 msgid "name"
 msgstr "שם"
 
@@ -101,204 +147,226 @@ msgstr "שם"
 msgid "user"
 msgstr "משתמש"
 
-#: .\models\models.py:22 .\models\models.py:41 .\models\models.py:56
-#: .\models\models.py:72 .\models\models.py:84 .\models\models.py:168
-#: .\models\models.py:254
+#: .\models\models.py:22 .\models\models.py:43 .\models\models.py:58
+#: .\models\models.py:74 .\models\models.py:86 .\models\models.py:171
+#: .\models\models.py:224
 msgid "business"
 msgstr "עסק"
 
-#: .\models\models.py:29 .\models\models.py:167
+#: .\models\models.py:29
+msgid "display name"
+msgstr ""
+
+#: .\models\models.py:30 .\models\models.py:170
 msgid "slug"
 msgstr "סלאג"
 
-#: .\models\models.py:30
+#: .\models\models.py:31
 msgid "header image"
 msgstr "תמונת כותרת"
 
-#: .\models\models.py:31
+#: .\models\models.py:32
 msgid "footer image"
 msgstr "תמונת תחתית"
 
-#: .\models\models.py:32
+#: .\models\models.py:33 .\models\models.py:268
 msgid "description"
 msgstr "תיאור"
 
-#: .\models\models.py:42
+#: .\models\models.py:34
+#, fuzzy
+#| msgid "icon"
+msgid "favicon"
+msgstr "אייקון"
+
+#: .\models\models.py:44
 msgid "businesses"
 msgstr "עסקים"
 
-#: .\models\models.py:51
+#: .\models\models.py:53
 msgid "business QR category"
 msgstr "קטגוריית QR של עסק"
 
-#: .\models\models.py:52
+#: .\models\models.py:54
 msgid "business QR categories"
 msgstr "קטגוריות QR של עסקים"
 
-#: .\models\models.py:55 .\models\models.py:71 .\models\models.py:252
+#: .\models\models.py:57 .\models\models.py:73 .\models\models.py:223
+#: .\models\models.py:278
 msgid "created at"
 msgstr "נוצר ב"
 
-#: .\models\models.py:57 .\models\models.py:74
+#: .\models\models.py:59 .\models\models.py:76
 msgid "QR"
 msgstr "קוד QR"
 
-#: .\models\models.py:60
+#: .\models\models.py:62
 msgid "leads click"
 msgstr "לחיצות לידים"
 
-#: .\models\models.py:61
+#: .\models\models.py:63
 msgid "leads clicks"
 msgstr "לחיצות לידים"
 
-#: .\models\models.py:73 .\models\models.py:83 .\models\models.py:179
+#: .\models\models.py:75 .\models\models.py:85 .\models\models.py:182
+#: .\models\models.py:238 .\models\models.py:281
 msgid "category"
 msgstr "קטגוריה"
 
-#: .\models\models.py:75
+#: .\models\models.py:77 .\models\models.py:282
 msgid "group type"
 msgstr "סוג קבוצה"
 
-#: .\models\models.py:78
+#: .\models\models.py:80
 msgid "categories click"
 msgstr "לחיצות קטגוריות"
 
-#: .\models\models.py:79
+#: .\models\models.py:81
 msgid "categories clicks"
 msgstr "לחיצות קטגוריות"
 
-#: .\models\models.py:85
+#: .\models\models.py:87
 msgid "QR code"
 msgstr "קוד QR"
 
-#: .\models\models.py:86
+#: .\models\models.py:88
 msgid "QR image"
 msgstr "תמונת QR"
 
-#: .\models\models.py:90
+#: .\models\models.py:92
 msgid "business QR"
 msgstr "QR של עסק"
 
-#: .\models\models.py:91
+#: .\models\models.py:93
 msgid "business QRs"
 msgstr "QR של עסקים"
 
-#: .\models\models.py:103 .\models\models.py:188
+#: .\models\models.py:105 .\models\models.py:191
 msgid "No Image"
 msgstr "אין תמונה"
 
-#: .\models\models.py:104
+#: .\models\models.py:106
 msgid "QR Image"
 msgstr "תמונת QR"
 
-#: .\models\models.py:120
+#: .\models\models.py:122
 msgid "Link"
 msgstr "קישור"
 
-#: .\models\models.py:124 .\models\models.py:145
+#: .\models\models.py:126 .\models\models.py:147
 msgid "chat ID"
 msgstr "מזהה צ'אט"
 
-#: .\models\models.py:125 .\models\models.py:146
+#: .\models\models.py:127 .\models\models.py:148
 msgid "last members count"
 msgstr "מספר חברים אחרון"
 
-#: .\models\models.py:126 .\models\models.py:147
+#: .\models\models.py:128 .\models\models.py:149
 msgid "last members check"
 msgstr "בדיקת חברים אחרונה"
 
-#: .\models\models.py:140
+#: .\models\models.py:142
 msgid "WhatsApp group"
 msgstr "קבוצת וואטסאפ"
 
-#: .\models\models.py:141
+#: .\models\models.py:143
 msgid "WhatsApp groups"
 msgstr "קבוצות וואטסאפ"
 
-#: .\models\models.py:161
+#: .\models\models.py:163
 msgid "Telegram group"
 msgstr "קבוצת טלגרם"
 
-#: .\models\models.py:162
+#: .\models\models.py:164
 msgid "Telegram groups"
 msgstr "קבוצות טלגרם"
 
-#: .\models\models.py:165
+#: .\models\models.py:167 .\models\models.py:222 .\models\models.py:236
+#: .\models\models.py:265
+msgid "uid"
+msgstr ""
+
+#: .\models\models.py:168
 msgid "icon"
 msgstr "אייקון"
 
-#: .\models\models.py:169
+#: .\models\models.py:172
 msgid "open WhatsApp URL"
 msgstr "פתח קישור וואטסאפ"
 
-#: .\models\models.py:170
+#: .\models\models.py:173
 msgid "open Telegram URL"
 msgstr "פתח קישור טלגרם"
 
-#: .\models\models.py:171
+#: .\models\models.py:174
 msgid "all WhatsApp URLs"
 msgstr "כל קישורי וואטסאפ"
 
-#: .\models\models.py:172
+#: .\models\models.py:175
 msgid "all Telegram URLs"
 msgstr "כל קישורי טלגרם"
 
-#: .\models\models.py:180 .\models\models.py:257
+#: .\models\models.py:183
 msgid "categories"
 msgstr "קטגוריות"
 
-#: .\models\models.py:242
-msgid "Approved"
-msgstr "מאושר"
+#: .\models\models.py:192
+msgid "Icon"
+msgstr ""
 
-#: .\models\models.py:243
-msgid "Pending"
-msgstr "ממתין"
-
-#: .\models\models.py:244
-msgid "Rejected"
-msgstr "נדחה"
-
-#: .\models\models.py:248
-msgid "ID"
-msgstr "מזהה"
-
-#: .\models\models.py:249
+#: .\models\models.py:225 .\models\models.py:237 .\models\models.py:267
+#: .\models\models.py:279
 msgid "message"
 msgstr "הודעה"
 
-#: .\models\models.py:250
-msgid "image"
-msgstr "תמונה"
+#: .\models\models.py:232
+#, fuzzy
+#| msgid "businesses"
+msgid "business message"
+msgstr "עסקים"
 
-#: .\models\models.py:251
-msgid "send date"
+#: .\models\models.py:233
+#, fuzzy
+#| msgid "businesses"
+msgid "business messages"
+msgstr "עסקים"
+
+#: .\models\models.py:239
+#, fuzzy
+#| msgid "send date"
+msgid "send at"
 msgstr "תאריך שליחה"
 
-#: .\models\models.py:253
-msgid "updated at"
-msgstr "עודכן ב"
-
-#: .\models\models.py:255
-msgid "approve state"
-msgstr "מצב אישור"
-
-#: .\models\models.py:256
-msgid "approve date"
-msgstr "תאריך אישור"
-
-#: .\models\models.py:258
-msgid "is WhatsApp sent"
+#: .\models\models.py:240
+#, fuzzy
+#| msgid "is WhatsApp sent"
+msgid "is sent"
 msgstr "האם נשלח בוואטסאפ"
 
-#: .\models\models.py:259
-msgid "is Telegram sent"
-msgstr "האם נשלח בטלגרם"
+#: .\models\models.py:242
+#, fuzzy
+#| msgid "business QR category"
+msgid "message category"
+msgstr "קטגוריית QR של עסק"
 
-#: .\models\models.py:289
-msgid "content schedule"
-msgstr "לוח זמנים לתוכן"
+#: .\models\models.py:243
+#, fuzzy
+#| msgid "categories"
+msgid "message categories"
+msgstr "קטגוריות"
 
-#: .\models\models.py:290
-msgid "content schedules"
-msgstr "לוחות זמנים לתוכן"
+#: .\models\models.py:266
+msgid "url"
+msgstr ""
+
+#: .\models\models.py:280
+msgid "link"
+msgstr ""
+
+#: .\models\models.py:283
+msgid "IP"
+msgstr ""
+
+#: .\models\models.py:284
+msgid "user agent"
+msgstr "דפדפן"

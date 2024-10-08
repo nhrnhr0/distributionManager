@@ -272,8 +272,7 @@ verbose_name_plural = _('message categories') -->
         }).then(response => {
             debugger;
             if (response.ok) {
-                // reload the page
-                window.location.reload();
+                window.location = "{% url 'dashboard_messages' %}";
             }
         });
 
