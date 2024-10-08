@@ -8,6 +8,7 @@ import pytz
 from datetime import datetime
 from django.contrib import messages
 from core.decoretors import admin_required
+from django.db.models import Q
 
 from django.shortcuts import redirect
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
@@ -42,7 +43,7 @@ def dashboard_message_send_edit(request, uid):
 
 @admin_required
 def dashboard_message_send(request):
-    messages_cats = MessageCategory.objects.all()
+    messages_cats = MessageCategory.objects.select_related('message', 'category', 'message__business').all()
     # order by, first the ones that are not sent, then the ones that are sent
     # and then by the send_at date, as close as possible to now and blank dates last
     messages_cats = messages_cats.order_by('is_sent', 'send_at')
@@ -114,7 +115,7 @@ def dashboard_message_edit(request, uid):
 @admin_required
 def dashboard_messages(request):
     businesses = Business.objects.all()
-    all_messages = BizMessages.objects.all()
+    all_messages = BizMessages.objects.select_related('business').prefetch_related('categories', 'links', 'categories__category').all()
     
     selected_busines = request.GET.get('business', None)
     if selected_busines:
@@ -139,15 +140,15 @@ def dashboard_leads_in(request):
     busines = request.GET.get('business', None)
     start_date = request.GET.get('start_date', None)
     end_date = request.GET.get('end_date', None)
-    qrs = request.GET.get('qrs', None)
+    qrs = request.GET.getlist('qrs', [])
 
     leads = LeadsClicks.objects.select_related('business', 'qr', 'qr__category').all()
-    categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category',).all()
+    categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category', 'category').all()
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     qrs_list = BusinessQR.objects.all()
     if busines:
         leads = leads.filter(business__id=busines)
-        qrs_list = qrs_list.objects.filter(business__id=busines)
+        qrs_list = qrs_list.filter(business__id=busines)
         categories_clicks = categories_clicks.filter(business__id=busines)
         group_size_count = group_size_count.filter(business__id=busines)
     if start_date:
@@ -173,16 +174,20 @@ def dashboard_leads_in(request):
     all_telegrams_qs = all_telegrams_qs.order_by('group', '-session__date').distinct('group')
     
     
-    
-    if qrs:
-        leads = leads.filter(qr__id=qrs)
-        categories_clicks = categories_clicks.filter(qr__id=qrs)
-    
-    
-    # leads_total = leads.count()
-    # categories_clicks_total = categories_clicks.count()
-    # leads = leads.values('qr__name', 'qr__category__name').annotate(count=Count('id')).order_by('-count')
-    # categories_clicks = categories_clicks.values('category__name',).annotate(count=Count('category__name'))
+    # remove empty strings from qrs
+    qrs = list(filter(None, qrs))
+    if qrs and len(qrs) > 0:
+        organic = True if '0' in qrs else False
+        
+        # if organic get all loads with qr__id = None and qr__id__in=qrs
+        if organic:
+            leads = leads.filter(Q(qr__id__in=qrs) | Q(qr__id=None))
+            categories_clicks = categories_clicks.filter(Q(qr__id__in=qrs) | Q(qr__id=None))
+        else:
+            leads = leads.filter(qr__id__in=qrs)
+            categories_clicks = categories_clicks.filter(qr__id__in=qrs)
+
+
     leads_clicks_json = []
     for lead in leads:
         leads_clicks_json.append({
