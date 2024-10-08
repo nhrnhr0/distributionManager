@@ -74,11 +74,11 @@ msgstr "Date"
 
 #: .\counting\models.py:13
 msgid "Dayly Group Size Count"
-msgstr "Dayly Group Size Count"
+msgstr "ספירת גודל קבוצה יומית"
 
 #: .\counting\models.py:14
 msgid "Dayly Group Size Counts"
-msgstr "Dayly Group Size Counts"
+msgstr "ספירות גודל קבוצה יומיות"
 
 #: .\counting\models.py:18
 msgid "Whatsapp Group"
@@ -115,19 +115,19 @@ msgstr "קבוצות טלגרם"
 
 #: .\counting\models.py:52
 msgid "Messages Responses Count"
-msgstr "Messages Responses Count"
+msgstr "ספירת הודעות חוזרות"
 
 #: .\counting\models.py:53
 msgid "Messages Responses Counts"
-msgstr "Messages Responses Counts"
+msgstr "ספירות הודעות חוזרות"
 
 #: .\counting\models.py:65
 msgid "Calls Responses Count"
-msgstr "Calls Responses Count"
+msgstr "ספירת שיחות חוזרות"
 
 #: .\counting\models.py:66
 msgid "Calls Responses Counts"
-msgstr "Calls Responses Counts"
+msgstr "ספירות שיחות חוזרות"
 
 #: .\models\admin.py:112
 msgid "whatsapp groups amount"

@@ -38,6 +38,9 @@ CSRF_TRUSTED_ORIGINS = [BACKEND_DOMAIN,]
 # Application definition
 
 INSTALLED_APPS = [
+    "django_admin_index",
+    "ordered_model",
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

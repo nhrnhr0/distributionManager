@@ -53,6 +53,9 @@ class MessagesResponsesCount(models.Model):
         verbose_name_plural = _("Messages Responses Counts")
 
 
+
+
+
 class CallsResponsesCount(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, verbose_name=_("Business"))
     date = models.DateField(default=timezone.now, verbose_name=_("Date"))
