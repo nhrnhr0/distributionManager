@@ -21,6 +21,12 @@
                    href="{{ dashboard_leads_url }}">לידים נכנסים</a>
             </li>
             <li class="nav-item">
+                {% url 'dashboard_leads_out' as dashboard_leads_out_url %}
+                <a class="nav-link
+                          {% if request.path|startswith:dashboard_leads_out_url %}active{% endif %}"
+                   href="{{ dashboard_leads_out_url }}">לידים יוצאים</a>
+            </li>
+            <li class="nav-item">
                 {% url 'dashboard_messages' as dashboard_messages_url %}
                 <a class="nav-link
                           {% if request.path|startswith:dashboard_messages_url %}active{% endif %}"

@@ -4,6 +4,7 @@ from django.utils.translation import gettext as _
 BREADCRUMBS_TRANSLATION = {
     'dashboard_index': _('Dashboard'),
     'dashboard_leads_in': _('Leads In'),
+    'dashboard_leads_out': _('Leads Out'),
     'dashboard_messages': _('Messages'),
     'message_new': _('New Message'),
     'message_edit': _('Edit Message'),

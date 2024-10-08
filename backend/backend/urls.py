@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
 # from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail,admin_dashboard_message_detail_update_send_date
 from django.contrib.auth.views import LogoutView, LoginView
-from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new
+from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out
 from core.views import redirector
 # from core.views import test
 urlpatterns = [
@@ -36,6 +36,7 @@ urlpatterns = [
     
     path('dashboard/', dashboard_index, name='dashboard_index'),
     path('dashboard/leads-in/', dashboard_leads_in, name='dashboard_leads_in'),
+    path('dashboard/leads-out/', dashboard_leads_out, name='dashboard_leads_out'),
     
     path('dashboard/messages/', dashboard_messages, name='dashboard_messages'),
     path('dashboard/messages/new/', dashboard_message_new, name='message_new'),

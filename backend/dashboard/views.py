@@ -132,6 +132,86 @@ def dashboard_messages(request):
 def dashboard_index(request):
     return render(request, 'dashboard/index.html', {})
 
+
+
+from counting.models import CallsResponsesCount, MessagesResponsesCount
+from models.models import MessageLinkClick
+@admin_required
+def dashboard_leads_out(request):
+    businesses = Business.objects.all()
+
+    selected_busines = request.GET.get('business', None)
+    start_date = request.GET.get('start_date', None)
+    end_date = request.GET.get('end_date', None)
+    
+    calls = CallsResponsesCount.objects.all()
+    messages = MessagesResponsesCount.objects.all()
+    links_clicks = MessageLinkClick.objects.all()
+    
+    if selected_busines:
+        calls = calls.filter(business__id=selected_busines)
+        messages = messages.filter(business__id=selected_busines)
+        links_clicks = links_clicks.filter(msg__business__id=selected_busines)
+        
+    if start_date:
+        calls = calls.filter(date__gte=start_date)
+        messages = messages.filter(date__gte=start_date)
+        links_clicks = links_clicks.filter(created_at__gte=start_date)
+    
+    if end_date:
+        calls = calls.filter(date__lte=end_date)
+        messages = messages.filter(date__lte=end_date)
+        links_clicks = links_clicks.filter(created_at__lte=end_date)
+
+    if calls.count() > 0:
+        calls_info = {
+            'amount': calls.last().count - calls.first().count,
+            'growth': (calls.last().count - calls.first().count) / (calls.last().date - calls.first().date).days,
+            'counts': calls.count(),
+        }
+    else:
+        calls_info = {
+            'amount': 0,
+            'growth': 0,
+            'counts': 0,
+        }
+        
+    if messages.count() > 0:
+        chats_info = {
+            'amount': messages.last().count - messages.first().count,
+            'growth': (messages.last().count - messages.first().count) / (messages.last().date - messages.first().date).days,
+            'counts': messages.count(),
+        }
+    else:
+        chats_info = {
+            'amount': 0,
+            'growth': 0,
+            'counts': 0,
+        }
+    
+    
+    links_clicks_json = []
+    for link in links_clicks:
+        links_clicks_json.append({
+            'id': link.id,
+            'business': link.msg.business.name,
+            'category': link.category.name,
+            'group_type': link.group_type,
+            'link': link.link.description,
+            'date': link.created_at,
+            'count': 1,
+        })
+    
+    links_clicks_json = json.dumps(links_clicks_json, default=str)
+    
+    ctx = {
+        'businesses': businesses,
+        'calls_info': calls_info,
+        'chats_info': chats_info,
+        'links_clicks_json': links_clicks_json,
+    }
+    return render(request, 'dashboard/leads-out/index.html', ctx)
+
 @admin_required
 def dashboard_leads_in(request):
     businesses = Business.objects.all()
