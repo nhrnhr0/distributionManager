@@ -17,15 +17,26 @@
         const categories_clicks_json = JSON.parse("{{ categories_clicks_json|escapejs }}");
         console.log('categories_clicks_json', categories_clicks_json);
 
-        const all_whatsapps_json = JSON.parse("{{ all_whatsapps_json|escapejs }}");
-        console.log('all_whatsapps_json', all_whatsapps_json);
+        const all_growth = JSON.parse("{{ all_growth|escapejs }}");
 
-        const all_telegrams_json = JSON.parse("{{ all_telegrams_json|escapejs }}");
-        console.log('all_telegrams_json', all_telegrams_json);
+
 
         // const data = merge all the lists together
-        const results_data = leads_clicks_json.concat(categories_clicks_json, all_whatsapps_json, all_telegrams_json);
+        const results_data = leads_clicks_json.concat(categories_clicks_json);
         console.log('data', results_data);
+
+        // Function to get 5 unique random rows from results_data
+        function getRandomUniqueRows(data, numRows) {
+            const uniqueData = Array.from(new Set(data.map(JSON.stringify))).map(JSON.parse);
+            const shuffled = uniqueData.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, numRows);
+        }
+
+        const randomUniqueRows = getRandomUniqueRows(results_data, 50);
+        // print it in a way that is easy to copy to Clipboard all the data
+        console.log('randomUniqueRows');
+        console.table(randomUniqueRows);
+
 
         const translated_results = results_data.map((item) => {
             return {
@@ -44,6 +55,7 @@
         <div style="flex: 3;">
             {% include "dashboard/leads-in/table_data.html" %}
             {% include "dashboard/leads-in/chart.html" %}
+            {% include "dashboard/leads-in/groups_grow.html" %}
         </div>
     </div>
 {% endblock %}

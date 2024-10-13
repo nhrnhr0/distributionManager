@@ -8,7 +8,7 @@ def redirector(request):
     
     link = MessageLink.objects.filter(uid=link_uid).first()
     category = Category.objects.filter(uid=category_uid).first()
-    group_type = CategoriesClicks.CATEGORY_GROUP_WHATSAPP if group_type == 'whatsapp' else CategoriesClicks.CATEGORY_GROUP_TELEGRAM
+    group_type = CategoriesClicks.CATEGORY_GROUP_WHATSAPP if group_type == 'w' else CategoriesClicks.CATEGORY_GROUP_TELEGRAM
     ip = request.META.get('REMOTE_ADDR')
     user_agent = request.META.get('HTTP_USER_AGENT')
     if link:
@@ -25,7 +25,7 @@ def redirector(request):
         pass
     
     
-        return redirect(link.url, permanent=True)
+        return redirect(link.url, permanent=False)
 
 # Create your views here.
 def busines_join(request, business_slug):

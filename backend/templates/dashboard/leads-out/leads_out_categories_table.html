@@ -1,0 +1,83 @@
+<!--translated_results  = [
+    {
+        "ID": 1,
+        "עסק": "ג חיון",
+        "קטגוריה": "הכל לגינה",
+        "סוג קבוצה": "telegram",
+        "תאריך": "2024-10-08 11:08:23.952063+00:00",
+        "כמות": 1,
+        "לינק": "אתר ג חיון ראשי"
+    },
+    {
+        "ID": 2,
+        "עסק": "ג חיון",
+        "קטגוריה": "פנאי, משחקים ובעלי חיים",
+        "סוג קבוצה": "telegram",
+        "תאריך": "2024-10-13 07:25:52.088246+00:00",
+        "כמות": 1,
+        "לינק": "אתר ג חיון ראשי"
+    }
+] -->
+<!-- show a table with each category and group type and the amount of leads in each category and group type -->
+<table class="table table-striped" id="leads-out-categories-table">
+    <thead>
+        <tr>
+            <th>קטגוריה</th>
+            <th>כמות אנשים בקבוצה</th>
+            <th>לחיצות על קישורים בהודעות</th>
+            <th>לחיצות על קישורים בהודעות יחסי</th>
+        </tr>
+    </thead>
+    <tbody id="leads-out-categories-table-body">
+    </tbody>
+</table>
+<script>
+    // all_growth = [
+    //     ['2024-10-08 11:08:23.952063+00:00', 'הכל לגינה', 1],...
+    // ]
+    // translated_results = [
+    //     {
+    //         "ID": 1,
+    //         "עסק": "ג חיון",
+    //         "קטגוריה": "הכל לגינה",
+    //         "סוג קבוצה": "telegram",
+    //         "תאריך": "2024-10-08 11:08:23.952063+00:00",
+    //         "כמות": 1,
+    //         "לינק": "אתר ג חיון ראשי"
+    //     },...
+    // ]
+    // categories_clicks_counts = {
+    //     "W הכל לגינה": 1,...
+    // }
+    // unique_categories = new Set();
+    // we want to show a table with each category and group type and the amount of leads in each category and group type
+
+
+    const categories_table = document.getElementById('leads-out-categories-table-body');
+    debugger;
+    // const unique_categories_groups = new Set(...);
+    unique_categories_groups.forEach(category => {
+
+
+        let growth_data = all_growth.filter(item => item[1] === category);
+        // const firstCount = categoryData[0][2]; // First count
+        const lastCount = growth_data[growth_data.length - 1][2]; // Last count
+        const category_clicks = categories_clicks_counts[category] || 0;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${category}</td>
+            <td>${lastCount}</td>
+            <td>${category_clicks}</td>
+            <td>${(category_clicks / lastCount) *100}%
+            </td>
+        `;
+        categories_table.appendChild(row);
+
+
+        // const growth = lastCount - firstCount;
+        // const growth_prc = ((lastCount - firstCount) / firstCount) * 100;
+
+
+    });
+</script>

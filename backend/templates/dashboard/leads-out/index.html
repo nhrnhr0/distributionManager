@@ -23,13 +23,38 @@
                 'לינק': item.link,
             }
         });
+        const all_growth = JSON.parse("{{ all_growth|escapejs }}");
         console.log('translated_results', translated_results);
+        console.log('all_growth', all_growth);
+        debugger;
+        const categories_clicks_counts = {};
+        for (let i = 0; i < translated_results.length; i++) {
+            const item = translated_results[i];
+            let cat = item['קטגוריה'];
+            const group = item['סוג קבוצה'];
+            const count = item['כמות'];
+            const g = group == 'whatsapp' ? 'W' : 'T';
+            cat = g + ' ' + cat;
+            categories_clicks_counts[cat] = categories_clicks_counts[cat] || 0;
+            categories_clicks_counts[cat] += count;
+        }
+        console.log('categories_clicks_counts', categories_clicks_counts);
+
+        const unique_categories_groups = new Set();
+
+        for (let i = 0; i < all_growth.length; i++) {
+            const item = all_growth[i];
+            const cat = item[1];
+            unique_categories_groups.add(cat);
+        }
+        console.log('unique_categories_groups', unique_categories_groups);
     </script>
     <div style="display: flex;">
         <div style="flex: 1;">{% include "dashboard/leads-out/leads_out_side_filter.html" %}</div>
         <div style="flex: 3;">
             {% include "dashboard/leads-out/leads_out_table_data.html" %}
             {% include "dashboard/leads-out/leads_out_chart.html" %}
+            {% include "dashboard/leads-out/leads_out_categories_table.html" %}
         </div>
     </div>
 {% endblock %}

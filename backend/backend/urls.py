@@ -23,6 +23,7 @@ from core.views import busines_join,busines_join_whatsapp_link,busines_join_tele
 from django.contrib.auth.views import LogoutView, LoginView
 from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out
 from core.views import redirector
+# from api_app.views import api_dashboard_whatsapp_group_count
 # from core.views import test
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -44,6 +45,8 @@ urlpatterns = [
     path('dashboard/messages/delete/<str:uid>/', dashboard_message_edit, name='message_delete'),
     path('dashboard/messages-send/', dashboard_message_send, name='message_send'),
     path('dashboard/messages-send/<str:uid>/', dashboard_message_send_edit, name='message_edit_send'),
+    
+    # path('api/dashboard/group-count/', api_dashboard_whatsapp_group_count, name='api_dashboard_group_count'),
     
     path('r/', redirector, name='redirector'),
     
