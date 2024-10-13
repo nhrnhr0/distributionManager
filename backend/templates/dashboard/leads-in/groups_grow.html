@@ -1,0 +1,190 @@
+<div class="container">
+    <h2>גדילה בקבוצות</h2>
+    <table id="growthTable" border="1" class="table table-bordered mb-5">
+        <thead>
+            <tr>
+                <th>קטגוריה</th>
+                <th>ספירה ראשונה</th>
+                <th>ספירה אחרונה</th>
+                <th>גדילה</th>
+                <th>גדילה (%)</th>
+                <th>לחיצות על קטגוריה</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <h2>גרף מספר אנשים בקבוצה לפי תאריך</h2>
+    <canvas id="group_size_chart"></canvas>
+</div>
+<script>
+    // const rawData from parent scope
+    const rawData = all_growth;
+    const dates = [...new Set(rawData.map(item => new Date(item[0]).toLocaleDateString()))];
+    const categories = [...new Set(rawData.map(item => item[1]))];
+    const category_clicks = calculate_category_clicks();
+
+    const datasets = categories.map(category => {
+        const data = dates.map(date => {
+            const found = rawData.find(item => new Date(item[0]).toLocaleDateString() === date && item[1] === category);
+            return found ? found[2] : 0;
+        });
+        return {
+            label: category,
+            data: data,
+            borderWidth: 3,
+            fill: false,
+            borderColor: hashStringToColor(category),
+            tension: 0.3
+        };
+    });
+
+
+    generateGrowthTable();
+    generateGroupGrowthChart();
+
+    function generateGroupGrowthChart() {
+
+
+        // Create the chart
+        const ctx = document.getElementById('group_size_chart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        onClick: function(e, legendItem) {
+                            const index = legendItem.datasetIndex;
+                            const ci = this.chart;
+                            const alreadyHidden = ci.getDatasetMeta(index).hidden === true;
+
+                            ci.data.datasets.forEach(function(e, i) {
+                                const meta = ci.getDatasetMeta(i);
+                                if (i === index) {
+                                    meta.hidden = !alreadyHidden;
+                                }
+                            });
+                            ci.update();
+                        }
+                    },
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            drag: {
+                                enabled: true
+                            },
+                            mode: 'x',
+                            drag: false,
+                            speed: 0.1,
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'x',
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index', // Show all points at the same x value
+                    intersect: false // Trigger when hovering between points
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'תאריך'
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 0
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'גודל הקבוצה'
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+
+    function hashStringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        // Calculate HSL values for more distinct colors
+        const hue = Math.abs(hash % 360); // Hue value between 0 and 360
+        const saturation = 70 + (Math.abs(hash) % 30); // Saturation between 70% and 100%
+        const lightness = 50 + (Math.abs(hash) % 20); // Lightness between 50% and 70%
+
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+
+    function calculate_category_clicks() {
+        const all_data = results_data;
+        const categories_clicks = {};
+        all_data.forEach(item => {
+            if (item.type === "לחיצה על קטגוריה") {
+                debugger;
+                if (item.group_type === "whatsapp") {
+                    categories_clicks['W ' + item.category] = (categories_clicks['W ' + item.category] || 0) + item.count;
+                } else if (item.group_type === "telegram") {
+                    categories_clicks['T ' + item.category] = (categories_clicks['T ' + item.category] || 0) + item.count;
+                } else {
+                    throw new Error("Unknown group type: " + item.group_type);
+                }
+
+            }
+        });
+        return categories_clicks;
+    }
+
+    function generateGrowthTable() {
+        const tableBody = document.querySelector("#growthTable tbody");
+        tableBody.innerHTML = ""; // Clear the table
+
+        categories.forEach(category => {
+            const categoryData = rawData.filter(item => item[1] === category);
+            const firstCount = categoryData[0][2]; // First count
+            const lastCount = categoryData[categoryData.length - 1][2]; // Last count
+
+            const growth = lastCount - firstCount;
+            const growth_prc = ((lastCount - firstCount) / firstCount) * 100;
+
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td>${category}</td>
+                        <td>${firstCount}</td>
+                        <td>${lastCount}</td>
+                        <td>${growth}</td>
+                        <td>${growth_prc.toFixed(2)}%</td>
+                        <td>${category_clicks[category]}</td>
+                    `;
+            tableBody.appendChild(row);
+        });
+    }
+</script>
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+</style>

@@ -12,6 +12,7 @@ class DaylyGroupSizeCount(models.Model):
     class Meta:
         verbose_name = _("Dayly Group Size Count")
         verbose_name_plural = _("Dayly Group Size Counts")
+        ordering = ['-date']
 
 
 class WhatsappGroupSizeCount(models.Model):

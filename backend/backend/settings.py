@@ -72,10 +72,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
     'core.middleware.BreadcrumbsMiddleware',
+    'core.middleware.NonHtmlDebugToolbarMiddleware',
+
 ]
 
 
 if DEBUG is False:
+    # MIDDLEWARE = MIDDLEWARE[1:]  # remove the first element of the list, which is the NonHtmlDebugToolbarMiddleware
     del MIDDLEWARE[0]
 
 

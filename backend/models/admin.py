@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks,MessageLink,BizMessages,MessageCategory
+from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks,MessageLink,BizMessages,MessageCategory,MessageLinkClick
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 from django.utils.translation import gettext_lazy as _
@@ -165,3 +165,9 @@ class MessageLinkAdmin(admin.ModelAdmin):
 admin.site.register(MessageLink, MessageLinkAdmin)
 # MessageLinkTracker
 # MessageLinkClick
+
+
+class MessageLinkClickAdmin(admin.ModelAdmin):
+    list_display = ['id', 'msg', 'category', 'link', 'group_type', 'ip', 'user_agent', 'created_at']
+    pass
+admin.site.register(MessageLinkClick, MessageLinkClickAdmin)

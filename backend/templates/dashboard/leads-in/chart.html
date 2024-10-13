@@ -1,7 +1,6 @@
 <div style="width: 90%; height: 700px; margin: 50px auto;">
     <canvas id="flowChart"></canvas>
 </div>
-
 <script>
     const ctx = document.getElementById('flowChart').getContext('2d');
 
@@ -13,63 +12,104 @@
 
     // Generate aggregated flows for leads
     dataFlow.forEach(item => {
-      if (item.type === "כניסה לאתר") {
-        const key = `${item.qr_category} ← ${item.qr || ''}`;
-        flows[key] = (flows[key] || 0) + item.count;
-      } else if (item.type === "לחיצה על קטגוריה") {
-        const key = `${item.qr || ''} ← ${item.category}`;
-        flows[key] = (flows[key] || 0) + item.count;
-      }
+        if (item.type === "כניסה לאתר") {
+            const key = `${item.qr_category} ← ${item.qr || ''}`;
+            flows[key] = (flows[key] || 0) + item.count;
+        } else if (item.type === "לחיצה על קטגוריה") {
+            const key = `${item.qr || ''} ← ${item.category}`;
+            flows[key] = (flows[key] || 0) + item.count;
+        }
     });
 
-    // Add flows for group sizes
-    all_whatsapps_json.forEach(item => {
-      const key = `קטגוריה ${item.category.slice(-1)} ← ${item.group}`;
-      flows[key] = (flows[key] || 0) + item.count;
-    });
+    // Add flows for group growth (whatsapp, telegram)
+    // from click on category for example: הכל" לגינה" to growth in group הכל לגינה וואצאפ and הכל לגינה טלגרם
+
+
+
+    // all_whatsapps_json.forEach(item => {
+    //     debugger;
+    //     const key = `${item.category} ← ${item.group}`;
+    //     flows[key] = (flows[key] || 0) + item.count;
+    // });
+    // whatsapp_growth =
+    // {
+    //     "כלי עבודה": {
+    //         "amount": 14,
+    //         "growth": 15,
+    //         "growth_percent": 1400,
+    //         "first": 1,
+    //         "last": 15,
+    //         "group_type": "whatsapp"
+    //     },
+    //     "הכל לבית": {
+    //         "amount": 19,
+    //         "growth": 20,
+    //         "growth_percent": 1900,
+    //         "first": 1,
+    //         "last": 20,
+    //         "group_type": "whatsapp"
+    //     },
+    //     "הכל לגינה": {
+    //         "amount": -6,
+    //         "growth": 0.4,
+    //         "growth_percent": -60,
+    //         "first": 10,
+    //         "last": 4,
+    //         "group_type": "whatsapp"
+    //     }
+    // }
+    // for (const [key, value] of Object.entries(whatsapp_growth)) {
+    //     const key2 = `${key} ← ${key} וואצאפ`;
+    //     flows[key2] = (flows[key2] || 0) + value.growth_percent;
+    // }
 
     const processedData = Object.entries(flows).map(([key, value]) => {
-      const [from, to] = key.split(' ← ');
-      return { from, to, flow: value, label: key };
+        const [from, to] = key.split(' ← ');
+        return {
+            from,
+            to,
+            flow: value,
+            label: key
+        };
     });
 
     const data = {
-      datasets: [{
-        label: 'User Flows',
-        data: processedData,
-        colorFrom: (d) => {
-          return 'gray';
-        },
-        colorTo: (d) => {
-          return 'gray';
-        },
-        colorFlow: 'lightgray'
-      }]
+        datasets: [{
+            label: 'User Flows',
+            data: processedData,
+            colorFrom: (d) => {
+                return 'gray';
+            },
+            colorTo: (d) => {
+                return 'gray';
+            },
+            colorFlow: 'lightgray'
+        }]
     };
 
     const config = {
-      type: 'sankey',
-      data: data,
-      options: {
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: (context) => `${context.raw.label}: ${context.raw.flow}`
-            }
-          }
-        },
-        layout: {
-          padding: {
-            left: 50,
-            right: 50,
-            top: 50,
-            bottom: 50
-          }
-        },
-        responsive: true,
-        maintainAspectRatio: false, // Allow it to adjust the height dynamically
-      }
+        type: 'sankey',
+        data: data,
+        options: {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.raw.label}: ${context.raw.flow}`
+                    }
+                }
+            },
+            layout: {
+                padding: {
+                    left: 50,
+                    right: 50,
+                    top: 50,
+                    bottom: 50
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false, // Allow it to adjust the height dynamically
+        }
     };
 
     new Chart(ctx, config);
-  </script>
+</script>

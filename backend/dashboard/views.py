@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from api_app.views import get_group_count
 from models.models import Business
 from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages, Category,MessageCategory
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
@@ -134,6 +135,9 @@ def dashboard_index(request):
 
 
 
+
+
+
 from counting.models import CallsResponsesCount, MessagesResponsesCount
 from models.models import MessageLinkClick
 @admin_required
@@ -147,21 +151,25 @@ def dashboard_leads_out(request):
     calls = CallsResponsesCount.objects.all()
     messages = MessagesResponsesCount.objects.all()
     links_clicks = MessageLinkClick.objects.all()
+    group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     
     if selected_busines:
         calls = calls.filter(business__id=selected_busines)
         messages = messages.filter(business__id=selected_busines)
         links_clicks = links_clicks.filter(msg__business__id=selected_busines)
+        group_size_count = group_size_count.filter(business__id=selected_busines)
         
     if start_date:
         calls = calls.filter(date__gte=start_date)
         messages = messages.filter(date__gte=start_date)
         links_clicks = links_clicks.filter(created_at__gte=start_date)
+        group_size_count = group_size_count.filter(date__gte=start_date)
     
     if end_date:
         calls = calls.filter(date__lte=end_date)
         messages = messages.filter(date__lte=end_date)
         links_clicks = links_clicks.filter(created_at__lte=end_date)
+        group_size_count = group_size_count.filter(date__lte=end_date)
 
     if calls.count() > 0:
         calls_info = {
@@ -204,13 +212,26 @@ def dashboard_leads_out(request):
     
     links_clicks_json = json.dumps(links_clicks_json, default=str)
     
+    group_size_count_ids = group_size_count.values_list('id', flat=True)
+    all_whatsapps_qs_full = WhatsappGroupSizeCount.objects.prefetch_related('group__whatsapp_categories').select_related('session').filter(session__id__in=group_size_count_ids)
+    all_telegrams_qs_full = TelegramGroupSizeCount.objects.prefetch_related('group__telegram_categories').select_related('session').filter(session__id__in=group_size_count_ids)
+    whatsapp_growth = get_group_count(all_whatsapps_qs_full, group_type='whatsapp')
+    telegram_growth = get_group_count(all_telegrams_qs_full, group_type='telegram')
+    for growth in whatsapp_growth:
+        growth[1] = 'W ' + growth[1]
+    for growth in telegram_growth:
+        growth[1] = 'T ' + growth[1]
+    all_growth = whatsapp_growth + telegram_growth
+    all_growth= json.dumps(all_growth, default=str)
     ctx = {
         'businesses': businesses,
         'calls_info': calls_info,
         'chats_info': chats_info,
         'links_clicks_json': links_clicks_json,
+        'all_growth': all_growth
     }
     return render(request, 'dashboard/leads-out/index.html', ctx)
+
 
 @admin_required
 def dashboard_leads_in(request):
@@ -246,12 +267,12 @@ def dashboard_leads_in(request):
     #     all_whatsapps_arr.extend(item.whatsappgroupsizecount_set.all())
     #     all_telegrams_arr.extend(item.telegramgroupsizecount_set.all())
     group_size_count_ids = group_size_count.values_list('id', flat=True)
-    all_whatsapps_qs = WhatsappGroupSizeCount.objects.prefetch_related('group__whatsapp_categories').select_related('session').filter(session__id__in=group_size_count_ids)
-    all_telegrams_qs = TelegramGroupSizeCount.objects.prefetch_related('group__telegram_categories').select_related('session').filter(session__id__in=group_size_count_ids)
+    all_whatsapps_qs_full = WhatsappGroupSizeCount.objects.prefetch_related('group__whatsapp_categories').select_related('session').filter(session__id__in=group_size_count_ids)
+    all_telegrams_qs_full = TelegramGroupSizeCount.objects.prefetch_related('group__telegram_categories').select_related('session').filter(session__id__in=group_size_count_ids)
     
     # keep only the last count of each group
-    all_whatsapps_qs = all_whatsapps_qs.order_by('group', '-session__date').distinct('group')
-    all_telegrams_qs = all_telegrams_qs.order_by('group', '-session__date').distinct('group')
+    # all_whatsapps_qs = all_whatsapps_qs_full.order_by('group', '-session__date').distinct('group')
+    # all_telegrams_qs = all_telegrams_qs_full.order_by('group', '-session__date').distinct('group')
     
     
     # remove empty strings from qrs
@@ -291,35 +312,15 @@ def dashboard_leads_in(request):
             'type': 'לחיצה על קטגוריה',
             'count': 1,
         })
-        
     
-    all_whatsapps_json = []
-    for whatsapp in all_whatsapps_qs:
-        all_whatsapps_json.append({
-            'id': whatsapp.id,
-            'business': whatsapp.session.business,
-            'category' : whatsapp.group.whatsapp_categories.first().name if whatsapp.group.whatsapp_categories.first() else '',
-            'group_type': 'whatsapp',
-            'group': whatsapp.group.name,
-            'count': whatsapp.count,
-            'type': 'גודל קבוצה',
-        })
-        
-    all_telegrams_json = []
-    for telegram in all_telegrams_qs:
-        all_telegrams_json.append({
-            'id': telegram.id,
-            'business': telegram.session.business,
-            'category' : telegram.group.telegram_categories.first().name if telegram.group.telegram_categories.first() else '',
-            'group_type': 'telegram',
-            'group': telegram.group.name,
-            'count': telegram.count,
-            'type': 'גודל קבוצה',
-        })
-        
-        
-    all_whatsapps_json = json.dumps(all_whatsapps_json, default=str)
-    all_telegrams_json = json.dumps(all_telegrams_json, default=str)
+    whatsapp_growth = get_group_count(all_whatsapps_qs_full, group_type='whatsapp')
+    telegram_growth = get_group_count(all_telegrams_qs_full, group_type='telegram')
+    for growth in whatsapp_growth:
+        growth[1] = 'W ' + growth[1]
+    for growth in telegram_growth:
+        growth[1] = 'T ' + growth[1]
+    all_growth = whatsapp_growth + telegram_growth
+    all_growth= json.dumps(all_growth, default=str)
     leads_clicks_json = json.dumps(leads_clicks_json, default=str)
     categories_clicks_json = json.dumps(categories_clicks_json, default=str)
     return render(request, 'dashboard/leads-in/index.html', {
@@ -327,11 +328,9 @@ def dashboard_leads_in(request):
         'businesses': businesses,
         'qrs_list': qrs_list,
         
-        
         # results
         'leads_clicks_json': leads_clicks_json,
         'categories_clicks_json': categories_clicks_json,
-        'all_whatsapps_json':all_whatsapps_json,
-        'all_telegrams_json':[],# all_telegrams_json
+        'all_growth': all_growth
         
     })
