@@ -27,7 +27,13 @@
     const datasets = categories.map(category => {
         const data = dates.map(date => {
             const found = rawData.find(item => new Date(item[0]).toLocaleDateString() === date && item[1] === category);
-            return found ? found[2] : 0;
+            // if found return the count, else return the last count
+            if (found) {
+                return found[2];
+            } else {
+                const lastFound = rawData.filter(item => item[1] === category).pop();
+                return lastFound ? lastFound[2] : 0;
+            }
         });
         return {
             label: category,
@@ -142,7 +148,6 @@
         const categories_clicks = {};
         all_data.forEach(item => {
             if (item.type === "לחיצה על קטגוריה") {
-                debugger;
                 if (item.group_type === "whatsapp") {
                     categories_clicks['W ' + item.category] = (categories_clicks['W ' + item.category] || 0) + item.count;
                 } else if (item.group_type === "telegram") {
