@@ -16,131 +16,154 @@
       </div>
     </div>
     <!-- list of all the busines categories in a responsive grid -->
-    <div class="container mt-5 leads-container">
-      <div class="row">
-        {% for category in biz.categories.all %}
-          <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-              {% if category.icon %}
-                <img src="{{ category.icon.url }}" class="card-img-top" alt="Image 1" />
-              {% else %}
-                <img src="{% static 'no-image.png' %}" class="card-img-top" alt="Image 1" />
+    <div id="imageGrid" class="grid-container">
+      {% for category in biz.categories.all %}
+        <div class="grid-item">
+          <div class="image-container">
+            {% if category.icon %}
+              <img src="{{ category.icon.url }}" alt="{{ category.name }}" />
+            {% else %}
+              <img src="{% static 'no-image.png' %}" alt="{{ category.name }}" />
+            {% endif %}
+          </div>
+          <div class="item-content">
+            <h2 class="item-title">{{ category.name }}</h2>
+            <div class="button-container">
+              {% if category.open_telegram_url %}
+                <a href="{{ category.slug }}/telegram/?c={{ request.GET.c }}"
+                   class="button telegram"
+                   target="_blank">
+                  <img src="{% static 'icons8-telegram.svg' %}"
+                       alt="Telegram"
+                       class="link-icon"
+                       width="20"
+                       height="20" />
+                  Telegram
+                </a>
               {% endif %}
-              <div class="card-body">
-                <h5 class="card-title">{{ category.name }}</h5>
-                <div class="buttons row">
-                  <!-- if the category dose not have Open whatsapp url we do not show the whatsapp buttuon, same to telegram -->
-                  {% if category.open_telegram_url %}
-                    <a href="{{ category.slug }}/telegram/?c={{ request.GET.c }}"
-                       class="btn btn-primary"
-                       target="_blank">
-                      <img src="{% static 'icons8-telegram.svg' %}"
-                           alt="Telegram"
-                           width="30"
-                           height="30" />
-                    Telegram</a>
-                  {% endif %}
-                  {% if category.open_whatsapp_url %}
-                    <a href="{{ category.slug }}/whatsapp/?c={{ request.GET.c }}"
-                       class="btn btn-success"
-                       target="_blank">
-                      <img src="{% static 'icons8-whatsapp.svg' %}"
-                           alt="WhatsApp"
-                           width="30"
-                           height="30" />
-                    WhatsApp</a>
-                  {% endif %}
-                </div>
-              </div>
+              {% if category.open_whatsapp_url %}
+                <a href="{{ category.slug }}/whatsapp/?c={{ request.GET.c }}"
+                   class="button whatsapp"
+                   target="_blank">
+                  <img src="{% static 'icons8-whatsapp.svg' %}"
+                       alt="WhatsApp"
+                       class="link-icon"
+                       width="20"
+                       height="20" />
+                  WhatsApp
+                </a>
+              {% endif %}
             </div>
           </div>
-        {% endfor %}
-      </div>
+        </div>
+      {% endfor %}
     </div>
     {% if biz.footer_image %}<img src="{{ biz.footer_image.url }}" class="img-fluid" alt="Footer Image" />{% endif %}
-    <style>
-        .description {
-            text-align: right;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-            width: 100%;
-        }
+  </div>
+  <style>
+      .description {
+          text-align: right;
+          background-color: white;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+          width: 100%;
+      }
 
-        .description h1 {
-            font-size: 2rem;
-            text-align: center;
-        }
+      .description h1 {
+          font-size: 2rem;
+          text-align: center;
+      }
 
-        .leads-container .card {
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-        }
+      .grid-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 20px;
+          padding: 20px;
+      }
 
-        .leads-container .card img {
-            border-radius: 10px 10px 0 0;
-        }
+      .grid-item {
+          display: flex;
+          flex-direction: column;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s ease;
+      }
 
-        .leads-container .card-title {
-            font-size: 1.5rem;
-            text-align: center;
-        }
+      .grid-item:hover {
+          transform: scale(1.05);
+      }
 
-        .leads-container .btn-primary {
-            background-color: #0088cc;
-            border-color: #0088cc;
-            color: white;
+      .image-container {
+          position: relative;
+          padding-top: 100%;
+          /* This creates a 1:1 aspect ratio */
+      }
 
-            img {
-                filter: invert(1);
-            }
-        }
+      .image-container img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
 
-        .leads-container .btn-primary:hover {
-            background-color: #005580;
-            border-color: #005580;
-        }
+      .item-content {
+          padding: 15px;
+          background-color: #fff;
+      }
 
-        .leads-container .btn-success {
-            background-color: #5cb85c;
-            border-color: #5cb85c;
+      .item-title {
+          margin: 0 0 10px;
+          font-size: 1.1em;
+          font-weight: bold;
+      }
 
-            color: white;
+      .button-container {
+          display: flex;
+          gap: 10px;
+      }
 
-            img {
-                filter: invert(1);
-            }
-        }
+      .button {
+          flex: 1;
+          padding: 8px;
+          border: none;
+          border-radius: 4px;
+          color: #fff;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          color: white;
+          text-decoration: none;
+          text-align: center;
 
-        .leads-container .btn-success:hover {
-            background-color: #4cae4c;
-            border-color: #4cae4c;
-        }
+      }
 
-        .leads-container .card-img-top {
-            width: 100%;
-            height: 15vw;
-            object-fit: cover;
-        }
+      .link-icon {
+          filter: invert(1);
+      }
 
-        .leads-container .buttons {
-            display: flex;
-            justify-content: space-around;
-            flex-direction: row;
-            flex-wrap: nowrap;
-        }
+      .button:hover {
+          text-decoration: none;
+          color: white;
+      }
 
-        .leads-container .buttons a {
-            width: 48%;
-        }
+      .whatsapp {
+          background-color: #25D366;
+      }
 
-        @media screen and (max-width: 992px) {
-            .leads-container .card img {
-                height: 20vw;
-            }
-        }
-    </style>
-  {% endblock %}
-</div>
+      .whatsapp:hover {
+          background-color: #128C7E;
+      }
+
+      .telegram {
+          background-color: #0088cc;
+      }
+
+      .telegram:hover {
+          background-color: #006699;
+      }
+  </style>
+{% endblock %}
