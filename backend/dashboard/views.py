@@ -171,7 +171,7 @@ def dashboard_leads_out(request):
         links_clicks = links_clicks.filter(created_at__lte=end_date)
         group_size_count = group_size_count.filter(date__lte=end_date)
 
-    if calls.count() > 0:
+    if calls.count() > 1:
         calls_info = {
             'amount': calls.last().count - calls.first().count,
             'growth': (calls.last().count - calls.first().count) / (calls.last().date - calls.first().date).days,
@@ -184,7 +184,7 @@ def dashboard_leads_out(request):
             'counts': 0,
         }
         
-    if messages.count() > 0:
+    if messages.count() > 1:
         chats_info = {
             'amount': messages.last().count - messages.first().count,
             'growth': (messages.last().count - messages.first().count) / (messages.last().date - messages.first().date).days,
