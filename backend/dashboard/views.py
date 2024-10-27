@@ -232,6 +232,13 @@ def dashboard_leads_out(request):
     }
     return render(request, 'dashboard/leads-out/index.html', ctx)
 
+@admin_required
+def dashboard_messages_calendar(request):
+    businesses = Business.objects.all()
+    
+    return render(request, 'dashboard/calender/index.html', {
+        'businesses': businesses,
+    })
 
 @admin_required
 def dashboard_leads_in(request):

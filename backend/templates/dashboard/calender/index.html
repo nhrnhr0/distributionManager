@@ -1,0 +1,13 @@
+{% extends "dashboard/calender/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - לוח שנה{% endblock %}
+{% block extra_head %}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+{% endblock %}
+{% block content %}
+    <div style="display: flex;">
+        <div style="flex: 1;">{% include "dashboard/calender/side_filter.html" %}</div>
+        <div style="flex: 3;">{% include "dashboard/calender/calender.html" %}</div>
+    </div>
+{% endblock %}

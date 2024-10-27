@@ -7,3 +7,4 @@ env/pyvenv.cfg
 backend/static/*
 backend/.env
 *.sql
+node_modules/
