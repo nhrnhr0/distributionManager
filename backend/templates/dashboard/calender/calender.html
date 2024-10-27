@@ -1,0 +1,86 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>לוח שנה הודעות</h5>
+                </div>
+                <div class="card-body">
+                    <div id='calendar'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    import interactionPlugin from '@fullcalendar/interaction'
+    import dayGridPlugin from '@fullcalendar/daygrid'
+    const events = [{
+        msg: 'הודעה 1',
+        category: 'קטגוריה 1',
+        sent: '2024-10-27',
+    }, {
+        msg: 'הודעה 2',
+        category: 'קטגוריה 2',
+        sent: '2024-10-28',
+    }, {
+        msg: 'הודעה 3',
+        category: 'קטגוריה 3',
+        sent: '2024-10-29',
+    }, {
+        msg: 'הודעה 4',
+        category: 'קטגוריה 4',
+        sent: '2024-10-30',
+    }, {
+        msg: 'הודעה 5',
+        category: 'קטגוריה 5',
+        sent: '2024-10-31',
+    }, {
+        msg: 'הודעה 6',
+        category: 'קטגוריה 6',
+        sent: '2024-11-01',
+    }, {
+        msg: 'הודעה 7',
+        category: 'קטגוריה 7',
+        sent: '2024-11-02',
+    }, {
+        msg: 'הודעה 8',
+        category: 'קטגוריה 8',
+        sent: '2024-11-03',
+    }, {
+        msg: 'הודעה 9',
+        category: 'קטגוריה 9',
+        sent: '2024-11-04',
+    }, {
+        msg: 'הודעה 10',
+        category: 'קטגוריה 10',
+        sent: '2024-11-05',
+    }, {
+        msg: 'הודעה 11',
+        category: 'קטגוריה 11',
+        sent: '2024-11-06',
+    }, {
+        msg: 'הודעה 12',
+        category: 'קטגוריה 12',
+        sent: '2024-11-07',
+    }];
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'he',
+            direction: 'rtl',
+            plugins: [
+                interactionPlugin,
+                dayGridPlugin
+            ],
+            initialView: 'dayGridMonth',
+            editable: true, // important for activating event interactions!
+            selectable: true, // important for activating date selectability!
+            events: [{
+                title: 'Meeting',
+                start: new Date()
+            }]
+        });
+        calendar.render();
+    });
+</script>

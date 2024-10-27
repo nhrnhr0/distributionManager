@@ -29,7 +29,7 @@ def redirector(request):
 
 # Create your views here.
 def busines_join(request, business_slug):
-    biz = Business.objects.get(slug=business_slug)
+    biz = Business.objects.prefetch_related('categories__open_whatsapp_url','categories__open_telegram_url').get(slug=business_slug)
     campain_source_code = request.GET.get('c')
     qr_obj = BusinessQR.objects.filter(qr_code=campain_source_code).first()
     if qr_obj:

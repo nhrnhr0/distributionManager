@@ -1,170 +1,170 @@
-{% extends "base.html" %} {% block title %} הצטרף לתפוצה של {{biz.name}}
-{%endblock %} {% block extra_head %}
-<!-- favicon -->
-{% if biz.favicon %}
-<link rel="icon" href="{{biz.favicon.url }}" type="image/x-icon" />
-{% endif %} {%endblock%} {% block content %} {% load static %}
+{% extends "base.html" %}
+{% block title %}הצטרף לתפוצה של {{ biz.name }}{% endblock %}
+{% block extra_head %}
+  <!-- favicon -->
+  {% if biz.favicon %}<link rel="icon" href="{{ biz.favicon.url }}" type="image/x-icon" />{% endif %}
+{% endblock %}
+{% block content %}
+  {% load static %}
+  <!-- biz.header_image -->
+  {% if biz.header_image %}<img src="{{ biz.header_image.url }}" class="img-fluid" alt="Header Image" />{% endif %}
+  <div class="container mt-5">
 
-<!-- biz.header_image -->
-{% if biz.header_image %}
-<img src="{{biz.header_image.url}}" class="img-fluid" alt="Header Image" />
-{% endif %}
-<div class="container mt-5">
-  <div class="row">
-    <div class="col-lg-6 description">
-      {%if biz.display_name %}
-      <h1>{{biz.display_name}}</h1>
-      {%endif%}
-      <p>{{biz.description|linebreaks}}</p>
-    </div>
-  </div>
-  <!-- list of all the busines categories in a responsive grid -->
-  <div class="container mt-5 leads-container">
     <div class="row">
+      <div class="col-lg-6 description">
+        {% if biz.display_name %}<h1>{{ biz.display_name }}</h1>{% endif %}
+        <p>{{ biz.description|linebreaks }}</p>
+      </div>
+    </div>
+    <!-- list of all the busines categories in a responsive grid -->
+    <div id="imageGrid" class="grid-container">
       {% for category in biz.categories.all %}
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card">
-          {%if category.icon%}
-          <img src="{{category.icon.url}}" class="card-img-top" alt="Image 1" />
-          {%else%}
-          <img
-            src="{% static 'no-image.png' %}"
-            class="card-img-top"
-            alt="Image 1"
-          />
-          {%endif%}
-          <div class="card-body">
-            <h5 class="card-title">{{category.name}}</h5>
-            <div class="buttons row">
-              <!-- if the category does not have Open whatsapp url we do not show the whatsapp button, same to telegram -->
+        <div class="grid-item">
+          <div class="image-container">
+            {% if category.icon %}
+              <img src="{{ category.icon.url }}" alt="{{ category.name }}" />
+            {% else %}
+              <img src="{% static 'no-image.png' %}" alt="{{ category.name }}" />
+            {% endif %}
+          </div>
+          <div class="item-content">
+            <h2 class="item-title">{{ category.name }}</h2>
+            <div class="button-container">
+              {% if category.open_telegram_url %}
+                <a href="{{ category.slug }}/telegram/?c={{ request.GET.c }}"
+                   class="button telegram"
+                   target="_blank">
+                  <img src="{% static 'icons8-telegram.svg' %}"
+                       alt="Telegram"
+                       class="link-icon"
+                       width="20"
+                       height="20" />
+                  Telegram
+                </a>
+              {% endif %}
               {% if category.open_whatsapp_url %}
-              <a
-                href="{{category.slug}}/whatsapp/?c={{ request.GET.c }}"
-                class="btn btn-success"
-                target="_blank"
-              >
-                <img
-                  src="{% static 'icons8-whatsapp.svg' %}"
-                  alt="WhatsApp"
-                  width="30"
-                  height="30"
-                />
-                WhatsApp</a
-              >
-              {% endif %} {% if category.open_telegram_url %}
-              <a
-                href="{{category.slug}}/telegram/?c={{ request.GET.c }}"
-                class="btn btn-primary"
-                target="_blank"
-              >
-                <img
-                  src="{% static 'icons8-telegram.svg' %}"
-                  alt="Telegram"
-                  width="30"
-                  height="30"
-                />
-                Telegram</a
-              >
+                <a href="{{ category.slug }}/whatsapp/?c={{ request.GET.c }}"
+                   class="button whatsapp"
+                   target="_blank">
+                  <img src="{% static 'icons8-whatsapp.svg' %}"
+                       alt="WhatsApp"
+                       class="link-icon"
+                       width="20"
+                       height="20" />
+                  WhatsApp
+                </a>
               {% endif %}
             </div>
           </div>
         </div>
-      </div>
       {% endfor %}
     </div>
+    {% if biz.footer_image %}<img src="{{ biz.footer_image.url }}" class="img-fluid" alt="Footer Image" />{% endif %}
   </div>
-  {% if biz.footer_image %}
-  <img src="{{biz.footer_image.url}}" class="img-fluid" alt="Footer Image" />
-  {% endif %}
-
   <style>
-    .description {
-      text-align: right;
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-      width: 100%;
-    }
-
-    .description h1 {
-      font-size: 2rem;
-      text-align: center;
-    }
-
-    .leads-container .card {
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .leads-container .card img {
-      border-radius: 10px 10px 0 0;
-    }
-
-    .leads-container .card-title {
-      font-size: 1.7rem; /* הגדלת הפונט לכותרות */
-      text-align: center;
-      margin-bottom: 10px; /* הוספת מרווח לכותרות */
-    }
-
-    .leads-container .btn-primary,
-    .leads-container .btn-success {
-      border-radius: 8px; /* עיגול פינות הכפתורים */
-      padding: 12px 18px; /* הקטנת גובה הכפתור */
-      transition: transform 0.1s ease; /* הוספת אפקט לחיצה */
-    }
-
-    .leads-container .btn-primary:hover,
-    .leads-container .btn-success:hover {
-      transform: translateY(-2px); /* אפקט hover להבלטה */
-    }
-
-    .leads-container .btn-primary:active,
-    .leads-container .btn-success:active {
-      transform: translateY(2px); /* אפקט לחיצה */
-    }
-
-    /* עיצוב לתמונות במסכי מחשב */
-    .leads-container .card-img-top {
-      width: 100%;
-      height: 200px; /* גובה קבוע עבור התמונות במסכים גדולים */
-      object-fit: contain; /*  שמירה על יחסי הגודל של התמונה ללא חיתוך*/
-    }
-
-    .leads-container .buttons {
-      display: flex;
-      justify-content: space-around;
-      flex-direction: row;
-      flex-wrap: nowrap;
-    }
-
-    .leads-container .buttons a {
-      width: 48%;
-      margin-bottom: 12px; /* הגדלת המרווח בין הכפתורים */
-    }
-
-    /* התאמות מיוחדות למסכים קטנים */
-    @media screen and (max-width: 992px) {
-      .leads-container .card img {
-        height: auto; /* התאמת גובה התמונה למסכים קטנים */
+      .description {
+          text-align: right;
+          background-color: white;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+          width: 100%;
       }
 
-      .leads-container .buttons {
-        flex-direction: column; /* שינוי לכיוון אנכי במכשירים קטנים */
-        align-items: center; /* יישור במרכז */
+      .description h1 {
+          font-size: 2rem;
+          text-align: center;
       }
 
-      .leads-container .buttons a {
-        width: 90%; /* הרחבת הכפתורים למסכים קטנים */
-        margin-bottom: 15px; /* הגדלת המרווח בין הכפתורים במכשירים קטנים */
+      .grid-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 20px;
+          padding: 20px;
       }
 
-      .leads-container .card-title {
-        font-size: 1.5rem; /* התאמת גודל הפונט לכותרות במסכים קטנים */
+      .grid-item {
+          display: flex;
+          flex-direction: column;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s ease;
       }
-    }
+
+      .grid-item:hover {
+          transform: scale(1.05);
+      }
+
+      .image-container {
+          position: relative;
+          padding-top: 100%;
+          /* This creates a 1:1 aspect ratio */
+      }
+
+      .image-container img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+
+      .item-content {
+          padding: 15px;
+          background-color: #fff;
+      }
+
+      .item-title {
+          margin: 0 0 10px;
+          font-size: 1.1em;
+          font-weight: bold;
+      }
+
+      .button-container {
+          display: flex;
+          gap: 10px;
+      }
+
+      .button {
+          flex: 1;
+          padding: 8px;
+          border: none;
+          border-radius: 4px;
+          color: #fff;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          color: white;
+          text-decoration: none;
+          text-align: center;
+
+      }
+
+      .link-icon {
+          filter: invert(1);
+      }
+
+      .button:hover {
+          text-decoration: none;
+          color: white;
+      }
+
+      .whatsapp {
+          background-color: #25D366;
+      }
+
+      .whatsapp:hover {
+          background-color: #128C7E;
+      }
+
+      .telegram {
+          background-color: #0088cc;
+      }
+
+      .telegram:hover {
+          background-color: #006699;
+      }
   </style>
-
-  {%endblock%}
-</div>
+{% endblock %}

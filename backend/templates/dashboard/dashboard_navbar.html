@@ -33,6 +33,12 @@
                    href="{{ dashboard_messages_url }}">הודעות</a>
             </li>
             <li class="nav-item">
+                {% url 'dashboard_messages_calendar' as dashboard_calendar_url %}
+                <a class="nav-link
+                          {% if request.path|startswith:dashboard_calendar_url %}active{% endif %}"
+                   href="{{ dashboard_calendar_url }}">לוח שנה</a>
+            </li>
+            <li class="nav-item">
                 {% url 'message_send' as message_send_url %}
                 <a class="nav-link
                           {% if request.path|startswith:message_send_url %}active{% endif %}"

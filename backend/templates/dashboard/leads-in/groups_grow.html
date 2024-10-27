@@ -1,6 +1,8 @@
 <div class="container">
     <h2>גדילה בקבוצות</h2>
-    <table id="growthTable" border="1" class="table table-bordered mb-5">
+    <table id="growthTable"
+           border="1"
+           class="table table-bordered mb-5 table-striped mt-4">
         <thead>
             <tr>
                 <th>קטגוריה</th>
@@ -14,10 +16,23 @@
         <tbody>
         </tbody>
     </table>
+    <h2>כמות הודעות שנשלחו לפי קטגוריה</h2>
+    <table class="table table-bordered mb-5 mt-4" border="1">
+        <thead class="table-dark">
+            <tr>
+                <th>קטגוריה</th>
+                <th>כמות הודעות שנשלחה</th>
+            </tr>
+        </thead>
+        <tbody id="send_messages_count_by_group">
+        </tbody>
+    </table>
     <h2>גרף מספר אנשים בקבוצה לפי תאריך</h2>
     <canvas id="group_size_chart"></canvas>
 </div>
 <script>
+    init_send_messages_count_by_group();
+
     // const rawData from parent scope
     const rawData = all_growth;
     const dates = [...new Set(rawData.map(item => new Date(item[0]).toLocaleDateString()))];
@@ -27,7 +42,13 @@
     const datasets = categories.map(category => {
         const data = dates.map(date => {
             const found = rawData.find(item => new Date(item[0]).toLocaleDateString() === date && item[1] === category);
-            return found ? found[2] : 0;
+            // if found return the count, else return the last count
+            if (found) {
+                return found[2];
+            } else {
+                const lastFound = rawData.filter(item => item[1] === category).pop();
+                return lastFound ? lastFound[2] : 0;
+            }
         });
         return {
             label: category,
@@ -142,7 +163,6 @@
         const categories_clicks = {};
         all_data.forEach(item => {
             if (item.type === "לחיצה על קטגוריה") {
-                debugger;
                 if (item.group_type === "whatsapp") {
                     categories_clicks['W ' + item.category] = (categories_clicks['W ' + item.category] || 0) + item.count;
                 } else if (item.group_type === "telegram") {
@@ -180,6 +200,23 @@
                     `;
             tableBody.appendChild(row);
         });
+    }
+
+
+
+    function init_send_messages_count_by_group() {
+        const send_messages_count_by_group = JSON.parse("{{ send_messages_count_by_group|escapejs }}");
+        const tbody = document.querySelector("#send_messages_count_by_group");
+        tbody.innerHTML = ""; // Clear the table
+        for (const [category, count] of Object.entries(send_messages_count_by_group)) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td>${category}</td>
+                    <td>${count}</td>
+                `;
+            tbody.appendChild(row);
+        }
+
     }
 </script>
 <style>

@@ -232,6 +232,13 @@ def dashboard_leads_out(request):
     }
     return render(request, 'dashboard/leads-out/index.html', ctx)
 
+@admin_required
+def dashboard_messages_calendar(request):
+    businesses = Business.objects.all()
+    
+    return render(request, 'dashboard/calender/index.html', {
+        'businesses': businesses,
+    })
 
 @admin_required
 def dashboard_leads_in(request):
@@ -247,6 +254,7 @@ def dashboard_leads_in(request):
     categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category', 'category').all()
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     qrs_list = BusinessQR.objects.all()
+    sent_messages = MessageCategory.objects.select_related('category').filter(is_sent=True)
     if busines:
         leads = leads.filter(business__id=busines)
         qrs_list = qrs_list.filter(business__id=busines)
@@ -256,10 +264,12 @@ def dashboard_leads_in(request):
         leads = leads.filter(created_at__gte=start_date)
         categories_clicks = categories_clicks.filter(created_at__gte=start_date)
         group_size_count = group_size_count.filter(date__gte=start_date)
+        sent_messages = sent_messages.filter(send_at__gte=start_date)
     if end_date:
         leads = leads.filter(created_at__lte=end_date)
         categories_clicks = categories_clicks.filter(created_at__lte=end_date)
         group_size_count = group_size_count.filter(date__lte=end_date)
+        sent_messages = sent_messages.filter(send_at__lte=end_date)
     
     # all_whatsapps_arr = []
     # all_telegrams_arr = []
@@ -315,6 +325,19 @@ def dashboard_leads_in(request):
     
     whatsapp_growth = get_group_count(all_whatsapps_qs_full, group_type='whatsapp')
     telegram_growth = get_group_count(all_telegrams_qs_full, group_type='telegram')
+    
+    
+    send_messages_count_by_group = {} # {T category name / W category name: count}
+    for message in sent_messages:
+        key = message.category.name
+        if key in send_messages_count_by_group:
+            send_messages_count_by_group[key] += 1
+        else:
+            send_messages_count_by_group[key] = 1
+    
+    send_messages_count_by_group = json.dumps(send_messages_count_by_group, default=str)
+    
+    
     for growth in whatsapp_growth:
         growth[1] = 'W ' + growth[1]
     for growth in telegram_growth:
@@ -331,6 +354,7 @@ def dashboard_leads_in(request):
         # results
         'leads_clicks_json': leads_clicks_json,
         'categories_clicks_json': categories_clicks_json,
-        'all_growth': all_growth
+        'all_growth': all_growth,
+        'send_messages_count_by_group': send_messages_count_by_group,
         
     })
