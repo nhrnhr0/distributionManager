@@ -235,6 +235,10 @@ def dashboard_leads_out(request):
 @admin_required
 def dashboard_messages_calendar(request):
     businesses = Business.objects.all()
+    messages = MessageCategory.objects.select_related('category','message').all()
+    selected_busines = request.GET.get('business', None)
+    
+
     
     return render(request, 'dashboard/calender/index.html', {
         'businesses': businesses,

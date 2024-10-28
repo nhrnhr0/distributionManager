@@ -2,9 +2,7 @@
 {% load static %}
 {% load my_tags %}
 {% block title %}דאשבורד - לוח שנה{% endblock %}
-{% block extra_head %}
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-{% endblock %}
+{% block extra_head %}{% endblock %}
 {% block content %}
     <div style="display: flex;">
         <div style="flex: 1;">{% include "dashboard/calender/side_filter.html" %}</div>
