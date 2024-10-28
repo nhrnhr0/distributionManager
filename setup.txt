@@ -79,5 +79,15 @@ docker run --name gm_postgres -e POSTGRES_PASSWORD=bnrbtnbcv -e POSTGRES_USER=gm
 docker run --name gm_postgres_satage -e POSTGRES_PASSWORD=bnrbtnbcv -e POSTGRES_USER=gm_db_user -e POSTGRES_DB=gm_db -d -p 5432:5432 postgres
 docker cp gm_09-10-2024-06_00_54.sql gm_postgres_satage:/tmp/gm_09-10-2024-06_00_54.sql
 docker exec -it gm_postgres_satage bash
+# drop the database
+psql -U gm_db_user -d gm_db
+\c postgres
+DROP DATABASE gm_db;
+CREATE DATABASE gm_db;
+GRANT ALL PRIVILEGES ON DATABASE gm_db TO gm_db_user;
+\c gm_db
+GRANT ALL PRIVILEGES ON SCHEMA public TO gm_db_user;
+\q
+# restore the database
 psql -U gm_db_user -d gm_db -f /tmp/gm_09-10-2024-06_00_54.sql
 
