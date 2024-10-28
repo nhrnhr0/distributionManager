@@ -254,7 +254,7 @@ def dashboard_leads_in(request):
     categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category', 'category').all()
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     qrs_list = BusinessQR.objects.all()
-    sent_messages = MessageCategory.objects.select_related('category').filter(is_sent=True)
+    sent_messages = MessageCategory.objects.select_related('category').filter(is_sent=True).filter(category__isnull=False)
     if busines:
         leads = leads.filter(business__id=busines)
         qrs_list = qrs_list.filter(business__id=busines)
