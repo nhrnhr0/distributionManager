@@ -71,7 +71,7 @@ def busines_join_telegram_link(request, business_slug, category_slug):
     qr_obj = BusinessQR.objects.filter(qr_code=request.GET.get('c')).first()
     if qr_obj:
         # add click
-        click = CategoriesClicks(business=biz, category=category, qr=qr_obj)
+        click = CategoriesClicks(business=biz, category=category, qr=qr_obj,group_type=CategoriesClicks.CATEGORY_GROUP_TELEGRAM)
         click.save()
         pass
     else:

@@ -7,12 +7,21 @@
                     <h5>לוח שנה הודעות</h5>
                 </div>
                 <div class="card-body">
-                    <div id='calendar'></div>
+                    <div id="unscheduled-events-container">
+                        <h4>הודעות ללא תאריך</h4>
+                        <div id="unscheduled-events"></div>
+                        <!-- Unscheduled events will populate here -->
+                    </div>
+                    <div id="calendar"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    const msgs = JSON.parse("{{msgs | escapejs}}");
+    console.log(msgs);
+</script>
 <script src="{% static 'dist/calender.bundle.js' %}"></script>
 <!-- <script>
      import interactionPlugin from '@fullcalendar/interaction'
@@ -91,5 +100,27 @@
         /* max-width: 900px; */
         margin: 0 auto;
         max-height: 75vh;
+    }
+
+    .external-event {
+        padding: 5px;
+        margin: 5px 0;
+        cursor: pointer;
+        color: #fff;
+        font-weight: bold;
+
+    }
+
+    #unscheduled-events-container {
+        float: left;
+        width: 200px;
+        padding: 10px;
+        border-right: 1px solid #ddd;
+        margin-right: 10px;
+
+    }
+
+    #unscheduled-events div {
+        margin-top: 10px;
     }
 </style>

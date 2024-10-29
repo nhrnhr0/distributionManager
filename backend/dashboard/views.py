@@ -10,7 +10,7 @@ from datetime import datetime
 from django.contrib import messages
 from core.decoretors import admin_required
 from django.db.models import Q
-
+from django.http import JsonResponse
 from django.shortcuts import redirect
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
@@ -232,17 +232,51 @@ def dashboard_leads_out(request):
     }
     return render(request, 'dashboard/leads-out/index.html', ctx)
 
+def messages_qs_to_json(messages):
+    msgs = []
+    for message in messages:
+        msgs.append({
+            'id': message.id,
+            
+            'category': message.category.name,
+            'business': message.category.business.name,
+            'send_at': message.send_at,
+            'is_sent': message.is_sent,
+            'message': message.message.messageTxt,
+            'message_id': message.message.id,
+            'message_uid': message.message.uid,
+        })
+    msgs = json.dumps(msgs, default=str)
+    return msgs
+
+
+@admin_required
+def dashboard_messages_calendar_set_date(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        message = MessageCategory.objects.get(id=data['id'])
+        message.send_at = data['new_date']
+        message.save()
+        return JsonResponse({'status': 'ok'})
+    pass
+
 @admin_required
 def dashboard_messages_calendar(request):
     businesses = Business.objects.all()
-    messages = MessageCategory.objects.select_related('category','message').all()
+    messages_to_send = MessageCategory.objects.select_related('category','message').filter(category__isnull=False)
     selected_busines = request.GET.get('business', None)
     
-
+    if selected_busines:
+        messages_to_send = messages_to_send.filter(message__business__id=selected_busines)
     
+    msgs = messages_qs_to_json(messages_to_send)
     return render(request, 'dashboard/calender/index.html', {
         'businesses': businesses,
+        'msgs': msgs,
+        
     })
+
+
 
 @admin_required
 def dashboard_leads_in(request):

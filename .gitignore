@@ -8,3 +8,4 @@ backend/static/*
 backend/.env
 *.sql
 node_modules/
+backend/static_cdn/dist/*
