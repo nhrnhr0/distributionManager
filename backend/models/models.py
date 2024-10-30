@@ -86,11 +86,12 @@ class BusinessQR(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='qrs', verbose_name=_('business'))
     qr_code = models.CharField(_('QR code'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     qr_img = models.ImageField(_('QR image'), upload_to='qrs/', blank=True, null=True)
-    
+    the_order = models.PositiveIntegerField(_('order'), default=0)
     class Meta:
         unique_together = ('name', 'business', 'category')
         verbose_name = _('business QR')
         verbose_name_plural = _('business QRs')
+        ordering = ['the_order',]
     
     def __str__(self) -> str:
         return self.category.name + ' - '+  self.name
@@ -173,7 +174,7 @@ class Category(models.Model):
     open_telegram_url = models.ForeignKey(to=TelegramGroup, on_delete=models.SET_NULL, related_name='open_telegram_categories', null=True, blank=True, verbose_name=_('open Telegram URL'))
     all_whatsapp_urls = models.ManyToManyField(to=WhatsappGroup, related_name='whatsapp_categories', verbose_name=_('all WhatsApp URLs'))
     all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='telegram_categories', verbose_name=_('all Telegram URLs'))
-    
+    the_order = models.PositiveIntegerField(_('order'), default=0)
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name
     
@@ -181,7 +182,7 @@ class Category(models.Model):
         unique_together = ('slug', 'business')
         verbose_name = _('category')
         verbose_name_plural = _('categories')
-        
+        ordering = ['the_order']
     def save(self):
         return super().save()
 

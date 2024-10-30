@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django_admin_index",
     "ordered_model",
     
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,7 +52,7 @@ INSTALLED_APPS = [
     
     'debug_toolbar',
     'storages',
-    
+    'adminsortable2',
     'import_export',
     
     'core',
