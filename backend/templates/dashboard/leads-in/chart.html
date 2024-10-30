@@ -16,7 +16,9 @@
             const key = `${item.qr_category} ← ${item.qr || ''}`;
             flows[key] = (flows[key] || 0) + item.count;
         } else if (item.type === "לחיצה על קטגוריה") {
-            const key = `${item.qr || ''} ← ${item.category}`;
+            const key = `${item.qr || ''} ← ${item.category} ${item.group_type === 'whatsapp' ? '': 'T '}`;
+            console.log('key', item);
+            debugger;
             flows[key] = (flows[key] || 0) + item.count;
         }
     });
