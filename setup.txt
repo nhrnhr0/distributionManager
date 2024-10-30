@@ -88,5 +88,5 @@ GRANT ALL PRIVILEGES ON DATABASE gm_db TO gm_db_user;
 \c gm_db
 GRANT ALL PRIVILEGES ON SCHEMA public TO gm_db_user;
 \q
+# restore the database
 psql -U gm_db_user -d gm_db -f /tmp/gm_09-10-2024-06_00_54.sql
-
