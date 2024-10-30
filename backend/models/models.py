@@ -53,6 +53,18 @@ class BusinessQRCategories(models.Model):
         verbose_name = _('business QR category')
         verbose_name_plural = _('business QR categories')
 
+
+# after busines is created/updated, we need to make sure each whatsapp and telegram group in the categories has initialized count
+@receiver(post_save, sender=Business, dispatch_uid="init_whatsapp_group_members_first_count_for_all_categories")
+def init_whatsapp_group_members_first_count_for_all_categories(sender, instance, **kwargs):
+    for category in instance.categories.all():
+        for group in category.all_whatsapp_urls.all():
+            group.init_whatsapp_group_members_first_count()
+        for group in category.all_telegram_urls.all():
+            group.init_telegram_group_members_first_count()
+
+
+
 class LeadsClicks(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='leads_clicks', verbose_name=_('business'))
@@ -86,11 +98,12 @@ class BusinessQR(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='qrs', verbose_name=_('business'))
     qr_code = models.CharField(_('QR code'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     qr_img = models.ImageField(_('QR image'), upload_to='qrs/', blank=True, null=True)
-    
+    the_order = models.PositiveIntegerField(_('order'), default=0)
     class Meta:
         unique_together = ('name', 'business', 'category')
         verbose_name = _('business QR')
         verbose_name_plural = _('business QRs')
+        ordering = ['the_order',]
     
     def __str__(self) -> str:
         return self.category.name + ' - '+  self.name
@@ -124,8 +137,8 @@ class BusinessQR(models.Model):
 class WhatsappGroup(models.Model):
     name = models.CharField(_('name'), max_length=120, blank=True, null=True)
     chat_id = models.CharField(_('chat ID'), max_length=120)
-    last_members_count = models.PositiveIntegerField(_('last members count'), default=0)
-    last_members_check = models.DateTimeField(_('last members check'), blank=True, null=True)
+    # last_members_count = models.PositiveIntegerField(_('last members count'), default=0)
+    # last_members_check = models.DateTimeField(_('last members check'), blank=True, null=True)
 
     def get_link(self):
         return 'https://chat.whatsapp.com/' + self.chat_id
@@ -141,12 +154,29 @@ class WhatsappGroup(models.Model):
     class Meta:
         verbose_name = _('WhatsApp group')
         verbose_name_plural = _('WhatsApp groups')
-
+        
+    def init_whatsapp_group_members_first_count(self):
+        from counting.models import WhatsappGroupSizeCount, DaylyGroupSizeCount
+        if not self.whatsapp_categories.first():
+            return
+        if WhatsappGroupSizeCount.objects.filter(group=self).exists():
+            return
+        # create new WhatsappGroupSizeCount and add it to the last session of this business
+        session = DaylyGroupSizeCount.objects.filter(business=self.whatsapp_categories.first().business).first()
+        if not session:
+            session = DaylyGroupSizeCount.objects.create(business=self.whatsapp_categories.first().business)
+        WhatsappGroupSizeCount.objects.create(group=self, count=1, session=session)
+# after a whatsapp group is created/updated, we need to make sure we have at least one manual count of the members
+@receiver(post_save, sender=WhatsappGroup, dispatch_uid="init_whatsapp_group_members_first_count")
+def init_whatsapp_group_members_first_count(sender, instance, **kwargs):
+    instance.init_whatsapp_group_members_first_count()
+    
+    
 class TelegramGroup(models.Model):
     name = models.CharField(_('name'), max_length=120, blank=True, null=True)
     chat_id = models.CharField(_('chat ID'), max_length=120)
-    last_members_count = models.PositiveIntegerField(_('last members count'), default=0)
-    last_members_check = models.DateTimeField(_('last members check'), blank=True, null=True)
+    # last_members_count = models.PositiveIntegerField(_('last members count'), default=0)
+    # last_members_check = models.DateTimeField(_('last members check'), blank=True, null=True)
 
     def get_link(self):
         return 'https://t.me/' + self.chat_id
@@ -162,6 +192,21 @@ class TelegramGroup(models.Model):
     class Meta:
         verbose_name = _('Telegram group')
         verbose_name_plural = _('Telegram groups')
+        
+    def init_telegram_group_members_first_count(self):
+        from counting.models import TelegramGroupSizeCount, DaylyGroupSizeCount
+        if not self.telegram_categories.first():
+            return
+        if TelegramGroupSizeCount.objects.filter(group=self).exists():
+            return
+        # create new TelegramGroupSizeCount and add it to the last session of this business
+        session = DaylyGroupSizeCount.objects.filter(business=self.telegram_categories.first().business).first()
+        if not session:
+            session = DaylyGroupSizeCount.objects.create(business=self.telegram_categories.first().business)
+        TelegramGroupSizeCount.objects.create(group=self, count=1, session=session)
+def init_telegram_group_members_first_count(sender, instance, **kwargs):
+    instance.init_telegram_group_members_first_count()
+
 
 class Category(models.Model):
     uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, editable=False, unique=True)
@@ -173,7 +218,7 @@ class Category(models.Model):
     open_telegram_url = models.ForeignKey(to=TelegramGroup, on_delete=models.SET_NULL, related_name='open_telegram_categories', null=True, blank=True, verbose_name=_('open Telegram URL'))
     all_whatsapp_urls = models.ManyToManyField(to=WhatsappGroup, related_name='whatsapp_categories', verbose_name=_('all WhatsApp URLs'))
     all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='telegram_categories', verbose_name=_('all Telegram URLs'))
-    
+    the_order = models.PositiveIntegerField(_('order'), default=0)
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name
     
@@ -181,7 +226,7 @@ class Category(models.Model):
         unique_together = ('slug', 'business')
         verbose_name = _('category')
         verbose_name_plural = _('categories')
-        
+        ordering = ['the_order']
     def save(self):
         return super().save()
 

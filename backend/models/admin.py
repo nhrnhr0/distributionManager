@@ -3,6 +3,10 @@ from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, Bu
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 from django.utils.translation import gettext_lazy as _
+from adminsortable2.admin import SortableAdminMixin
+from adminsortable2.admin import SortableAdminBase
+from adminsortable2.admin import SortableTabularInline
+
 # Register your models here.
 class SysUserAdmin(admin.ModelAdmin):
     list_display = ['name', 'user']
@@ -52,7 +56,7 @@ class CategoriesClicksAdmin(admin.ModelAdmin):
     
 admin.site.register(CategoriesClicks, CategoriesClicksAdmin)
 
-class CategoryInline(admin.TabularInline):
+class CategoryInline(SortableTabularInline):
     model=Category
     extra = 1
     fields = ['image_display',  'icon','name', 'slug', 'open_whatsapp_url', 'open_telegram_url']
@@ -64,7 +68,7 @@ class BusinessQRCategoriesAdmin(admin.ModelAdmin):
     list_display = ['name',]
     pass
 admin.site.register(BusinessQRCategories, BusinessQRCategoriesAdmin)
-class BusinessQRInline(admin.TabularInline):
+class BusinessQRInline(SortableTabularInline):
     model=BusinessQR
     fields = ('get_html_link', 'name', 'category', 'html_qr_img')
     readonly_fields = ('get_html_link','html_qr_img',)
@@ -74,13 +78,17 @@ class BusinessQRInline(admin.TabularInline):
     #     return mark_safe(f'<a href="{l}" target="_blank">{l}</a>')
     # link.short_description = 'Link'
     pass
-class BusinessAdmin(admin.ModelAdmin):
+class BusinessAdmin(SortableAdminBase, admin.ModelAdmin):
     list_display = ['name', 'slug', 'all_users']
     prepopulated_fields = {'slug': ('name',)}
     inlines = [CategoryInline,BusinessQRInline]
     def all_users(self, obj):
         return ', '.join([user.name for user in obj.users.all()])
-
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.prefetch_related('categories', 'qrs', 'categories__all_whatsapp_urls', 'categories__all_telegram_urls')
+        return qs
 
     pass
 admin.site.register(Business, BusinessAdmin)
@@ -91,7 +99,9 @@ class WhatsappInline(admin.TabularInline):
 class TelegramInline(admin.TabularInline):
     model=Category.all_telegram_urls.through
     pass
-class CategoryAdmin(ImportExportModelAdmin):
+
+
+class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ['id', 'icon', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count']
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['whatsapp_groups_count','telegram_groups_count']

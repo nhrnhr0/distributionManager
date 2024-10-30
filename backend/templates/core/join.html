@@ -9,7 +9,6 @@
   <!-- biz.header_image -->
   {% if biz.header_image %}<img src="{{ biz.header_image.url }}" class="img-fluid" alt="Header Image" />{% endif %}
   <div class="container mt-5">
-
     <div class="row">
       <div class="col-lg-6 description">
         {% if biz.display_name %}<h1>{{ biz.display_name }}</h1>{% endif %}
@@ -120,6 +119,7 @@
           margin: 0 0 10px;
           font-size: 1.1em;
           font-weight: bold;
+          text-align: center;
       }
 
       .button-container {

@@ -1,6 +1,7 @@
 backend/db.sqlite3
 env
 env2
+env3
 *.pyc
 backend/static/media_root/*
 env/pyvenv.cfg
@@ -8,3 +9,4 @@ backend/static/*
 backend/.env
 *.sql
 node_modules/
+backend/static_cdn/dist/*
