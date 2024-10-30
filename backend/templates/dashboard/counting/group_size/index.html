@@ -1,0 +1,11 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - ספירת קבוצות{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+    <div style="display: flex;">
+        <div style="flex: 1;">{% include "dashboard/counting/group_size/side_filter.html" %}</div>
+        <div style="flex: 3;">{% include "dashboard/counting/group_size/table_data.html" %}</div>
+    </div>
+{% endblock %}

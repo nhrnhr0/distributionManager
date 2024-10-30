@@ -12,8 +12,40 @@ from core.decoretors import admin_required
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+
+def dashboard_counting_group_size_detail(request, id):
+    obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').get(id=id)
+    return render(request, 'dashboard/counting/group_size/detail.html', {
+        'obj': obj,
+    })
+
+def craete_group_size_count(request):
+    data = request.POST
+    business = Business.objects.get(id=data['business'])
+
+    obj = DaylyGroupSizeCount.objects.create(business=business)
+    return redirect('dashboard_counting_group_size_detail', id=obj.id)
+
+@admin_required
+def dashboard_counting_group_size(request):
+    if request.method == 'POST':
+        return craete_group_size_count(request)
+    businesses = Business.objects.all()
+    
+    counts = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
+
+    business = request.GET.get('business', None)
+    
+    if business:
+        counts = counts.filter(business__id=business)
+    
+    return render(request, 'dashboard/counting/group_size/index.html', {
+        'businesses': businesses,
+        'counts': counts,
+    })
 
 @admin_required
 def dashboard_message_new(request):
