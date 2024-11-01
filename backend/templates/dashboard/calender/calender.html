@@ -7,6 +7,12 @@
                     <h5>לוח שנה הודעות</h5>
                 </div>
                 <div class="card-body">
+                    <form method="post"
+                          action="{% url 'message_new' %}"
+                          class="form-inline mt-2 mb-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">הוסף הודעה חדשה</button>
+                    </form>
                     <div id="unscheduled-events-container">
                         <h4>הודעות ללא תאריך</h4>
                         <div id="unscheduled-events"></div>

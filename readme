@@ -1,12 +1,23 @@
-run on development
-# run docker desktop
-# https://www.docker.com/products/docker-desktop/
+# run on development
+docker run --name gm_postgres_satage -e POSTGRES_PASSWORD=bnrbtnbcv -e POSTGRES_USER=gm_db_user -e POSTGRES_DB=gm_db -d -p 5432:5432 postgres
+docker cp base.sql gm_postgres_satage:/tmp/base.sql
+docker exec -it gm_postgres_satage bash
+psql -U gm_db_user -d gm_db
+psql -U gm_db_user -d gm_db -f /tmp/base.sql
+
+# craete and activate environment
+python -m venv env
+source env/Scrips/activate
+
+# install requirements
+pip install -r requirements.txt
+cd backend
 
 create .env file in backend/.env
 ```
 DEBUG=True
 DATABASE_TYPE='postgresql'
-DATABASE_HOST='db'
+DATABASE_HOST='localhost'
 DATABASE_PORT='5432'
 DATABASE_USER='gm_db_user'
 DATABASE_PASSWORD='bnrbtnbcv'
@@ -14,9 +25,5 @@ DATABASE_NAME='gm_db'
 BACKEND_DOMAIN='http://127.0.0.1:8000'
 ```
 
-docker-compose up --build
-go to
-http://127.0.0.1:8000
-
-# reset:
-docker-compose down -v
+python manage.py migrate
+python manage.py runserver

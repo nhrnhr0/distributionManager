@@ -19,6 +19,7 @@ sudo apt install python3-venv
 sudo apt-get install redis
 sudo apt install nginx
 sudo apt install ffmpeg
+sudo apt install npm
 
 # postgresql: https://medium.com/@pantaanish/setting-up-postgresql-on-an-ec2-instance-a-step-by-step-guide-9be2e3348fdb
 sudo apt install postgresql postgresql-contrib
@@ -88,5 +89,4 @@ GRANT ALL PRIVILEGES ON DATABASE gm_db TO gm_db_user;
 \c gm_db
 GRANT ALL PRIVILEGES ON SCHEMA public TO gm_db_user;
 \q
-# restore the database
 psql -U gm_db_user -d gm_db -f /tmp/gm_09-10-2024-06_00_54.sql

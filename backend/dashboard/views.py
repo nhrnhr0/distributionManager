@@ -138,6 +138,7 @@ def dashboard_message_edit(request, uid):
     if request.method == 'DELETE':
         message.delete()
         return redirect('dashboard_messages')
+    
     return render(request, 'dashboard/messages/edit.html', {
         'message': message,
         'businesses': businesses,
