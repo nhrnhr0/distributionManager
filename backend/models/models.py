@@ -218,6 +218,7 @@ class Category(models.Model):
     open_telegram_url = models.ForeignKey(to=TelegramGroup, on_delete=models.SET_NULL, related_name='open_telegram_categories', null=True, blank=True, verbose_name=_('open Telegram URL'))
     all_whatsapp_urls = models.ManyToManyField(to=WhatsappGroup, related_name='whatsapp_categories', verbose_name=_('all WhatsApp URLs'))
     all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='telegram_categories', verbose_name=_('all Telegram URLs'))
+    is_main_category = models.BooleanField(_('is main category'), default=False)
     the_order = models.PositiveIntegerField(_('order'), default=0)
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name

@@ -52,6 +52,9 @@ def dashboard_message_new(request):
     # create new empty message with empty links and categories and return the uid
     if request.method == 'POST':
         message = BizMessages.objects.create()
+        biz = request.user.profile.biz
+        message.business = biz
+        message.save()
         return redirect('message_edit', uid=message.uid)
     
 
@@ -90,6 +93,7 @@ def dashboard_message_edit(request, uid):
     message = BizMessages.objects.get(uid=uid)
     businesses = Business.objects.all()
     categories = Category.objects.all()
+    categories = categories.filter(business=message.business)
     
     if request.method == 'POST':
         data = request.body
