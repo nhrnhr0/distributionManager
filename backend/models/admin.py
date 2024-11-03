@@ -101,7 +101,7 @@ class TelegramInline(admin.TabularInline):
 
 
 class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ['id', 'icon', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count']
+    list_display = ['id', 'icon', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count', 'uid']
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['whatsapp_groups_count','telegram_groups_count']
     inlines= [WhatsappInline, TelegramInline]

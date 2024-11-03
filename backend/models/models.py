@@ -14,7 +14,7 @@ import os
 import requests
 from io import BytesIO
 from django.core.files import File
-from core.utils import generate_small_uuid
+from core.utils import generate_small_uuid,generate_unique_uid
 
 class SysUser(models.Model):
     name = models.CharField(_('name'), max_length=100)
@@ -209,7 +209,7 @@ def init_telegram_group_members_first_count(sender, instance, **kwargs):
 
 
 class Category(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, editable=False, unique=True)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, editable=False, unique=True)
     icon = models.ImageField(_('icon'), upload_to='categories/', blank=True, null=True)
     name = models.CharField(_('name'), max_length=100)
     slug = models.SlugField(_('slug'), max_length=100, allow_unicode=True)
@@ -265,7 +265,7 @@ def update_open_groups(sender, instance, **kwargs):
 
 # message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
 class BizMessages(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, unique=True, editable=False)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'), blank=True, null=True)
     messageTxt = models.TextField(_('message'), max_length=20000)
@@ -279,7 +279,7 @@ class BizMessages(models.Model):
         verbose_name_plural = _('business messages')
         
 class MessageCategory(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, unique=True, editable=False)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'), blank=True, null=True)
     send_at = models.DateTimeField(_('send at'), blank=True, null=True)
@@ -308,7 +308,7 @@ class MessageCategory(models.Model):
     
 # the links we insert in the message
 class MessageLink(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid,  editable=False, unique=True)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid,  editable=False, unique=True)
     url = models.URLField(_('url'), max_length=2000)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='links', verbose_name=_('message'))
     description = models.CharField(_('description'), max_length=100, blank=True, null=True)
