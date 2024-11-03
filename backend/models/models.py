@@ -282,7 +282,7 @@ class MessageCategory(models.Model):
     uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'), blank=True, null=True)
-    send_at = models.DateTimeField(_('send at'), default=timezone.now, blank=True, null=True)
+    send_at = models.DateTimeField(_('send at'), blank=True, null=True)
     is_sent = models.BooleanField(_('is sent'), default=False)
     class Meta:
         verbose_name = _('message category')

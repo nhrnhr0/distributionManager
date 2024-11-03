@@ -54,6 +54,13 @@ def dashboard_message_new(request):
         message = BizMessages.objects.create()
         biz = request.user.profile.biz
         message.business = biz
+        # add the main category to the message
+        main_category = Category.objects.filter(business=biz, is_main_category=True).first()
+        if main_category:
+            cat = MessageCategory(message=message, category=main_category)
+            cat.save()
+            
+            
         message.save()
         return redirect('message_edit', uid=message.uid)
     

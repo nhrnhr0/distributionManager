@@ -115,7 +115,11 @@ verbose_name_plural = _('message categories') -->
                                 <input type="datetime-local"
                                        name="send_at"
                                        value="{{ category.send_at|date:'Y-m-d\TH:i' }}"
-                                       class="form-control">
+                                       class="form-control send_at"
+                                       id="send_at-{{ category.id }}"
+                                       onfocus="this.oldValue = this.value;"
+                                       onchange="on_date_change(event);this.oldValue = this.value;"
+                                       {% if forloop.first %}data-mainCategory="true"{% endif %}>
                             </td>
                             <td>
                                 <input type="checkbox"
@@ -136,6 +140,29 @@ verbose_name_plural = _('message categories') -->
     <a href="{% url 'dashboard_messages' %}" class="btn btn-secondary mt-5">חזור</a>
 </div>
 <script>
+    function on_date_change(e) {
+        debugger;
+        console.log('old value', e.target.oldValue, 'new value', e.target.value);
+
+        // if it's not the main category and the old value is equal to the value in the main category, update the main category as well
+        const categories = document.querySelectorAll('.send_at');
+        const mainCategory = categories[0];
+        const value_of_main_category = mainCategory.value;
+        if (e.target.dataset.maincategory !== 'true' && e.target.oldValue === value_of_main_category) {
+            mainCategory.value = e.target.value;
+        }
+
+        // if the main category is updated, update all the other categories as well that are empty (undefined)
+        if (e.target.dataset.maincategory === 'true') {
+            for (let i = 1; i < categories.length; i++) {
+                if (categories[i].value === "") {
+                    categories[i].value = e.target.value;
+                }
+            }
+        }
+
+    }
+
     function deleteBtn(e) {
         e.preventDefault();
         if (confirm('האם אתה בטוח שברצונך למחוק את ההודעה?')) {
@@ -164,7 +191,7 @@ verbose_name_plural = _('message categories') -->
                     </select>
                 </td>
                 <td>
-                    <input type="datetime-local" name="send_at" class="form-control">
+                    <input type="datetime-local" name="send_at" class="form-control send_at" onfocus="this.oldValue = this.value;" onchange="on_date_change(event);this.oldValue = this.value;" name="send_at">
                 </td>
                 <td>
                     <input type="checkbox" name="is_sent">
