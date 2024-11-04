@@ -1,5 +1,3 @@
-
-
 <!-- dispaly the leads and categories_clicks data -->
 <div class="container-fluid">
     <div class="row">
@@ -15,11 +13,7 @@
         </div>
     </div>
 </div>
-
-
 <script>
-
-
     // Function to handle pivot table updates
     function handlePivotUpdate(config) {
         console.log("User updated the pivot table");
@@ -32,42 +26,46 @@
             cols: config.cols,
             vals: config.vals,
         }
-        
+
         window.localStorage.setItem('table_config', JSON.stringify(config));
 
     }
 
-$(function() {
-    // load table config from URL query params and set it to the pivot table if exists
-    
-    const table_config = window.localStorage.getItem('table_config');
-    if (table_config) {
-        $('#table').pivotUI(
-            translated_results, {
-                vals: ["כמות"],               // The value to aggregate (adjust as needed)
-                aggregatorName: "Integer Sum",         // The aggregation function to use (adjust as needed)
-                rendererName: "Table",          // The renderer to use (adjust as needed)
-                onRefresh: function(config) {
-                    handlePivotUpdate(config);   // Call function when the pivot table is updated
-                },
-                ...JSON.parse(table_config)
-            }
-            
-        );
-    }
-    else {
-        $('#table').pivotUI(
-            translated_results,{
-                vals: ["כמות"],               // The value to aggregate (adjust as needed)
-                aggregatorName: "Integer Sum",         // The aggregation function to use (adjust as needed)
-                rendererName: "Table",          // The renderer to use (adjust as needed)
-                onRefresh: function(config) {
-                    handlePivotUpdate(config);   // Call function when the pivot table is updated
-                },
-            }
-        );
-    }
-})
+    $(function() {
+        // load table config from URL query params and set it to the pivot table if exists
+        const default_table_config = {
+            rows: ['עסק', 'QR אבא', 'QR'],
+            cols: ['סוג ליד', 'סוג קבוצה', 'קטגוריה'],
+            vals: ["כמות"],
+            aggregatorName: "Integer Sum",
+            rendererName: "Table",
+        }
+        debugger;
+        const table_config = window.localStorage.getItem('table_config') || JSON.stringify(default_table_config);
+        if (table_config) {
+            $('#table').pivotUI(
+                translated_results, {
+                    vals: ["כמות"], // The value to aggregate (adjust as needed)
+                    aggregatorName: "Integer Sum", // The aggregation function to use (adjust as needed)
+                    rendererName: "Table", // The renderer to use (adjust as needed)
+                    onRefresh: function(config) {
+                        handlePivotUpdate(config); // Call function when the pivot table is updated
+                    },
+                    ...JSON.parse(table_config)
+                }
 
-    
+            );
+        } else {
+            $('#table').pivotUI(
+                translated_results, {
+                    vals: ["כמות"], // The value to aggregate (adjust as needed)
+                    aggregatorName: "Integer Sum", // The aggregation function to use (adjust as needed)
+                    rendererName: "Table", // The renderer to use (adjust as needed)
+                    onRefresh: function(config) {
+                        handlePivotUpdate(config); // Call function when the pivot table is updated
+                    },
+                }
+            );
+        }
+    })
 </script>

@@ -11,6 +11,7 @@
                 <th>גדילה</th>
                 <th>גדילה (%)</th>
                 <th>לחיצות על קטגוריה</th>
+                <th title="לחיצות על קטגוריה / גדילה">יחס הצטרפות ללחיצות</th>
             </tr>
         </thead>
         <tbody>
@@ -197,6 +198,7 @@
                         <td>${growth}</td>
                         <td>${growth_prc.toFixed(2)}%</td>
                         <td>${category_clicks[category]}</td>
+                        <td>${(category_clicks[category] / growth).toFixed(2)}%</td>
                     `;
             tableBody.appendChild(row);
         });
