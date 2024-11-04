@@ -1,5 +1,32 @@
 from django.shortcuts import render, redirect
-from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks, MessageLink, MessageLinkClick
+from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks, MessageLink, MessageLinkClick, Call
+from counting.models import CallsResponsesCount
+from django.http import JsonResponse
+
+def calls_webhook(request):
+    caller_id = request.GET.get('caller_number_friendly', '')
+    call_status = request.GET.get('type', '')
+    call_length = request.GET.get('time_duration_seconds', 0)
+    time_started = request.GET.get('time_started', '')
+    own_number_friendly = request.GET.get('own_number_friendly', '')
+    # Create a new Call object
+    call_obj = Call.objects.create(
+        caller_id=caller_id,
+        call_status=call_status,
+        call_length=int(call_length) if call_length else 0,
+        time_started=time_started,
+        own_number_friendly=own_number_friendly
+    )
+    
+    # find the biz based on own_number_friendly is equal to biz.phone
+    bizs = Business.objects.filter(phone=own_number_friendly)
+    if bizs.exists():
+        biz = bizs.first()
+        call_tracker = CallsResponsesCount.objects.create(business=biz,count=1, rel=call_obj)
+        call_tracker.save()
+
+    # Return a JSON response to confirm successful storage
+    return JsonResponse({'status': 'success', 'message': 'Call data stored successfully'})
 
 def redirector(request):
     category_uid = request.GET.get('c')

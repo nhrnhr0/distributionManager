@@ -61,7 +61,7 @@ class CallsResponsesCount(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, verbose_name=_("Business"))
     date = models.DateField(default=timezone.now, verbose_name=_("Date"))
     count = models.IntegerField(verbose_name=_("Count"))
-
+    rel = models.ForeignKey('models.Call', on_delete=models.CASCADE, verbose_name=_("Call"), blank=True, null=True)
     def __str__(self):
         return f'{self.business} - {self.count}'
 

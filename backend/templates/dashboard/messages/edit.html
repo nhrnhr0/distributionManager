@@ -28,7 +28,7 @@ verbose_name_plural = _('message categories') -->
 {% block content %}
     <div class="container">
         <h1>עריכת הודעה</h1>
-        <form method="post" id="edit-message-form">
+        <form method="post" id="edit-message-form" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <label for="business">עסק</label>
@@ -41,8 +41,21 @@ verbose_name_plural = _('message categories') -->
                 </select>
             </div>
             <div class="form-group">
+                <!-- image display and input -->
+                <label for="image">תמונה</label>
+                <div class="d-flex align-items-center">
+                    {% if message.image %}
+                        <img src="{{ message.image.url }}"
+                             alt="message image"
+                             class="img-thumbnail"
+                             style="width: 350px">
+                    {% endif %}
+                    <input type="file" name="image" id="image" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
                 <label for="messageTxt">הודעה</label>
-                <textarea name="messageTxt" id="messageTxt" class="form-control">{{ message.messageTxt }}</textarea>
+                <textarea name="messageTxt" id="messageTxt" class="form-control" rows="10">{{ message.messageTxt }}</textarea>
             </div>
             <!-- adding links to the message -->
             <table class="table table-bordered table-striped table-hover mt-3"
@@ -59,12 +72,14 @@ verbose_name_plural = _('message categories') -->
                 <tbody>
                     <tr>
                         <td colspan="4">
-                            <a href="#" class="btn btn-primary" onclick="addNewLink()">הוסף לינק</a>
+                            <!-- <a href="#" class="btn btn-primary" onclick="addNewLink()">הוסף לינק</a> -->
+                            <button type="button" class="btn btn-primary" onclick="addNewLink()">הוסף לינק</button>
                         </td>
                     </tr>
                     {% for link in message.links.all %}
                         <tr>
                             <td>
+                                <input type="hidden" name="link_id" value="{{ link.id }}">
                                 <input type="text"
                                        name="description"
                                        value="{{ link.description }}"
@@ -74,7 +89,7 @@ verbose_name_plural = _('message categories') -->
                                 <input type="text" name="url" value="{{ link.url }}" class="form-control">
                             </td>
                             <td>
-                                <input type="checkbox" name="delete" id="delete-{{ link.id }}">
+                                <input type="checkbox" name="delete-link" id="delete-{{ link.id }}">
                             </td>
                             <td>
                                 <button type="button" class="btn btn-secondary" onclick="addLink(event)">הוסף</button>
@@ -97,12 +112,14 @@ verbose_name_plural = _('message categories') -->
                 <tbody>
                     <tr>
                         <td colspan="4">
-                            <a href="#" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</a>
+                            <!-- <a href="#" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</a> -->
+                            <button type="button" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</button>
                         </td>
                     </tr>
                     {% for category in message.categories.all %}
                         <tr>
                             <td>
+                                <input type="hidden" name="category_id" value="{{ category.id }}">
                                 <select name="category" class="form-control">
                                     <option value="">בחר קטגוריה</option>
                                     {% for cat in categories %}
@@ -127,7 +144,7 @@ verbose_name_plural = _('message categories') -->
                                        {% if category.is_sent %}checked{% endif %}>
                             </td>
                             <td>
-                                <input type="checkbox" name="delete" id="delete-{{ category.id }}">
+                                <input type="checkbox" name="delete-category" id="delete-{{ category.id }}">
                             </td>
                         </tr>
                     {% endfor %}
@@ -241,69 +258,69 @@ verbose_name_plural = _('message categories') -->
 
 
     // on submit, collect all the links and categories and form info and POST to the server
-    const form = document.querySelector('#edit-message-form');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        debugger;
-        const links = []; // description, url, is_deleted
-        const categories = []; // category, send_at, is_sent, is_deleted
-        const form = new FormData(this);
-        const linksTable = document.querySelector('#links-table tbody');
-        const categoriesTable = document.querySelector('#categories-table tbody');
-        for (let i = 1; i < linksTable.children.length; i++) {
-            const row = linksTable.children[i];
-            const description = row.querySelector('input[name="description"]').value;
-            const url = row.querySelector('input[name="url"]').value;
-            const isDeleted = row.querySelector('input[name="delete"]').checked;
-            const id = row.querySelector('input[name="delete"]').id.split('-')[1];
+    // const form = document.querySelector('#edit-message-form');
+    // form.addEventListener('submit', function(e) {
+    //     e.preventDefault();
+    //     debugger;
+    //     const links = []; // description, url, is_deleted
+    //     const categories = []; // category, send_at, is_sent, is_deleted
+    //     const form = new FormData(this);
+    //     const linksTable = document.querySelector('#links-table tbody');
+    //     const categoriesTable = document.querySelector('#categories-table tbody');
+    //     for (let i = 1; i < linksTable.children.length; i++) {
+    //         const row = linksTable.children[i];
+    //         const description = row.querySelector('input[name="description"]').value;
+    //         const url = row.querySelector('input[name="url"]').value;
+    //         const isDeleted = row.querySelector('input[name="delete"]').checked;
+    //         const id = row.querySelector('input[name="delete"]').id.split('-')[1];
 
-            links.push({
-                description,
-                url,
-                isDeleted,
-                id
-            });
-        }
-
-
-        for (let i = 1; i < categoriesTable.children.length; i++) {
-            const row = categoriesTable.children[i];
-            const category = row.querySelector('select[name="category"]').value;
-            const sendAt = row.querySelector('input[name="send_at"]').value;
-            const isSent = row.querySelector('input[name="is_sent"]').checked;
-            const isDeleted = row.querySelector('input[name="delete"]').checked;
-            const id = row.querySelector('input[name="delete"]').id.split('-')[1];
-            categories.push({
-                category,
-                sendAt,
-                isSent,
-                isDeleted,
-                id
-            });
-        }
-
-        console.log('links', links);
-        console.log('categories', categories);
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: JSON.stringify({
-                links: links,
-                categories: categories,
-                business: form.get('business'),
-                messageTxt: form.get('messageTxt'),
-            }),
-        }).then(response => {
-            debugger;
-            if (response.ok) {
-                window.location = "{% url 'dashboard_messages' %}";
-            }
-        });
+    //         links.push({
+    //             description,
+    //             url,
+    //             isDeleted,
+    //             id
+    //         });
+    //     }
 
 
-    });
+    //     for (let i = 1; i < categoriesTable.children.length; i++) {
+    //         const row = categoriesTable.children[i];
+    //         const category = row.querySelector('select[name="category"]').value;
+    //         const sendAt = row.querySelector('input[name="send_at"]').value;
+    //         const isSent = row.querySelector('input[name="is_sent"]').checked;
+    //         const isDeleted = row.querySelector('input[name="delete"]').checked;
+    //         const id = row.querySelector('input[name="delete"]').id.split('-')[1];
+    //         categories.push({
+    //             category,
+    //             sendAt,
+    //             isSent,
+    //             isDeleted,
+    //             id
+    //         });
+    //     }
+
+    //     console.log('links', links);
+    //     console.log('categories', categories);
+    //     fetch(window.location.href, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'X-CSRFToken': '{{ csrf_token }}',
+    //         },
+    //         body: JSON.stringify({
+    //             links: links,
+    //             categories: categories,
+    //             business: form.get('business'),
+    //             messageTxt: form.get('messageTxt'),
+    //         }),
+    //     }).then(response => {
+    //         debugger;
+    //         if (response.ok) {
+    //             window.location = "{% url 'dashboard_messages' %}";
+    //         }
+    //     });
+
+
+    // });
 </script>
 {% endblock %}

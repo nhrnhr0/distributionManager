@@ -16,6 +16,17 @@ from io import BytesIO
 from django.core.files import File
 from core.utils import generate_small_uuid,generate_unique_uid
 
+
+class Call(models.Model):
+    caller_id = models.CharField(max_length=50, blank=True, null=True)
+    call_status = models.CharField(max_length=50, blank=True, null=True)
+    call_length = models.IntegerField(blank=True, null=True)
+    time_started = models.CharField(max_length=50)
+    own_number_friendly = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"Call {self.caller_id} - Status: {self.call_status}"
+    
 class SysUser(models.Model):
     name = models.CharField(_('name'), max_length=100)
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='me', verbose_name=_('user'))
@@ -32,7 +43,8 @@ class Business(models.Model):
     footer_image = models.ImageField(_('footer image'), upload_to='businesses/', blank=True, null=True)
     description = models.TextField(_('description'), max_length=20000, blank=True, null=True)
     favicon = models.ImageField(_('favicon'), upload_to='businesses/', blank=True, null=True)
-    
+    phone = models.CharField(_('phone'), max_length=100, blank=True, null=True)
+    telegram_fotter = models.CharField(_('telegram footer'), max_length=2500, blank=True, null=True)
     def __str__(self) -> str:
         return self.name
     
@@ -269,7 +281,7 @@ class BizMessages(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'), blank=True, null=True)
     messageTxt = models.TextField(_('message'), max_length=20000)
-    
+    image = models.ImageField(_('image'), upload_to='messages/', blank=True, null=True)
     
     def __str__(self) -> str:
         return self.messageTxt
@@ -304,6 +316,9 @@ class MessageCategory(models.Model):
             # replace [link:<description>] with redirect url /r/?c=<category_uid>&m=<message_uid>&l=<link_uid>
             new_link = settings.BACKEND_DOMAIN + '/r/?c=' + self.category.uid + '&l=' + link.uid + '&t=t'
             message = message.replace(f'[link:{link.description}]', new_link)
+        telegram_fotter = self.category.business.telegram_fotter
+        if telegram_fotter:
+            message += '\n' + telegram_fotter
         return message
     
 # the links we insert in the message

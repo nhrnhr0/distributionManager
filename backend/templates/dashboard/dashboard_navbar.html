@@ -51,6 +51,13 @@
                           {% if request.path|startswith:dashboard_counting_group_size_url %}active{% endif %}"
                    href="{{ dashboard_counting_group_size_url }}">ספירת קבוצות</a>
             </li>
+            <!-- dashboard_index -->
+            <li class="nav-item">
+                {% url 'dashboard_biz_profile' as dashboard_biz_profile_url %}
+                <a class="nav-link
+                          {% if request.path|startswith:dashboard_biz_profile_url %}active{% endif %}"
+                   href="{{ dashboard_biz_profile_url }}">פרופיל עסק</a>
+            </li>
         </ul>
         <ul class="navbar-nav">
             {% if request.user.is_authenticated %}

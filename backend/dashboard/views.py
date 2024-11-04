@@ -15,6 +15,15 @@ from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+def dashboard_biz_profile(request):
+    if request.method == 'POST':
+        data = request.POST
+        biz = request.user.profile.biz
+        biz.phone = data['phone']
+        biz.telegram_fotter = data['telegram_fotter']
+        biz.save()
+        return redirect('dashboard_biz_profile')
+    return render(request, 'dashboard/biz_profile/index.html', {'biz': request.user.profile.biz})
 
 def dashboard_counting_group_size_detail(request, id):
     obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').get(id=id)
@@ -103,14 +112,28 @@ def dashboard_message_edit(request, uid):
     categories = categories.filter(business=message.business)
     
     if request.method == 'POST':
-        data = request.body
-        data = json.loads(data) 
+        data = request.POST
         # first delete all links with id and isDeleted = True
-        for link in data['links']:
+        link_ids = data.getlist('link_id')
+        descriptions = data.getlist('description')
+        urls = data.getlist('url')
+        is_deleted = data.getlist('delete-link')
+        
+        links = []
+        for i in range(len(descriptions)):
+            links.append({
+                'id': link_ids[i] if i < len(link_ids) else None,
+                'description': descriptions[i] if i < len(descriptions) else '',
+                'url': urls[i] if i < len(urls) else '',
+                'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
+            })
+        
+        for link in links:
             if link.get('id') and link['isDeleted']:
                 message.links.get(id=link['id']).delete()
-        # then update or create the rest
-        for link in data['links']:
+        
+        
+        for link in links:
             if link.get('id') and not link['isDeleted']:
                 l = {'description': link['description'], 'url': link['url']}
                 message.links.filter(id=link['id']).update(**l)
@@ -118,14 +141,35 @@ def dashboard_message_edit(request, uid):
                 l = {'description': link['description'], 'url': link['url']}
                 message.links.create(**l)
 
+        
+        
         # first delete all categories with id and isDeleted = True
-        for category in data['categories']:
+        categories_ids = data.getlist('category_id')
+        categories_list = data.getlist('category')
+        send_ats = data.getlist('send_at')
+        is_sents = data.getlist('is_sent')
+        is_deleted = data.getlist('delete-category')
+        
+        cats = []
+        for i in range(len(categories_list)):
+            cats.append({
+                'id': categories_ids[i] if i < len(categories_ids) else None,
+                'category': categories_list[i] if i < len(categories_list) else None,
+                'sendAt': send_ats[i] if i < len(send_ats) else None,
+                'isSent': is_sents[i] if i < len(is_sents) else False,
+                'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
+            })
+            
+        
+        
+        
+        for category in cats:
             if category.get('id') and category['isDeleted']:
                 message.categories.get(id=category['id']).delete()
         # then update or create the rest
         tz = pytz.timezone('Asia/Jerusalem')
 
-        for category in data['categories']:
+        for category in cats:
             if category.get('id') and not category['isDeleted']:
                 if category['sendAt']:
                     category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
@@ -144,8 +188,11 @@ def dashboard_message_edit(request, uid):
 
         message.business_id = data['business']
         message.messageTxt = data['messageTxt']
+        # message.image = request.FILES.get('image') if request.FILES.get('image') else message.image
+        if request.FILES.get('image'):
+            message.image = request.FILES.get('image')
         message.save()
-    
+        return redirect('message_edit', uid=message.uid)
     if request.method == 'DELETE':
         message.delete()
         return redirect('dashboard_messages')

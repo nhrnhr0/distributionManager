@@ -21,8 +21,9 @@ from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
 # from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail,admin_dashboard_message_detail_update_send_date
 from django.contrib.auth.views import LogoutView, LoginView
-from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out,dashboard_messages_calendar, dashboard_messages_calendar_set_date,dashboard_counting_group_size,dashboard_counting_group_size_detail
+from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out,dashboard_messages_calendar, dashboard_messages_calendar_set_date,dashboard_counting_group_size,dashboard_counting_group_size_detail,dashboard_biz_profile
 from core.views import redirector
+from core.views import calls_webhook
 # from api_app.views import api_dashboard_whatsapp_group_count
 # from core.views import test
 urlpatterns = [
@@ -36,6 +37,7 @@ urlpatterns = [
     path('join/<str:business_slug>/<str:category_slug>/telegram/', busines_join_telegram_link, name='business_join_telegram'),
     
     path('dashboard/', dashboard_index, name='dashboard_index'),
+    path('dashboard/busines-profile/', dashboard_biz_profile, name='dashboard_biz_profile'),
     path('dashboard/leads-in/', dashboard_leads_in, name='dashboard_leads_in'),
     path('dashboard/leads-out/', dashboard_leads_out, name='dashboard_leads_out'),
     path('dashboard/calendar/', dashboard_messages_calendar, name='dashboard_messages_calendar'),
@@ -52,7 +54,7 @@ urlpatterns = [
     path('dashboard/counting/group-size/<str:id>/', dashboard_counting_group_size_detail, name='dashboard_counting_group_size_detail'),
     
     # path('api/dashboard/group-count/', api_dashboard_whatsapp_group_count, name='api_dashboard_group_count'),
-    
+    path('calls_webhook/', calls_webhook, name='webhook'),  # Webhook endpoint
     path('r/', redirector, name='redirector'),
     
     # path('admin-dashboard/messages/', admin_dashboard_schedule, name='admin_dashboard_schedule'),

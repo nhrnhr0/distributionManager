@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - דף עסק{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>פרופיל עסק</h2>
+        <!-- form -->
+        <form method="post" action="{% url 'dashboard_biz_profile' %}">
+            {% csrf_token %}
+            <!-- phone -->
+            <div class="form-group">
+                <label for="phone">טלפון</label>
+                <input type="text"
+                       class="form-control"
+                       id="phone"
+                       name="phone"
+                       value="{{ biz.phone }}">
+            </div>
+            <!-- telegram_fotter -->
+            <div class="form-group">
+                <label for="telegram_fotter">תוספת לטלגרם</label>
+                <textarea class="form-control"
+                          id="telegram_fotter"
+                          name="telegram_fotter"
+                          rows="3">{{ biz.telegram_fotter | default_if_none:"" }}</textarea>
+                <button type="submit" class="btn btn-primary">שמור</button>
+            </form>
+        </div>
+    {% endblock %}
