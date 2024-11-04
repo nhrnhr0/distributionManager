@@ -32,8 +32,15 @@ SECRET_KEY = 'django-insecure-trgynxv69d^o5u0!-qzaeqv*!0ual(-#6b_ey$_4#1g!e28zct
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=True)
 BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT = BACKEND_DOMAIN.split('//')[-1].split(':')[0]
-ALLOWED_HOSTS = [BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT,]
+# ALLOWED_HOSTS = [BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT,]
+ALLOWED_HOSTS = ['0.0.0.0', '192.168.50.73']
+
 CSRF_TRUSTED_ORIGINS = [BACKEND_DOMAIN,]
+
+# Added telegram bot token with ENV
+TELEGRAM_BOT_TOKEN = env.str('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = env.str('TELEGRAM_CHAT_ID')
+
 
 # Application definition
 

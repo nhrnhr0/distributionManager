@@ -25,6 +25,9 @@ from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_message
 from core.views import redirector
 # from api_app.views import api_dashboard_whatsapp_group_count
 # from core.views import test
+
+from core.views import send_telegram_message
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('logout/', LogoutView.as_view(),name='logout'),
@@ -62,6 +65,9 @@ urlpatterns = [
     
     # path('admin-dashboard/send-messsages/', admin_dashboard_send_messages, name='admin_dashboard_send_messages'),
     # path('admin-dashboard/send-messsages/<uuid:id>/send/', admin_dashboard_send_message_detail,name='admin_dashboard_send_message_detail'),
+    
+    path('send-telegram-message/', send_telegram_message, name='send_telegram_message'),
+
 ]
 
 
