@@ -1,5 +1,39 @@
 from django.shortcuts import render, redirect
 from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks, MessageLink, MessageLinkClick
+import requests
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
+
+
+
+
+def send_telegram_message(request):
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        if not message:
+            return HttpResponseBadRequest("No message provided")  # Bad request if message is empty
+        
+        # Telegram API URL
+        url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage"
+        
+        # Payload
+        payload = {
+            'chat_id': settings.TELEGRAM_CHAT_ID,
+            'text': message
+        }
+        
+        # Send the request to Telegram
+        response = requests.post(url, json=payload)
+        
+        if response.status_code == 200:
+            return HttpResponse("Message sent successfully!")
+        else:
+            return HttpResponse(f"Failed to send message. Status code: {response.status_code}", status=response.status_code)
+    
+    return render(request, 'core/send_message.html')
+
 
 def redirector(request):
     category_uid = request.GET.get('c')
