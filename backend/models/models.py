@@ -14,8 +14,19 @@ import os
 import requests
 from io import BytesIO
 from django.core.files import File
-from core.utils import generate_small_uuid
+from core.utils import generate_small_uuid,generate_unique_uid
 
+
+class Call(models.Model):
+    caller_id = models.CharField(max_length=50, blank=True, null=True)
+    call_status = models.CharField(max_length=50, blank=True, null=True)
+    call_length = models.IntegerField(blank=True, null=True)
+    time_started = models.CharField(max_length=50)
+    own_number_friendly = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"Call {self.caller_id} - Status: {self.call_status}"
+    
 class SysUser(models.Model):
     name = models.CharField(_('name'), max_length=100)
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='me', verbose_name=_('user'))
@@ -32,7 +43,8 @@ class Business(models.Model):
     footer_image = models.ImageField(_('footer image'), upload_to='businesses/', blank=True, null=True)
     description = models.TextField(_('description'), max_length=20000, blank=True, null=True)
     favicon = models.ImageField(_('favicon'), upload_to='businesses/', blank=True, null=True)
-    
+    phone = models.CharField(_('phone'), max_length=100, blank=True, null=True)
+    telegram_fotter = models.CharField(_('telegram footer'), max_length=2500, blank=True, null=True)
     def __str__(self) -> str:
         return self.name
     
@@ -209,7 +221,7 @@ def init_telegram_group_members_first_count(sender, instance, **kwargs):
 
 
 class Category(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, editable=False, unique=True)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, editable=False, unique=True)
     icon = models.ImageField(_('icon'), upload_to='categories/', blank=True, null=True)
     name = models.CharField(_('name'), max_length=100)
     slug = models.SlugField(_('slug'), max_length=100, allow_unicode=True)
@@ -218,7 +230,12 @@ class Category(models.Model):
     open_telegram_url = models.ForeignKey(to=TelegramGroup, on_delete=models.SET_NULL, related_name='open_telegram_categories', null=True, blank=True, verbose_name=_('open Telegram URL'))
     all_whatsapp_urls = models.ManyToManyField(to=WhatsappGroup, related_name='whatsapp_categories', verbose_name=_('all WhatsApp URLs'))
     all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='telegram_categories', verbose_name=_('all Telegram URLs'))
+    is_main_category = models.BooleanField(_('is main category'), default=False)
     the_order = models.PositiveIntegerField(_('order'), default=0)
+    
+    ai_message_tone = models.CharField(_('AI message tone'), max_length=1000, blank=True, null=True)
+    ai_message_example = models.CharField(_('AI message example'), max_length=1000, blank=True, null=True)
+    
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name
     
@@ -264,11 +281,18 @@ def update_open_groups(sender, instance, **kwargs):
 
 # message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
 class BizMessages(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, unique=True, editable=False)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'), blank=True, null=True)
     messageTxt = models.TextField(_('message'), max_length=20000)
+    image = models.ImageField(_('image'), upload_to='messages/', blank=True, null=True)
     
+    
+    product_metadata = models.CharField(_('product metadata'), max_length=1000, default='')
+    product_name = models.CharField(_('product name'), max_length=500, default='')
+    product_description = models.CharField(_('description'), max_length=1000, default='')
+    price = models.CharField(_('price'), max_length=100, default='')
+    coupon_code = models.CharField(_('coupon code'), max_length=100, default='')
     
     def __str__(self) -> str:
         return self.messageTxt
@@ -278,10 +302,10 @@ class BizMessages(models.Model):
         verbose_name_plural = _('business messages')
         
 class MessageCategory(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid, unique=True, editable=False)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, unique=True, editable=False)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='categories', verbose_name=_('message'))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'), blank=True, null=True)
-    send_at = models.DateTimeField(_('send at'), default=timezone.now, blank=True, null=True)
+    send_at = models.DateTimeField(_('send at'), blank=True, null=True)
     is_sent = models.BooleanField(_('is sent'), default=False)
     class Meta:
         verbose_name = _('message category')
@@ -303,11 +327,14 @@ class MessageCategory(models.Model):
             # replace [link:<description>] with redirect url /r/?c=<category_uid>&m=<message_uid>&l=<link_uid>
             new_link = settings.BACKEND_DOMAIN + '/r/?c=' + self.category.uid + '&l=' + link.uid + '&t=t'
             message = message.replace(f'[link:{link.description}]', new_link)
+        telegram_fotter = self.category.business.telegram_fotter
+        if telegram_fotter:
+            message += '\n' + telegram_fotter
         return message
     
 # the links we insert in the message
 class MessageLink(models.Model):
-    uid = models.CharField(_('uid'), max_length=100, default=generate_small_uuid,  editable=False, unique=True)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid,  editable=False, unique=True)
     url = models.URLField(_('url'), max_length=2000)
     message = models.ForeignKey(BizMessages, on_delete=models.CASCADE, related_name='links', verbose_name=_('message'))
     description = models.CharField(_('description'), max_length=100, blank=True, null=True)

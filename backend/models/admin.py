@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
 from .models import SysUser, Business, Category,TelegramGroup, WhatsappGroup, BusinessQR, BusinessQRCategories, LeadsClicks, CategoriesClicks,MessageLink,BizMessages,MessageCategory,MessageLinkClick
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
@@ -6,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from adminsortable2.admin import SortableAdminMixin
 from adminsortable2.admin import SortableAdminBase
 from adminsortable2.admin import SortableTabularInline
+from django.db.models import Prefetch
 
 # Register your models here.
 class SysUserAdmin(admin.ModelAdmin):
@@ -59,7 +62,7 @@ admin.site.register(CategoriesClicks, CategoriesClicksAdmin)
 class CategoryInline(SortableTabularInline):
     model=Category
     extra = 1
-    fields = ['image_display',  'icon','name', 'slug', 'open_whatsapp_url', 'open_telegram_url']
+    fields = ['image_display',  'icon','name', 'slug','is_main_category', 'open_whatsapp_url', 'open_telegram_url','ai_message_tone','ai_message_example']
     readonly_fields = ['image_display']
     prepopulated_fields = {'slug': ('name',)}
     pass
@@ -85,10 +88,6 @@ class BusinessAdmin(SortableAdminBase, admin.ModelAdmin):
     def all_users(self, obj):
         return ', '.join([user.name for user in obj.users.all()])
     
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        qs = qs.prefetch_related('categories', 'qrs', 'categories__all_whatsapp_urls', 'categories__all_telegram_urls')
-        return qs
 
     pass
 admin.site.register(Business, BusinessAdmin)
@@ -102,7 +101,7 @@ class TelegramInline(admin.TabularInline):
 
 
 class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ['id', 'icon', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count']
+    list_display = ['id', 'icon', 'name', 'slug', 'business','whatsapp_groups_count', 'telegram_groups_count', 'uid']
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ['whatsapp_groups_count','telegram_groups_count']
     inlines= [WhatsappInline, TelegramInline]

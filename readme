@@ -1,3 +1,4 @@
+
 run on development
 # run docker desktop
 docker run --name gm_postgres_satage -e POSTGRES_PASSWORD=bnrbtnbcv -e POSTGRES_USER=gm_db_user -e POSTGRES_DB=gm_db -d -p 5432:5432 postgres
@@ -20,7 +21,7 @@ create .env file in backend/.env
 ```
 DEBUG=True
 DATABASE_TYPE='postgresql'
-DATABASE_HOST='db'
+DATABASE_HOST='localhost'
 DATABASE_PORT='5432'
 DATABASE_USER='gm_db_user'
 DATABASE_PASSWORD='bnrbtnbcv'
