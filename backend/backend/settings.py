@@ -23,6 +23,8 @@ env.read_env()  # read .env file, if it exists
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 BACKEND_DOMAIN = env.str('BACKEND_DOMAIN', default='')
+import openai
+openai.api_key = env.str('OPENAI_API_KEY', default='')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 

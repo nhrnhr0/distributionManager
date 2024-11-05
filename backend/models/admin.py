@@ -62,7 +62,7 @@ admin.site.register(CategoriesClicks, CategoriesClicksAdmin)
 class CategoryInline(SortableTabularInline):
     model=Category
     extra = 1
-    fields = ['image_display',  'icon','name', 'slug','is_main_category', 'open_whatsapp_url', 'open_telegram_url']
+    fields = ['image_display',  'icon','name', 'slug','is_main_category', 'open_whatsapp_url', 'open_telegram_url','ai_message_tone','ai_message_example']
     readonly_fields = ['image_display']
     prepopulated_fields = {'slug': ('name',)}
     pass

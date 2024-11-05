@@ -24,6 +24,7 @@ from django.contrib.auth.views import LogoutView, LoginView
 from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out,dashboard_messages_calendar, dashboard_messages_calendar_set_date,dashboard_counting_group_size,dashboard_counting_group_size_detail,dashboard_biz_profile
 from core.views import redirector
 from core.views import calls_webhook
+from core.views import generate_ai_message_view,apply_ai_correction_view
 # from api_app.views import api_dashboard_whatsapp_group_count
 # from core.views import test
 urlpatterns = [
@@ -52,6 +53,9 @@ urlpatterns = [
     
     path('dashboard/counting/group-size/', dashboard_counting_group_size, name='dashboard_counting_group_size'),
     path('dashboard/counting/group-size/<str:id>/', dashboard_counting_group_size_detail, name='dashboard_counting_group_size_detail'),
+    
+    path('generate-ai-message/', generate_ai_message_view, name='generate_ai_message'),
+    path('apply-ai-correction', apply_ai_correction_view, name='apply_ai_correction'),
     
     # path('api/dashboard/group-count/', api_dashboard_whatsapp_group_count, name='api_dashboard_group_count'),
     path('calls_webhook/', calls_webhook, name='webhook'),  # Webhook endpoint

@@ -148,10 +148,12 @@ def dashboard_message_edit(request, uid):
         categories_list = data.getlist('category')
         send_ats = data.getlist('send_at')
         is_sents = data.getlist('is_sent')
-        is_deleted = data.getlist('delete-category')
+        is_deleted = data.getlist('delete-category[]')
         
         cats = []
         for i in range(len(categories_list)):
+            if not categories_list[i]:
+                continue
             cats.append({
                 'id': categories_ids[i] if i < len(categories_ids) else None,
                 'category': categories_list[i] if i < len(categories_list) else None,
@@ -159,6 +161,7 @@ def dashboard_message_edit(request, uid):
                 'isSent': is_sents[i] if i < len(is_sents) else False,
                 'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
             })
+        print(cats)
             
         
         

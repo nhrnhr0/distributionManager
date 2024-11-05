@@ -232,6 +232,10 @@ class Category(models.Model):
     all_telegram_urls = models.ManyToManyField(to=TelegramGroup, related_name='telegram_categories', verbose_name=_('all Telegram URLs'))
     is_main_category = models.BooleanField(_('is main category'), default=False)
     the_order = models.PositiveIntegerField(_('order'), default=0)
+    
+    ai_message_tone = models.CharField(_('AI message tone'), max_length=1000, blank=True, null=True)
+    ai_message_example = models.CharField(_('AI message example'), max_length=1000, blank=True, null=True)
+    
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name
     
