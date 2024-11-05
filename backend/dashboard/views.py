@@ -4,8 +4,12 @@ from models.models import Business
 from models.models import LeadsClicks, CategoriesClicks, BusinessQR, BizMessages, Category,MessageCategory
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 from django.db.models import Count
+from apscheduler.schedulers.background import BackgroundScheduler
+from django.http import HttpResponse, HttpResponseBadRequest
 import json
 import pytz
+import logging
+import requests
 from datetime import datetime
 from django.contrib import messages
 from core.decoretors import admin_required
@@ -13,8 +17,14 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
+from django.conf import settings
+
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+
+logger = logging.getLogger(__name__)
+scheduler = BackgroundScheduler(timezone='Asia/Jerusalem')
+scheduler.start()
 
 def dashboard_counting_group_size_detail(request, id):
     obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').get(id=id)
@@ -85,59 +95,104 @@ def dashboard_message_send(request):
         'all_message_categories': messages_cats,
     })
 
-@admin_required
+
+
+def send_telegram_message(uid):
+    url = f"http://192.168.50.73:8000/dashboard/messages/edit/{uid}/"
+    
+    text = f"הגיע הזמן לפרסם הודעה זו: {url}"
+    
+    payload = {
+        'chat_id': settings.TELEGRAM_CHAT_ID,
+        'text': text
+    }
+    
+    response = requests.post(f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage", json=payload)
+    
+    if response.status_code != 200:
+        logger.error(f"Failed to send message to Telegram: {response.text}")
+    return response.status_code == 200
+
+def schedule_telegram_message(uid, send_at):
+    try:
+        job = scheduler.add_job(
+            send_telegram_message,
+            'date',
+            run_date=send_at,
+            args=[uid]
+        )
+        logger.info (f"scheduled job: {job.id}, run at {send_at} for UID: {uid}")
+    except Exception as e:
+            logger.error(f"failed to schedule job for UID {uid}: {e}")
+
 def dashboard_message_edit(request, uid):
     message = BizMessages.objects.get(uid=uid)
     businesses = Business.objects.all()
     categories = Category.objects.all()
     
     if request.method == 'POST':
-        data = request.body
-        data = json.loads(data) 
-        # first delete all links with id and isDeleted = True
+        data = json.loads(request.body)
+        logger.info(f"Received POST request for UID {uid} with data: {data}")
+
+        # Update the main message fields first
+        message.business_id = data['business']
+        message.messageTxt = data['messageTxt']
+        message.save()
+
+        # Process links
         for link in data['links']:
             if link.get('id') and link['isDeleted']:
                 message.links.get(id=link['id']).delete()
-        # then update or create the rest
-        for link in data['links']:
-            if link.get('id') and not link['isDeleted']:
+            elif link.get('id') and not link['isDeleted']:
                 l = {'description': link['description'], 'url': link['url']}
                 message.links.filter(id=link['id']).update(**l)
             elif not link['isDeleted']:
                 l = {'description': link['description'], 'url': link['url']}
                 message.links.create(**l)
 
-        # first delete all categories with id and isDeleted = True
-        for category in data['categories']:
-            if category.get('id') and category['isDeleted']:
-                message.categories.get(id=category['id']).delete()
-        # then update or create the rest
+        # Process categories and scheduling
         tz = pytz.timezone('Asia/Jerusalem')
-
         for category in data['categories']:
-            if category.get('id') and not category['isDeleted']:
-                if category['sendAt']:
-                    category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
-                    aware_dt = tz.localize(category['sendAt'])
-                    category['sendAt'] = aware_dt
-                c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
-                message.categories.filter(id=category['id']).update(**c)
-            elif not category['isDeleted']:
-                if category['sendAt']:
-                    category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
-                    aware_dt = tz.localize(category['sendAt'])
-                    category['sendAt'] = aware_dt
-                    
-                c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
-                message.categories.create(**c)
+            aware_dt = None
+            if category.get('sendAt') and not category['isDeleted']:
+                try:
+                    send_at = datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
+                    aware_dt = tz.localize(send_at)
+                    logger.info(f"Parsed and localized sendAt as {aware_dt}")
+                except ValueError as e:
+                    logger.error(f"Failed to parse sendAt for category ID {category.get('id')}: {e}")
+                    continue
 
-        message.business_id = data['business']
-        message.messageTxt = data['messageTxt']
-        message.save()
+                c = {
+                    'category_id': category['category'],
+                    'send_at': aware_dt,
+                    'is_sent': category['isSent']
+                }
+                if category.get('id'):
+                    message.categories.filter(id=category['id']).update(**c)
+                else:
+                    message.categories.create(**c)
+
+                if aware_dt and message.messageTxt:
+                    schedule_telegram_message(message.uid, aware_dt)
+                    logger.info(f"Message scheduled at {aware_dt} for UID: {uid}")
+                elif aware_dt:
+                    logger.warning("Message text is empty; nothing scheduled.")
+                else:
+                    logger.warning("No valid datetime; nothing scheduled.")
+            elif not category['isDeleted']:
+                c = {
+                    'category_id': category['category'],
+                    'send_at': None,
+                    'is_sent': category['isSent']
+                }
+                message.categories.create(**c)
+                logger.info("Category created without scheduling due to missing send_at.")
     
     if request.method == 'DELETE':
         message.delete()
         return redirect('dashboard_messages')
+    
     return render(request, 'dashboard/messages/edit.html', {
         'message': message,
         'businesses': businesses,
