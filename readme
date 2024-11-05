@@ -1,17 +1,21 @@
-# run on development
+
+run on development
+# run docker desktop
 docker run --name gm_postgres_satage -e POSTGRES_PASSWORD=bnrbtnbcv -e POSTGRES_USER=gm_db_user -e POSTGRES_DB=gm_db -d -p 5432:5432 postgres
+# copy the data to the container
 docker cp base.sql gm_postgres_satage:/tmp/base.sql
 docker exec -it gm_postgres_satage bash
 psql -U gm_db_user -d gm_db
+\c postgres
+DROP DATABASE gm_db;
+CREATE DATABASE gm_db;
+GRANT ALL PRIVILEGES ON DATABASE gm_db TO gm_db_user;
+\c gm_db
+GRANT ALL PRIVILEGES ON SCHEMA public TO gm_db_user;
+\q
+# restore the database
 psql -U gm_db_user -d gm_db -f /tmp/base.sql
 
-# craete and activate environment
-python -m venv env
-source env/Scrips/activate
-
-# install requirements
-pip install -r requirements.txt
-cd backend
 
 create .env file in backend/.env
 ```
@@ -25,5 +29,15 @@ DATABASE_NAME='gm_db'
 BACKEND_DOMAIN='http://127.0.0.1:8000'
 ```
 
+
+# install requirements
+python -m venv env
+./env/Scripts/activate
+pip install -r requirements.txt
+
+# run the server
+cd backend
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
+go to http://127.0.0.1:8000
