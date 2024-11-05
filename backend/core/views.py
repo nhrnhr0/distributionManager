@@ -90,7 +90,7 @@ def make_ai_template(product_metadata, product_name, description, price, coupon,
 
     # Prepare coupon text conditionally
     coupon_text = f"✅ קוד קופון: {coupon}" if coupon else ""
-    join_group_link = '<span class="link-rtl">https://gm.bizbiz.co.il/join/ג-חיון/?c=0fa45f</span>'
+    join_group_link = 'gm.bizbiz.co.il/join/ג-חיון/?c=0fa45f'
 
     # Define greeting based on metadata
     greetings_map = {

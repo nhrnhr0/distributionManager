@@ -119,6 +119,15 @@ def dashboard_message_edit(request, uid):
         urls = data.getlist('url')
         is_deleted = data.getlist('delete-link')
         
+        # ai fields:
+        message.product_metadata = data.get('product_metadata', '')
+        message.product_name= data.get('product_name', '')
+        message.product_ = data.get('product_description', '')
+        message.price = data.get('price', '')
+        message.coupon_code = data.get('coupon_code', '')
+        
+        
+        
         links = []
         for i in range(len(descriptions)):
             links.append({

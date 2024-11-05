@@ -67,7 +67,8 @@ verbose_name_plural = _('message categories') -->
                         <input type="text"
                                class="form-control"
                                id="product_metadata"
-                               name="product_metadata">
+                               name="product_metadata"
+                                 value="{{ message.product_metadata }}">
                     </div>
                 </div>
                 <div class="form-group">
@@ -79,12 +80,13 @@ verbose_name_plural = _('message categories') -->
                         <input type="text"
                                class="form-control"
                                id="product_name"
-                               name="product_name">
+                               name="product_name"
+                                 value="{{ message.product_name }}">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="description">תיאור</label>
-                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    <textarea class="form-control" id="product_description" name="product_description" rows="3">{{ message.product_description }}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="price">מחיר (כולל מע"מ)</label>
@@ -92,7 +94,8 @@ verbose_name_plural = _('message categories') -->
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-shekel-sign"></i></span>
                         </div>
-                        <input type="text" class="form-control" id="price" name="price">
+                        <input type="text" class="form-control" id="price" name="price"
+                                 value="{{ message.price }}">
                     </div>
                 </div>
                 <div class="form-group">
@@ -101,7 +104,8 @@ verbose_name_plural = _('message categories') -->
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-percent"></i></span>
                         </div>
-                        <input type="text" class="form-control" id="coupon_code" name="coupon_code">
+                        <input type="text" class="form-control" id="coupon_code" name="coupon_code"
+                                    value="{{ message.coupon_code }}">
                     </div>
                 </div>
                 <div class="form-group">
@@ -303,7 +307,7 @@ verbose_name_plural = _('message categories') -->
         const business = document.getElementById('business').value;
         const product_metadata = document.getElementById('product_metadata').value;
         const product_name = document.getElementById('product_name').value;
-        const description = document.getElementById('description').value;
+        const description = document.getElementById('product_description').value;
         const price = document.getElementById('price').value;
         const coupon_code = document.getElementById('coupon_code').value;
         const messageTxt = document.getElementById('messageTxt');

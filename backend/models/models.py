@@ -287,6 +287,13 @@ class BizMessages(models.Model):
     messageTxt = models.TextField(_('message'), max_length=20000)
     image = models.ImageField(_('image'), upload_to='messages/', blank=True, null=True)
     
+    
+    product_metadata = models.CharField(_('product metadata'), max_length=1000, default='')
+    product_name = models.CharField(_('product name'), max_length=500, default='')
+    product_description = models.CharField(_('description'), max_length=1000, default='')
+    price = models.CharField(_('price'), max_length=100, default='')
+    coupon_code = models.CharField(_('coupon code'), max_length=100, default='')
+    
     def __str__(self) -> str:
         return self.messageTxt
     
