@@ -17,7 +17,7 @@ class DaylyGroupSizeCount(models.Model):
 
 class WhatsappGroupSizeCount(models.Model):
     group = models.ForeignKey(WhatsappGroup, on_delete=models.CASCADE, verbose_name=_("Whatsapp Group"))
-    count = models.IntegerField(verbose_name=_("Count"))
+    count = models.IntegerField(verbose_name=_("Count"), blank=True, null=True)
     session = models.ForeignKey(DaylyGroupSizeCount, on_delete=models.CASCADE, verbose_name=_("Session"), related_name='whatsappgroupsizecount_set')
 
     def __str__(self):
@@ -30,7 +30,7 @@ class WhatsappGroupSizeCount(models.Model):
 
 class TelegramGroupSizeCount(models.Model):
     group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, verbose_name=_("Telegram Group"))
-    count = models.IntegerField(verbose_name=_("Count"))
+    count = models.IntegerField(verbose_name=_("Count"), blank=True, null=True)
     session = models.ForeignKey(DaylyGroupSizeCount, on_delete=models.CASCADE, verbose_name=_("Session"), related_name='telegramgroupsizecount_set')
 
     def __str__(self):

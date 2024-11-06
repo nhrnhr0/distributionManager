@@ -25,8 +25,29 @@ def dashboard_biz_profile(request):
         return redirect('dashboard_biz_profile')
     return render(request, 'dashboard/biz_profile/index.html', {'biz': request.user.profile.biz})
 
+
+@admin_required
 def dashboard_counting_group_size_detail(request, id):
-    obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').get(id=id)
+    obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set__group__whatsapp_categories', 'telegramgroupsizecount_set__group__telegram_categories').get(id=id)
+    if request.method == 'POST':
+        data = request.POST
+        obj.date = data['date']
+        print(data)
+        for wac in obj.whatsappgroupsizecount_set.all():
+            cnt = data.get(f'whatsappgroupsizecount_set-{wac.id}', '')
+            cnt = cnt if cnt else None
+            wac.count = cnt
+            wac.save()
+        for tgc in obj.telegramgroupsizecount_set.all():
+            cnt = data.get(f'telegramgroupsizecount_set-{tgc.id}', '')
+            cnt = cnt if cnt else None
+            tgc.count = cnt
+            tgc.save()
+        obj.save()
+        return redirect('dashboard_counting_group_size_detail', id=obj.id)
+    if request.method == 'DELETE':
+        obj.delete()
+        return JsonResponse({'status': 'ok'})
     return render(request, 'dashboard/counting/group_size/detail.html', {
         'obj': obj,
     })
@@ -36,6 +57,13 @@ def craete_group_size_count(request):
     business = Business.objects.get(id=data['business'])
 
     obj = DaylyGroupSizeCount.objects.create(business=business)
+    for category in business.categories.all():
+        for wa_group in category.all_whatsapp_urls.all():
+            obj.whatsappgroupsizecount_set.create(group=wa_group)
+        for tg_group in category.all_telegram_urls.all():
+            obj.telegramgroupsizecount_set.create(group=tg_group)
+    
+    
     return redirect('dashboard_counting_group_size_detail', id=obj.id)
 
 @admin_required
