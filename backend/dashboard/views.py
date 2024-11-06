@@ -96,34 +96,92 @@ def dashboard_message_send(request):
     })
 
 
+# def send_telegram_message(uid):
+#     url = f"http://192.168.50.73:8000/dashboard/messages/edit/{uid}/"
+    
+#     text = f"הגיע הזמן לפרסם הודעה זו: {url}"
+    
+#     payload = {
+#         'chat_id': settings.TELEGRAM_CHAT_ID,
+#         'text': text
+#     }
+    
+#     response = requests.post(f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage", json=payload)
+    
+#     if response.status_code != 200:
+#         logger.error(f"Failed to send message to Telegram: {response.text}")
+#     return response.status_code == 200
 
-def send_telegram_message(uid):
-    url = f"http://192.168.50.73:8000/dashboard/messages/edit/{uid}/"
-    
-    text = f"הגיע הזמן לפרסם הודעה זו: {url}"
-    
-    payload = {
-        'chat_id': settings.TELEGRAM_CHAT_ID,
-        'text': text
-    }
-    
-    response = requests.post(f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage", json=payload)
-    
-    if response.status_code != 200:
-        logger.error(f"Failed to send message to Telegram: {response.text}")
-    return response.status_code == 200
+# def schedule_telegram_message(uid, send_at):
+#     try:
+#         job = scheduler.add_job(
+#             send_telegram_message,
+#             'date',
+#             run_date=send_at,
+#             args=[uid]
+#         )
+#         logger.info (f"scheduled job: {job.id}, run at {send_at} for UID: {uid}")
+#     except Exception as e:
+#             logger.error(f"failed to schedule job for UID {uid}: {e}")
 
+
+def send_telegram_message():
+    try:
+        # Fetch only unsent messages
+        unsent_messages = MessageCategory.objects.filter(is_sent=False)
+        
+        if unsent_messages.exists():
+            # Construct message text with each unsent message link
+            text = "הודעות שלא נשלחו:\n"
+            for message in unsent_messages:
+                url = f"http://192.168.50.73:8000/dashboard/messages-send/{message.uid}/"
+                text += f"{message.uid}: {url}\n"
+
+            payload = {
+                'chat_id': settings.TELEGRAM_CHAT_ID,
+                'text': text
+            }
+            
+            response = requests.post(f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage", json=payload)
+            
+            if response.status_code != 200:
+                logger.error(f"Failed to send reminder to Telegram: {response.status_code} - {response.text}")
+        else:
+            logger.info("No unsent messages to send reminder for.")
+    except requests.exceptions.RequestException as e:
+        # Log network-related errors (e.g., connection errors)
+        logger.error(f"Network error occurred when sending reminder to Telegram: {e}")
+    except Exception as e:
+        # Catch any other unexpected exceptions
+        logger.error(f"An unexpected error occurred: {e}")
+        
+        
 def schedule_telegram_message(uid, send_at):
     try:
+        job_id = f"send_message_{uid}_{send_at.timestamp()}"
+        
+        # Schedule the job to run at the specified date and time
         job = scheduler.add_job(
-            send_telegram_message,
-            'date',
+            send_telegram_message,   
+            trigger='date',
             run_date=send_at,
-            args=[uid]
+            id=job_id
         )
-        logger.info (f"scheduled job: {job.id}, run at {send_at} for UID: {uid}")
+        logger.info(f"Scheduled job: {job.id}, run at {send_at} for UID: {uid}")
     except Exception as e:
-            logger.error(f"failed to schedule job for UID {uid}: {e}")
+        logger.error(f"Failed to schedule job for UID {uid}: {e}")
+
+
+# Ensure that this job runs every minute to send reminders for unsent messages
+def setup_scheduler():
+    if not scheduler.get_job("unsent_messages_reminder"):
+        scheduler.add_job(
+            send_telegram_message,
+            'interval',
+            minutes=20,
+            id="unsent_messages_reminder"
+        )
+
 
 def dashboard_message_edit(request, uid):
     message = BizMessages.objects.get(uid=uid)
