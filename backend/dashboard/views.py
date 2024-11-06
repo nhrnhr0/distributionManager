@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
+from django.db.models import Min
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
 def dashboard_biz_profile(request):
@@ -387,7 +388,20 @@ def dashboard_messages_calendar_set_date(request):
         data = json.loads(request.body)
         message = MessageCategory.objects.get(id=data['id'])
         message.send_at = data['new_date']
+        
         message.save()
+        # if it was not a main category, set the message of the main category to the min date of all the categories
+        if not message.category.is_main_category:
+            biz_message = message.message
+            all_messages = biz_message.categories.all()
+            main_category = all_messages.filter(category__is_main_category=True).first()
+            if main_category:
+                all_categories_without_main = all_messages.exclude(category__is_main_category=True)
+                min_date = all_categories_without_main.aggregate(Min('send_at'))['send_at__min']
+                main_category.send_at = min_date
+                main_category.save()
+                
+        
         return JsonResponse({'status': 'ok'})
     pass
 
@@ -399,6 +413,9 @@ def dashboard_messages_calendar(request):
     
     if selected_busines:
         messages_to_send = messages_to_send.filter(message__business__id=selected_busines)
+        
+    # remove the messages for the main category
+    messages_to_send = messages_to_send.exclude(category__is_main_category=True)
     
     msgs = messages_qs_to_json(messages_to_send)
     return render(request, 'dashboard/calender/index.html', {
