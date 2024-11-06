@@ -146,7 +146,7 @@ def dashboard_message_edit(request, uid):
         link_ids = data.getlist('link_id')
         descriptions = data.getlist('description')
         urls = data.getlist('url')
-        is_deleted = data.getlist('delete-link')
+        # is_deleted = data.getlist('delete-link')
         
         # ai fields:
         message.product_metadata = data.get('product_metadata', '')
@@ -159,12 +159,17 @@ def dashboard_message_edit(request, uid):
         
         links = []
         for i in range(len(descriptions)):
-            links.append({
+            lnk ={
                 'id': link_ids[i] if i < len(link_ids) else None,
                 'description': descriptions[i] if i < len(descriptions) else '',
                 'url': urls[i] if i < len(urls) else '',
-                'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
-            })
+                # 'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
+            }
+            if lnk['id']:
+                lnk['isDeleted'] = data.get(f'delete-link-{lnk["id"]}', '') == 'on'
+            else:
+                lnk['isDeleted'] = False
+            links.append(lnk)
         
         for link in links:
             if link.get('id') and link['isDeleted']:
@@ -185,20 +190,28 @@ def dashboard_message_edit(request, uid):
         categories_ids = data.getlist('category_id')
         categories_list = data.getlist('category')
         send_ats = data.getlist('send_at')
-        is_sents = data.getlist('is_sent')
-        is_deleted = data.getlist('delete-category[]')
+        # is_sents = data.getlist('is_sent')
+        #is_deleted = data.getlist('delete-category[]')
         
         cats = []
         for i in range(len(categories_list)):
             if not categories_list[i]:
                 continue
-            cats.append({
+            cat = {
                 'id': categories_ids[i] if i < len(categories_ids) else None,
                 'category': categories_list[i] if i < len(categories_list) else None,
                 'sendAt': send_ats[i] if i < len(send_ats) else None,
-                'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
-                'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
-            })
+                #'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
+                #'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
+            }
+            if cat['id']:
+                cat['isDeleted'] = data.get(f'delete-category-{cat["id"]}', '') == 'on'
+                cat['isSent'] = data.get(f'is_sent-{cat["id"]}', '') == 'on'
+            else:
+                cat['isDeleted'] = False
+                cat['isSent'] = False
+            cats.append(cat)
+            
         print(cats)
             
         
