@@ -151,7 +151,9 @@ verbose_name_plural = _('message categories') -->
                                         <input type="text" name="url" value="{{ link.url }}" class="form-control">
                                     </td>
                                     <td>
-                                        <input type="checkbox" name="delete-link" id="delete-{{ link.id }}">
+                                        <input type="checkbox"
+                                               name="delete-link-{{ link.id }}"
+                                               id="delete-{{ link.id }}">
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-secondary" onclick="addLink(event)">הוסף</button>
@@ -184,15 +186,26 @@ verbose_name_plural = _('message categories') -->
                                 <tr>
                                     <td>
                                         <input type="hidden" name="category_id" value="{{ category.id }}">
-                                        <select name="category"
-                                                class="form-control"
-                                                {% if forloop.first %}readonly{% endif %}>
-                                            <option value="">בחר קטגוריה</option>
-                                            {% for cat in categories %}
-                                                <option value="{{ cat.id }}"
-                                                        {% if cat.id == category.category.id %}selected{% endif %}>{{ cat }}</option>
-                                            {% endfor %}
-                                        </select>
+                                        {% if forloop.first %}
+                                            <select class="form-control" {% if forloop.first %}disabled{% endif %}>
+                                                <option value="">בחר קטגוריה</option>
+                                                {% for cat in categories %}
+                                                    <option value="{{ cat.id }}"
+                                                            {% if cat.id == category.category.id %}selected{% endif %}>{{ cat }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <input type="hidden" name="category" value="{{ category.category.id }}">
+                                        {% else %}
+                                            <select name="category" class="form-control"
+                                                <option value="">בחר קטגוריה</option>
+                                                {% for cat in categories %}
+                                                    {% if not cat.is_main_category %}
+                                                        <option value="{{ cat.id }}"
+                                                                {% if cat.id == category.category.id %}selected{% endif %}>{{ cat }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <input type="datetime-local"
@@ -206,13 +219,15 @@ verbose_name_plural = _('message categories') -->
                                     </td>
                                     <td>
                                         <input type="checkbox"
-                                               name="is_sent"
+                                               name="is_sent-{{ category.id }}"
                                                {% if category.is_sent %}checked{% endif %}>
                                     </td>
                                     <td>
-                                        <input type="checkbox"
-                                               name="delete-category[]"
-                                               id="delete-{{ category.id }}">
+                                        {% if not forloop.first %}
+                                            <input type="checkbox"
+                                                   name="delete-category-{{ category.id }}"
+                                                   id="delete-{{ category.id }}">
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -415,7 +430,11 @@ verbose_name_plural = _('message categories') -->
                 <td>
                     <select name="category" class="form-control">
                         <option value="">בחר קטגוריה</option>
-                        {% for cat in categories %}<option value="{{ cat.id }}">{{ cat }}</option>{% endfor %}
+                        {% for cat in categories %}
+                        {% if not cat.is_main_category %}
+                        <option value="{{ cat.id }}">{{ cat }}</option>
+                        {% endif %}
+                        {% endfor %}
                     </select>
                 </td>
                 <td>
