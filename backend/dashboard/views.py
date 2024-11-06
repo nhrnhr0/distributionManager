@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
+from django.db.models import Min
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
 def dashboard_biz_profile(request):
@@ -25,8 +26,29 @@ def dashboard_biz_profile(request):
         return redirect('dashboard_biz_profile')
     return render(request, 'dashboard/biz_profile/index.html', {'biz': request.user.profile.biz})
 
+
+@admin_required
 def dashboard_counting_group_size_detail(request, id):
-    obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').get(id=id)
+    obj = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set__group__whatsapp_categories', 'telegramgroupsizecount_set__group__telegram_categories').get(id=id)
+    if request.method == 'POST':
+        data = request.POST
+        obj.date = data['date']
+        print(data)
+        for wac in obj.whatsappgroupsizecount_set.all():
+            cnt = data.get(f'whatsappgroupsizecount_set-{wac.id}', '')
+            cnt = cnt if cnt else None
+            wac.count = cnt
+            wac.save()
+        for tgc in obj.telegramgroupsizecount_set.all():
+            cnt = data.get(f'telegramgroupsizecount_set-{tgc.id}', '')
+            cnt = cnt if cnt else None
+            tgc.count = cnt
+            tgc.save()
+        obj.save()
+        return redirect('dashboard_counting_group_size_detail', id=obj.id)
+    if request.method == 'DELETE':
+        obj.delete()
+        return JsonResponse({'status': 'ok'})
     return render(request, 'dashboard/counting/group_size/detail.html', {
         'obj': obj,
     })
@@ -36,6 +58,13 @@ def craete_group_size_count(request):
     business = Business.objects.get(id=data['business'])
 
     obj = DaylyGroupSizeCount.objects.create(business=business)
+    for category in business.categories.all():
+        for wa_group in category.all_whatsapp_urls.all():
+            obj.whatsappgroupsizecount_set.create(group=wa_group)
+        for tg_group in category.all_telegram_urls.all():
+            obj.telegramgroupsizecount_set.create(group=tg_group)
+    
+    
     return redirect('dashboard_counting_group_size_detail', id=obj.id)
 
 @admin_required
@@ -167,8 +196,8 @@ def dashboard_message_edit(request, uid):
                 'id': categories_ids[i] if i < len(categories_ids) else None,
                 'category': categories_list[i] if i < len(categories_list) else None,
                 'sendAt': send_ats[i] if i < len(send_ats) else None,
-                'isSent': is_sents[i] if i < len(is_sents) else False,
-                'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
+                'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
+                'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
             })
         print(cats)
             
@@ -359,7 +388,20 @@ def dashboard_messages_calendar_set_date(request):
         data = json.loads(request.body)
         message = MessageCategory.objects.get(id=data['id'])
         message.send_at = data['new_date']
+        
         message.save()
+        # if it was not a main category, set the message of the main category to the min date of all the categories
+        if not message.category.is_main_category:
+            biz_message = message.message
+            all_messages = biz_message.categories.all()
+            main_category = all_messages.filter(category__is_main_category=True).first()
+            if main_category:
+                all_categories_without_main = all_messages.exclude(category__is_main_category=True)
+                min_date = all_categories_without_main.aggregate(Min('send_at'))['send_at__min']
+                main_category.send_at = min_date
+                main_category.save()
+                
+        
         return JsonResponse({'status': 'ok'})
     pass
 
@@ -371,6 +413,9 @@ def dashboard_messages_calendar(request):
     
     if selected_busines:
         messages_to_send = messages_to_send.filter(message__business__id=selected_busines)
+        
+    # remove the messages for the main category
+    messages_to_send = messages_to_send.exclude(category__is_main_category=True)
     
     msgs = messages_qs_to_json(messages_to_send)
     return render(request, 'dashboard/calender/index.html', {
@@ -380,6 +425,7 @@ def dashboard_messages_calendar(request):
     })
 
 
+from datetime import datetime, timedelta
 
 @admin_required
 def dashboard_leads_in(request):
@@ -390,6 +436,12 @@ def dashboard_leads_in(request):
     start_date = request.GET.get('start_date', None)
     end_date = request.GET.get('end_date', None)
     qrs = request.GET.getlist('qrs', [])
+    
+    start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+    end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+    
+    if end_date:
+        end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
 
     leads = LeadsClicks.objects.select_related('business', 'qr', 'qr__category').all()
     categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category', 'category').all()

@@ -68,7 +68,7 @@ verbose_name_plural = _('message categories') -->
                                class="form-control"
                                id="product_metadata"
                                name="product_metadata"
-                                 value="{{ message.product_metadata }}">
+                               value="{{ message.product_metadata }}">
                     </div>
                 </div>
                 <div class="form-group">
@@ -81,12 +81,15 @@ verbose_name_plural = _('message categories') -->
                                class="form-control"
                                id="product_name"
                                name="product_name"
-                                 value="{{ message.product_name }}">
+                               value="{{ message.product_name }}">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="description">תיאור</label>
-                    <textarea class="form-control" id="product_description" name="product_description" rows="3">{{ message.product_description }}</textarea>
+                    <textarea class="form-control"
+                              id="product_description"
+                              name="product_description"
+                              rows="3">{{ message.product_description }}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="price">מחיר (כולל מע"מ)</label>
@@ -94,8 +97,11 @@ verbose_name_plural = _('message categories') -->
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-shekel-sign"></i></span>
                         </div>
-                        <input type="text" class="form-control" id="price" name="price"
-                                 value="{{ message.price }}">
+                        <input type="text"
+                               class="form-control"
+                               id="price"
+                               name="price"
+                               value="{{ message.price }}">
                     </div>
                 </div>
                 <div class="form-group">
@@ -104,8 +110,11 @@ verbose_name_plural = _('message categories') -->
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-percent"></i></span>
                         </div>
-                        <input type="text" class="form-control" id="coupon_code" name="coupon_code"
-                                    value="{{ message.coupon_code }}">
+                        <input type="text"
+                               class="form-control"
+                               id="coupon_code"
+                               name="coupon_code"
+                               value="{{ message.coupon_code }}">
                     </div>
                 </div>
                 <div class="form-group">
@@ -154,72 +163,77 @@ verbose_name_plural = _('message categories') -->
                 </div>
                 <div class="form-group">
                     <!-- adding categories with option to add new or delete existing -->
-            <table class="table table-bordered table-striped table-hover mt-3"
-                   id="categories-table">
-                <thead>
-                    <tr>
-                        <th>קטגוריה</th>
-                        <th>תאריך שליחה</th>
-                        <th>נשלח</th>
-                        <th>מחק</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="4">
-                            <!-- <a href="#" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</a> -->
-                            <button type="button" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</button>
-                        </td>
-                    </tr>
-                    {% for category in message.categories.all %}
-                        <tr>
-                            <td>
-                                <input type="hidden" name="category_id" value="{{ category.id }}">
-                                <select name="category" class="form-control">
-                                    <option value="">בחר קטגוריה</option>
-                                    {% for cat in categories %}
-                                        <option value="{{ cat.id }}"
-                                                {% if cat.id == category.category.id %}selected{% endif %}>{{ cat }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <input type="datetime-local"
-                                       name="send_at"
-                                       value="{{ category.send_at|date:'Y-m-d\TH:i' }}"
-                                       class="form-control send_at"
-                                       id="send_at-{{ category.id }}"
-                                       onfocus="this.oldValue = this.value;"
-                                       onchange="on_date_change(event);this.oldValue = this.value;"
-                                       {% if forloop.first %}data-mainCategory="true"{% endif %}>
-                            </td>
-                            <td>
-                                <input type="checkbox"
-                                       name="is_sent"
-                                       {% if category.is_sent %}checked{% endif %}>
-                            </td>
-                            <td>
-                                <input type="checkbox"
-                                       name="delete-category[]"
-                                       id="delete-{{ category.id }}">
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    <table class="table table-bordered table-striped table-hover mt-3"
+                           id="categories-table">
+                        <thead>
+                            <tr>
+                                <th>קטגוריה</th>
+                                <th>תאריך שליחה</th>
+                                <th>נשלח</th>
+                                <th>מחק</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <!-- <a href="#" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</a> -->
+                                    <button type="button" class="btn btn-primary" onclick="addNewCategory()">הוסף קטגוריה</button>
+                                </td>
+                            </tr>
+                            {% for category in message.categories.all %}
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="category_id" value="{{ category.id }}">
+                                        <select name="category"
+                                                class="form-control"
+                                                {% if forloop.first %}readonly{% endif %}>
+                                            <option value="">בחר קטגוריה</option>
+                                            {% for cat in categories %}
+                                                <option value="{{ cat.id }}"
+                                                        {% if cat.id == category.category.id %}selected{% endif %}>{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="datetime-local"
+                                               name="send_at"
+                                               value="{{ category.send_at|date:'Y-m-d\TH:i' }}"
+                                               class="form-control send_at"
+                                               id="send_at-{{ category.id }}"
+                                               onfocus="this.oldValue = this.value;"
+                                               onchange="on_date_change(event);this.oldValue = this.value;"
+                                               {% if forloop.first %}data-mainCategory="true" readonly{% endif %}>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox"
+                                               name="is_sent"
+                                               {% if category.is_sent %}checked{% endif %}>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox"
+                                               name="delete-category[]"
+                                               id="delete-{{ category.id }}">
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                
                 <div class="form-group mt-5">
                     <!-- action buttons -->
-                    <button type="button" onclick="generate_AI_message()" class="btn btn-primary ai-msg-button">צור הודעה</button>
+                    <button type="button"
+                            onclick="generate_AI_message()"
+                            class="btn btn-primary ai-msg-button">צור הודעה</button>
                 </div>
             </div>
             <div class="form-group">
                 <label for="messageTxt">הודעה</label>
-                <button onclick="applyCorrections()" class="btn btn-warning btn-block" id="applyCorrectionsButton" type="button">שלח תיקונים</button>
+                <button onclick="applyCorrections()"
+                        class="btn btn-warning btn-block"
+                        id="applyCorrectionsButton"
+                        type="button">שלח תיקונים</button>
                 <textarea name="messageTxt" id="messageTxt" class="form-control" rows="10">{{ message.messageTxt }}</textarea>
             </div>
-            
             <button type="submit" class="btn btn-primary">שמור</button>
             <button type="button" class="btn btn-danger" onclick="deleteBtn(event)">מחק</button>
         </button>
@@ -254,6 +268,7 @@ verbose_name_plural = _('message categories') -->
             body: JSON.stringify(data),
         }).then(response => response.json());
     }
+
     function read_product_links() {
         // table id="links-table"
         const table = document.getElementById('links-table');
@@ -348,26 +363,32 @@ verbose_name_plural = _('message categories') -->
 
 
     function on_date_change(e) {
-        debugger;
-        console.log('old value', e.target.oldValue, 'new value', e.target.value);
-
-        // if it's not the main category and the old value is equal to the value in the main category, update the main category as well
         const categories = document.querySelectorAll('.send_at');
         const mainCategory = categories[0];
-        const value_of_main_category = mainCategory.value;
-        if (e.target.dataset.maincategory !== 'true' && e.target.oldValue === value_of_main_category) {
-            mainCategory.value = e.target.value;
-        }
 
-        // if the main category is updated, update all the other categories as well that are empty (undefined)
-        if (e.target.dataset.maincategory === 'true') {
-            for (let i = 1; i < categories.length; i++) {
-                if (categories[i].value === "") {
-                    categories[i].value = e.target.value;
+        // Start with a maximum date for comparison
+        let minDate = new Date('9999-12-31T23:59');
+
+        for (let i = 1; i < categories.length; i++) {
+            const category = categories[i];
+            if (category.value) {
+                const categoryDate = new Date(category.value);
+
+                // Update minDate if a smaller date is found
+                if (categoryDate < minDate) {
+                    minDate = categoryDate;
                 }
             }
         }
 
+        // Format minDate to "yyyy-MM-ddThh:mm" in local time
+        const year = minDate.getFullYear();
+        const month = String(minDate.getMonth() + 1).padStart(2, '0');
+        const day = String(minDate.getDate()).padStart(2, '0');
+        const hours = String(minDate.getHours()).padStart(2, '0');
+        const minutes = String(minDate.getMinutes()).padStart(2, '0');
+
+        mainCategory.value = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
     function deleteBtn(e) {

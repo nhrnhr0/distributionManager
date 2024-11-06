@@ -86,7 +86,7 @@
                     <ul>
                         {% for link in message_cat.category.all_whatsapp_urls.all %}
                             <li>
-                                <a href="/{{ link }}" target="_blank">{{ link.name }}</a>
+                                <a href="{{ link.get_link }}" target="_blank">{{ link.name }}</a>
                             </li>
                         {% endfor %}
                     </ul>
@@ -96,7 +96,7 @@
                     <ul>
                         {% for link in message_cat.category.all_telegram_urls.all %}
                             <li>
-                                <a href="/{{ link }}" target="_blank">{{ link.name }}</a>
+                                <a href="{{ link.get_link }}" target="_blank">{{ link.name }}</a>
                             </li>
                         {% endfor %}
                     </ul>

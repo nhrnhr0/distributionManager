@@ -3,6 +3,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 document.addEventListener('DOMContentLoaded', function () {
     var calendarEl = document.getElementById('calendar');
@@ -35,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Apply line-through style if is_sent is true
                 info.el.style.textDecoration = 'line-through';
             }
+            tippy(info.el, {
+                content: info.event.extendedProps.description,
+            });
         },
         headerToolbar: {
             left: 'prev,next today',
@@ -121,12 +126,13 @@ function init_events() {
         {
             var event = {
                 is_sent: msgs[i].is_sent,
-                title: msgs[i].category + " - " + msgs[i].message.substring(0, 10),
+                title: msgs[i].message.substring(0, 30),
                 start: msgs[i].send_at,
                 allDay: false,
                 color: hashStringToColor(msgs[i].category),
                 msg_uid: msgs[i].message_uid,
-                obj_id: msgs[i].id
+                obj_id: msgs[i].id,
+                description: msgs[i].category + " | " + msgs[i].message
             };
             events.push(event);
         }
@@ -143,12 +149,13 @@ function init_unscheduled_events() {
         {
             unscheduledEvents.push({
                 is_sent: msgs[i].is_sent,
-                title: msgs[i].category + " - " + msgs[i].message.substring(0, 10),
+                title: msgs[i].message.substring(0, 30),
                 color: hashStringToColor(msgs[i].category),
                 category: msgs[i].category,
                 message: msgs[i].message,
                 msg_uid: msgs[i].message_uid,
-                obj_id: msgs[i].id
+                obj_id: msgs[i].id,
+                description: msgs[i].category + " | " + msgs[i].message
             });
         }
     }

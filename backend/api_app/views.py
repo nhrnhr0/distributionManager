@@ -78,7 +78,8 @@ def get_group_count(data, group_type='whatsapp'):
         # Calculate the totals for each category
         category_totals = defaultdict(int)
         for group, count in group_counts.items():
-            category_totals[group_categories[group]] += count
+            if count:
+                category_totals[group_categories[group]] += count
         # Store the total for the current date and category
         for cat, total in category_totals.items():
             date_totals_by_category[date][cat] = total

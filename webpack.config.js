@@ -15,5 +15,13 @@ module.exports = {
     output: {
         filename: '[name].bundle.js', // Use [name] to dynamically replace with each entry key
         path: path.resolve(__dirname, 'backend', 'static_cdn', 'dist')
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/i,
+                use: ['style-loader', 'css-loader'],
+            }
+        ]
     }
 };

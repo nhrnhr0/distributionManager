@@ -7,6 +7,7 @@
                     <h5>כניסות לאתר</h5>
                 </div>
                 <div class="card-body">
+                    <button class="btn btn-secondary mb-3" onclick="reset_pivot_table_fields()">איפוס שדות</button>
                     <div id="table"></div>
                 </div>
             </div>
@@ -14,6 +15,10 @@
     </div>
 </div>
 <script>
+    function reset_pivot_table_fields() {
+        window.localStorage.removeItem('table_config');
+        location.reload();
+    }
     // Function to handle pivot table updates
     function handlePivotUpdate(config) {
         console.log("User updated the pivot table");
