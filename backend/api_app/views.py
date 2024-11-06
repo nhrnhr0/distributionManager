@@ -55,7 +55,11 @@ from django.http import JsonResponse
 #     # return json response
 #     return JsonResponse(results, safe=False)
     
-
+'''
+    Function to get the group count
+    data: quertset of WhatsappGroupSizeCount/TelegramGroupSizeCount
+    group_type: type of group (whatsapp/telegram)
+'''
 def get_group_count(data, group_type='whatsapp'):
     group_counts = defaultdict(int)
     # Dictionary to hold the category for each group
@@ -68,9 +72,12 @@ def get_group_count(data, group_type='whatsapp'):
         date, count, group_id = entry.session.date, entry.count, entry.group.id#, entry.group.whatsapp_categories.all().first().name
         category = None
         if group_type == 'whatsapp':
-            category = entry.group.whatsapp_categories.all()[0].name
+            category = entry.group.whatsapp_categories.all()[0].name if entry.group.whatsapp_categories.count() else None
         elif group_type == 'telegram':
-            category = entry.group.telegram_categories.all()[0].name
+            category = entry.group.telegram_categories.all()[0].name if entry.group.telegram_categories.count() else None
+        
+        if not category:
+            continue
         # Update the group count
         group_counts[group_id] = count
         # Store the category for the group
