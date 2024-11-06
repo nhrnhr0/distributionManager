@@ -195,8 +195,8 @@ def dashboard_message_edit(request, uid):
                 'id': categories_ids[i] if i < len(categories_ids) else None,
                 'category': categories_list[i] if i < len(categories_list) else None,
                 'sendAt': send_ats[i] if i < len(send_ats) else None,
-                'isSent': is_sents[i] if i < len(is_sents) else False,
-                'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
+                'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
+                'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
             })
         print(cats)
             
@@ -408,6 +408,7 @@ def dashboard_messages_calendar(request):
     })
 
 
+from datetime import datetime, timedelta
 
 @admin_required
 def dashboard_leads_in(request):
@@ -418,6 +419,12 @@ def dashboard_leads_in(request):
     start_date = request.GET.get('start_date', None)
     end_date = request.GET.get('end_date', None)
     qrs = request.GET.getlist('qrs', [])
+    
+    start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+    end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+    
+    if end_date:
+        end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
 
     leads = LeadsClicks.objects.select_related('business', 'qr', 'qr__category').all()
     categories_clicks = CategoriesClicks.objects.select_related('business', 'qr', 'qr__category', 'category').all()

@@ -44,6 +44,7 @@
                             </table>
                         </div>
                     </div>
+                    <button class="btn btn-secondary mb-3" onclick="reset_pivot_table_fields()">איפוס שדות</button>
                     <div id="table"></div>
                 </div>
             </div>
@@ -51,6 +52,10 @@
     </div>
 </div>
 <script>
+    function reset_pivot_table_fields() {
+        window.localStorage.removeItem('table_config_leads_out');
+        location.reload();
+    }
     // Function to handle pivot table updates
     function handlePivotUpdate(config) {
         console.log("User updated the pivot table");
@@ -70,8 +75,14 @@
 
     $(function() {
         // load table config from URL query params and set it to the pivot table if exists
-
-        const table_config = window.localStorage.getItem('table_config_leads_out');
+        const default_table_config = {
+            rows: ['עסק', 'קטגוריה', 'סוג קבוצה'],
+            cols: ['לינק'],
+            vals: ["כמות"],
+            aggregatorName: "Integer Sum",
+            rendererName: "Table",
+        }
+        const table_config = window.localStorage.getItem('table_config_leads_out') || JSON.stringify(default_table_config);
         if (table_config) {
             $('#table').pivotUI(
                 translated_results, {

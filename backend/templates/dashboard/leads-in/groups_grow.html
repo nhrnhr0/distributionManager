@@ -74,7 +74,12 @@
             type: 'line',
             data: {
                 labels: dates,
-                datasets: datasets
+                datasets: datasets.map(dataset => {
+                    return {
+                        ...dataset,
+                        tension: 0
+                    };
+                })
             },
             options: {
                 responsive: true,
