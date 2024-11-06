@@ -58,6 +58,12 @@
                           {% if request.path|startswith:dashboard_biz_profile_url %}active{% endif %}"
                    href="{{ dashboard_biz_profile_url }}">פרופיל עסק</a>
             </li>
+            <li class="nav-item">
+                {% url 'dashboard_admin_page' as dashboard_admin_page %}
+                <a class="nav-link
+                          {% if request.path|startswith:dashboard_admin_page %}active{% endif %}"
+                   href="{{ dashboard_admin_page }}">עריכת פרופיל</a>
+            </li>
         </ul>
         <ul class="navbar-nav">
             {% if request.user.is_authenticated %}

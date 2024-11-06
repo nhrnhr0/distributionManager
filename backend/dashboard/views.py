@@ -16,6 +16,19 @@ from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, Telegra
 from django.db.models import Min
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+@admin_required
+def dashboard_admin_page(reqeust):
+    businesses = Business.objects.all()
+    if reqeust.method == 'POST':
+        data = reqeust.POST
+        reqeust.user.profile.biz = Business.objects.get(id=data['business'])
+        reqeust.user.profile.save()
+        return redirect('dashboard_admin_page')
+    return render(reqeust, 'dashboard/admin_page/index.html', {
+        'businesses': businesses,
+    })
+
+@admin_required
 def dashboard_biz_profile(request):
     if request.method == 'POST':
         data = request.POST

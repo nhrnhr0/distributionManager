@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from core.views import busines_join,busines_join_whatsapp_link,busines_join_telegram_link
 # from admin_dashboard.views import admin_dashboard_schedule,admin_dashboard_message_detail,admin_dashboard_send_messages,admin_dashboard_send_message_detail,admin_dashboard_message_detail_update_send_date
 from django.contrib.auth.views import LogoutView, LoginView
-from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out,dashboard_messages_calendar, dashboard_messages_calendar_set_date,dashboard_counting_group_size,dashboard_counting_group_size_detail,dashboard_biz_profile
+from dashboard.views import dashboard_leads_in,dashboard_index,dashboard_messages,dashboard_message_edit,dashboard_message_send,dashboard_message_send_edit,dashboard_message_new,dashboard_leads_out,dashboard_messages_calendar, dashboard_messages_calendar_set_date,dashboard_counting_group_size,dashboard_counting_group_size_detail,dashboard_biz_profile,dashboard_admin_page
 from core.views import redirector
 from core.views import calls_webhook
 from core.views import generate_ai_message_view,apply_ai_correction_view
@@ -50,6 +50,7 @@ urlpatterns = [
     path('dashboard/messages/delete/<str:uid>/', dashboard_message_edit, name='message_delete'),
     path('dashboard/messages-send/', dashboard_message_send, name='message_send'),
     path('dashboard/messages-send/<str:uid>/', dashboard_message_send_edit, name='message_edit_send'),
+    path('dashboard/admin-page/', dashboard_admin_page, name='dashboard_admin_page'),
     
     path('dashboard/counting/group-size/', dashboard_counting_group_size, name='dashboard_counting_group_size'),
     path('dashboard/counting/group-size/<str:id>/', dashboard_counting_group_size_detail, name='dashboard_counting_group_size_detail'),
