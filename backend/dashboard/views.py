@@ -14,6 +14,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
 from django.db.models import Min, Sum
+from django.contrib import messages
+
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
 @admin_required
@@ -35,6 +37,8 @@ def dashboard_biz_profile(request):
         biz = request.user.profile.biz
         biz.phone = data['phone']
         biz.telegram_fotter = data['telegram_fotter']
+        biz.ai_system_prompt = data['ai_system_prompt']
+        messages.add_message(request, messages.SUCCESS, 'הפרטים נשמרו בהצלחה')
         biz.save()
         return redirect('dashboard_biz_profile')
     return render(request, 'dashboard/biz_profile/index.html', {'biz': request.user.profile.biz})
