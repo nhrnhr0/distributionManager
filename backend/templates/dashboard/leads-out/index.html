@@ -48,6 +48,12 @@
             unique_categories_groups.add(cat);
         }
         console.log('unique_categories_groups', unique_categories_groups);
+
+        const returning_messages = JSON.parse("{{ returning_messages|escapejs }}");
+        console.log('returning_messages', returning_messages);
+
+        const returning_calls = JSON.parse("{{ returning_calls|escapejs }}");
+        console.log('returning_calls', returning_calls);
     </script>
     <div style="display: flex;">
         <div style="flex: 1;">{% include "dashboard/leads-out/leads_out_side_filter.html" %}</div>
@@ -55,6 +61,7 @@
             {% include "dashboard/leads-out/leads_out_table_data.html" %}
             {% include "dashboard/leads-out/leads_out_chart.html" %}
             {% include "dashboard/leads-out/leads_out_categories_table.html" %}
+            {% include "dashboard/leads-out/returning_chats_chart.html" %}
         </div>
     </div>
 {% endblock %}

@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
-from django.db.models import Min
+from django.db.models import Min, Sum
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
 @admin_required
@@ -306,10 +306,17 @@ def dashboard_leads_out(request):
     start_date = request.GET.get('start_date', None)
     end_date = request.GET.get('end_date', None)
     
+    start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+    end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+    
+    if end_date:
+        end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
+    
     calls = CallsResponsesCount.objects.all()
     messages = MessagesResponsesCount.objects.all()
     links_clicks = MessageLinkClick.objects.all()
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
+    
     
     if biz:
         calls = calls.filter(business__id=biz.id)
@@ -329,32 +336,34 @@ def dashboard_leads_out(request):
         links_clicks = links_clicks.filter(created_at__lte=end_date)
         group_size_count = group_size_count.filter(date__lte=end_date)
 
-    if calls.count() > 1:
-        calls_info = {
-            'amount': calls.last().count - calls.first().count,
-            'growth': (calls.last().count - calls.first().count) / (calls.last().date - calls.first().date).days,
-            'counts': calls.count(),
-        }
-    else:
-        calls_info = {
-            'amount': 0,
-            'growth': 0,
-            'counts': 0,
-        }
+    # if calls.count() > 1:
+    #     calls_info = {
+    #         'amount': calls.last().count - calls.first().count,
+    #         'growth': (calls.last().count - calls.first().count) / (calls.last().date - calls.first().date).days,
+    #         'counts': calls.count(),
+    #     }
+    # else:
+    #     calls_info = {
+    #         'amount': 0,
+    #         'growth': 0,
+    #         'counts': 0,
+    #     }
         
-    if messages.count() > 1:
-        chats_info = {
-            'amount': messages.last().count - messages.first().count,
-            'growth': (messages.last().count - messages.first().count) / (messages.last().date - messages.first().date).days,
-            'counts': messages.count(),
-        }
-    else:
-        chats_info = {
-            'amount': 0,
-            'growth': 0,
-            'counts': 0,
-        }
-    
+    # if messages.count() > 1:
+    #     chats_info = {
+    #         'amount': messages.last().count - messages.first().count,
+    #         'growth': (messages.last().count - messages.first().count) / (messages.last().date - messages.first().date).days,
+    #         'counts': messages.count(),
+    #     }
+    # else:
+    #     chats_info = {
+    #         'amount': 0,
+    #         'growth': 0,
+    #         'counts': 0,
+    #     }
+    # chats_info = {amount: <sum of all counts>, counts: <count of all messages>}
+    chats_info = messages.aggregate(amount=Sum('count'), counts=Count('id'))
+    calls_info = calls.aggregate(amount=Sum('count'), counts=Count('id'))
     
     links_clicks_json = []
     for link in links_clicks:
@@ -381,12 +390,19 @@ def dashboard_leads_out(request):
         growth[1] = 'T ' + growth[1]
     all_growth = whatsapp_growth + telegram_growth
     all_growth= json.dumps(all_growth, default=str)
+    # group by date and sum the counts [{'date', 'count'}]
+    returning_messages_vals = messages.values('date').annotate(count=Sum('count'))
+    returning_calls_vals = calls.values('date').annotate(count=Sum('count'))
+    returning_messages = json.dumps(list(returning_messages_vals), default=str)
+    returning_calls = json.dumps(list(returning_calls_vals), default=str)
     ctx = {
         # 'businesses': businesses,
         'calls_info': calls_info,
         'chats_info': chats_info,
         'links_clicks_json': links_clicks_json,
-        'all_growth': all_growth
+        'all_growth': all_growth,
+        'returning_messages': returning_messages,
+        'returning_calls': returning_calls,
     }
     return render(request, 'dashboard/leads-out/index.html', ctx)
 
