@@ -393,15 +393,20 @@ verbose_name_plural = _('message categories') -->
                 }
             }
         }
+        if (minDate.getTime() === new Date('9999-12-31T23:59').getTime()) {
+            // empty date for the main category
+            mainCategory.value = '';
+        } else {
 
-        // Format minDate to "yyyy-MM-ddThh:mm" in local time
-        const year = minDate.getFullYear();
-        const month = String(minDate.getMonth() + 1).padStart(2, '0');
-        const day = String(minDate.getDate()).padStart(2, '0');
-        const hours = String(minDate.getHours()).padStart(2, '0');
-        const minutes = String(minDate.getMinutes()).padStart(2, '0');
+            // Format minDate to "yyyy-MM-ddThh:mm" in local time
+            const year = minDate.getFullYear();
+            const month = String(minDate.getMonth() + 1).padStart(2, '0');
+            const day = String(minDate.getDate()).padStart(2, '0');
+            const hours = String(minDate.getHours()).padStart(2, '0');
+            const minutes = String(minDate.getMinutes()).padStart(2, '0');
 
-        mainCategory.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            mainCategory.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
     }
 
     function deleteBtn(e) {
