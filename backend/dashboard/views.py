@@ -314,7 +314,7 @@ def dashboard_leads_out(request):
     
     calls = CallsResponsesCount.objects.all()
     messages = MessagesResponsesCount.objects.all()
-    links_clicks = MessageLinkClick.objects.all()
+    links_clicks = MessageLinkClick.objects.all().prefetch_related('msg', 'category', 'link', 'msg__business')
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     
     
@@ -391,8 +391,8 @@ def dashboard_leads_out(request):
     all_growth = whatsapp_growth + telegram_growth
     all_growth= json.dumps(all_growth, default=str)
     # group by date and sum the counts [{'date', 'count'}]
-    returning_messages_vals = messages.values('date').annotate(count=Sum('count'))
-    returning_calls_vals = calls.values('date').annotate(count=Sum('count'))
+    returning_messages_vals = messages.values('date').annotate(count=Sum('count')).order_by('date')
+    returning_calls_vals = calls.values('date').annotate(count=Sum('count')).order_by('date')
     returning_messages = json.dumps(list(returning_messages_vals), default=str)
     returning_calls = json.dumps(list(returning_calls_vals), default=str)
     ctx = {

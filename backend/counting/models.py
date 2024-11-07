@@ -52,7 +52,7 @@ class MessagesResponsesCount(models.Model):
     class Meta:
         verbose_name = _("Messages Responses Count")
         verbose_name_plural = _("Messages Responses Counts")
-
+        ordering = ['-date']
 
 
 
@@ -68,3 +68,4 @@ class CallsResponsesCount(models.Model):
     class Meta:
         verbose_name = _("Calls Responses Count")
         verbose_name_plural = _("Calls Responses Counts")
+        ordering = ['-date']
