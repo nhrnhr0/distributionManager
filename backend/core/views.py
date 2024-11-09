@@ -96,6 +96,8 @@ def calls_webhook(request):
     call_length = request.GET.get('time_duration_seconds', 0)
     time_started = request.GET.get('time_started', '')
     own_number_friendly = request.GET.get('own_number_friendly', '')
+    if not caller_id or not call_status or not time_started or not own_number_friendly:
+        return JsonResponse({'status': 'error', 'message': 'Missing required parameters'})
     # Create a new Call object
     call_obj = Call.objects.create(
         caller_id=caller_id,
