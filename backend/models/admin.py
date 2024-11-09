@@ -18,9 +18,11 @@ class SysUserAdmin(admin.ModelAdmin):
 admin.site.register(SysUser, SysUserAdmin)
 
 class LeadsClicksAdmin(admin.ModelAdmin):
-    list_display = ['id', 'business', 'qr', 'created_at']
+    list_display = ['id', 'business', 'qr', 'created_at', 'referrer']
     actions = ['download_csv',]
     list_filter = ['business', 'qr', 'created_at']
+    def get_queryset(self, request: HttpRequest) -> QuerySet:
+        return super().get_queryset(request).prefetch_related('qr', 'business')
     def download_csv(self, request, queryset):
         import csv
         from django.http import HttpResponse
@@ -41,8 +43,10 @@ class LeadsClicksAdmin(admin.ModelAdmin):
 admin.site.register(LeadsClicks, LeadsClicksAdmin)
 
 class CategoriesClicksAdmin(admin.ModelAdmin):
-    list_display = ['id', 'business', 'category', 'qr', 'created_at']
+    list_display = ['id', 'business', 'category', 'qr', 'created_at','referrer']
     actions = ['download_csv',]
+    def get_queryset(self, request: HttpRequest) -> QuerySet:
+        return super().get_queryset(request).prefetch_related('qr', 'business')
     def download_csv(self, request, queryset):
         import csv
         from django.http import HttpResponse
@@ -178,7 +182,7 @@ admin.site.register(MessageLink, MessageLinkAdmin)
 
 
 class MessageLinkClickAdmin(admin.ModelAdmin):
-    list_display = ['id', 'msg', 'category', 'link', 'group_type', 'ip', 'user_agent', 'created_at']
+    list_display = ['id', 'created_at','msg','link','category','group_type','ip','user_agent','referrer',]
     pass
 admin.site.register(MessageLinkClick, MessageLinkClickAdmin)
 

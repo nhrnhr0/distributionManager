@@ -107,7 +107,7 @@ class LeadsClicks(models.Model):
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='leads_clicks', verbose_name=_('business'))
     qr = models.ForeignKey('BusinessQR', on_delete=models.CASCADE, related_name='leads_clicks', null=True, blank=True, verbose_name=_('QR'))
-    
+    referrer = models.CharField(_('referrer'), max_length=1000, blank=True, null=True)
     class Meta:
         verbose_name = _('leads click')
         verbose_name_plural = _('leads clicks')
@@ -125,7 +125,7 @@ class CategoriesClicks(models.Model):
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='categories_clicks', verbose_name=_('category'))
     qr = models.ForeignKey('BusinessQR', on_delete=models.CASCADE, related_name='categories_clicks', null=True, blank=True, verbose_name=_('QR'))
     group_type = models.CharField(_('group type'), max_length=100, choices=CATEGORY_GROUP, default=CATEGORY_GROUP_WHATSAPP)
-
+    referrer = models.CharField(_('referrer'), max_length=1000, blank=True, null=True)
     class Meta:
         verbose_name = _('categories click')
         verbose_name_plural = _('categories clicks')
@@ -380,4 +380,4 @@ class MessageLinkClick(models.Model):
     group_type = models.CharField(_('group type'), max_length=100, choices=CategoriesClicks.CATEGORY_GROUP, default=CategoriesClicks.CATEGORY_GROUP_WHATSAPP)
     ip = models.GenericIPAddressField(_('IP'), blank=True, null=True)
     user_agent = models.TextField(_('user agent'), blank=True, null=True)
-    
+    referrer = models.CharField(_('referrer'), max_length=1000, blank=True, null=True)

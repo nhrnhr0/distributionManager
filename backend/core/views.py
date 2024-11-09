@@ -127,6 +127,7 @@ def redirector(request):
     group_type = CategoriesClicks.CATEGORY_GROUP_WHATSAPP if group_type == 'w' else CategoriesClicks.CATEGORY_GROUP_TELEGRAM
     ip = request.META.get('REMOTE_ADDR')
     user_agent = request.META.get('HTTP_USER_AGENT')
+    referrer = request.META.get('HTTP_REFERER')
     if link:
         # add click
         
@@ -136,7 +137,8 @@ def redirector(request):
             link=link,
             group_type=group_type,
             ip=ip,
-            user_agent=user_agent)
+            user_agent=user_agent,
+            referrer=referrer)
         click.save()
         pass
     
@@ -148,14 +150,15 @@ def busines_join(request, business_slug):
     biz = Business.objects.prefetch_related('categories__open_whatsapp_url','categories__open_telegram_url').get(slug=business_slug)
     campain_source_code = request.GET.get('c')
     qr_obj = BusinessQR.objects.filter(qr_code=campain_source_code).first()
+    referrer = request.META.get('HTTP_REFERER')
     if qr_obj:
         # add click
-        click = LeadsClicks(business=biz, qr=qr_obj)
+        click = LeadsClicks(business=biz, qr=qr_obj, referrer=referrer)
         click.save()
         pass
     else:
         # add click
-        click = LeadsClicks(business=biz)
+        click = LeadsClicks(business=biz, referrer=referrer)
         click.save()
         pass
     return render(request, 'core/join.html', {'biz': biz})
@@ -166,14 +169,16 @@ def busines_join_whatsapp_link(request, business_slug, category_slug):
     category = Category.objects.get(slug=category_slug, business=biz)
     
     qr_obj = BusinessQR.objects.filter(qr_code=request.GET.get('c')).first()
+    referrer = request.META.get('HTTP_REFERER')
+
     if qr_obj:
         # add click
-        click = CategoriesClicks(business=biz, category=category, qr=qr_obj)
+        click = CategoriesClicks(business=biz, category=category, qr=qr_obj,group_type=CategoriesClicks.CATEGORY_GROUP_WHATSAPP, referrer=referrer)
         click.save()
         pass
     else:
         # add click
-        click = CategoriesClicks(business=biz, category=category,group_type=CategoriesClicks.CATEGORY_GROUP_WHATSAPP)
+        click = CategoriesClicks(business=biz, category=category,group_type=CategoriesClicks.CATEGORY_GROUP_WHATSAPP, referrer=referrer)
         click.save()
     
     link = category.open_whatsapp_url.get_link()
@@ -185,14 +190,16 @@ def busines_join_telegram_link(request, business_slug, category_slug):
     category = Category.objects.get(slug=category_slug, business=biz)
     
     qr_obj = BusinessQR.objects.filter(qr_code=request.GET.get('c')).first()
+    referrer = request.META.get('HTTP_REFERER')
+    
     if qr_obj:
         # add click
-        click = CategoriesClicks(business=biz, category=category, qr=qr_obj,group_type=CategoriesClicks.CATEGORY_GROUP_TELEGRAM)
+        click = CategoriesClicks(business=biz, category=category, qr=qr_obj,group_type=CategoriesClicks.CATEGORY_GROUP_TELEGRAM, referrer=referrer)
         click.save()
         pass
     else:
         # add click
-        click = CategoriesClicks(business=biz, category=category,group_type=CategoriesClicks.CATEGORY_GROUP_TELEGRAM)
+        click = CategoriesClicks(business=biz, category=category,group_type=CategoriesClicks.CATEGORY_GROUP_TELEGRAM, referrer=referrer)
         click.save()
     
     link = category.open_telegram_url.get_link()
