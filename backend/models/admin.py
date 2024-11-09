@@ -9,6 +9,7 @@ from adminsortable2.admin import SortableAdminMixin
 from adminsortable2.admin import SortableAdminBase
 from adminsortable2.admin import SortableTabularInline
 from django.db.models import Prefetch
+from .models import Call
 
 # Register your models here.
 class SysUserAdmin(admin.ModelAdmin):
@@ -184,3 +185,8 @@ class MessageLinkClickAdmin(admin.ModelAdmin):
     list_display = ['id', 'created_at','msg','link','category','group_type','ip','user_agent','referrer',]
     pass
 admin.site.register(MessageLinkClick, MessageLinkClickAdmin)
+
+class CallAdmin(admin.ModelAdmin):
+    list_display = ['caller_id','call_status','call_length','time_started','own_number_friendly',]
+    pass
+admin.site.register(Call, CallAdmin)
