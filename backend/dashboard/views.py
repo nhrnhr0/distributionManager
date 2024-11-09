@@ -246,7 +246,7 @@ def setup_scheduler():
     if not scheduler.get_job("daily_group_count_reminder"):
         scheduler.add_job(
             send_daily_group_count_reminder,
-            CronTrigger(hour=9, minute=0),
+            CronTrigger(hour=9, minute=0, day_of_week="mon-fri,sun"),
             id="daily_group_count_reminder",
         )
         logger.info("Scheduled 'daily_group_count_reminder' job.")
@@ -264,11 +264,12 @@ def setup_scheduler():
     else:
         logger.info("'weekly_whatsapp_call_reminder' job already exists.")
 
-    # הוספת משימה מתוזמנת לבדיקת קבוצות יומית
+    # הוספת משימה מתוזמנת לבדיקת מכסה ספירת קבוצות יומית
     if not scheduler.get_job("check_group_count_threshold"):
         scheduler.add_job(
             check_group_count_threshold,
-            CronTrigger(hour=9, minute=0),
+            "interval",
+            hours=4,
             id="check_group_count_threshold",
         )
         logger.info("Scheduled 'check_group_count_threshold' job.")
