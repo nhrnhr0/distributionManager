@@ -35,7 +35,7 @@
                 {% url 'dashboard_messages' as dashboard_messages_url %}
                 <a class="nav-link
                           {% if request.path|startswith:dashboard_messages_url %}active{% endif %}"
-                   href="{{ dashboard_messages_url }}">הודעות</a>
+                   href="{{ dashboard_messages_url }}">יצירת הודעות</a>
             </li>
             <li class="nav-item">
                 {% url 'dashboard_messages_calendar' as dashboard_calendar_url %}

@@ -211,6 +211,7 @@ def dashboard_message_edit(request, uid):
         
         cats = []
         for i in range(len(categories_list)):
+            # TODO: Should we allow empty categories? No: how to show it in the calendar? Yes: What if a date is set and no category, ignore it?
             if not categories_list[i]:
                 continue
             cat = {

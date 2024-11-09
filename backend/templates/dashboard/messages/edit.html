@@ -225,6 +225,31 @@ verbose_name_plural = _('message categories') -->
                                     </td>
                                 </tr>
                             {% endfor %}
+                            {% comment %} adding one empty category row {% endcomment %}
+                            <tr>
+                                <td>
+                                    <select name="category" class="form-control">
+                                        <option value="">בחר קטגוריה</option>
+                                        {% for cat in categories %}
+                                            {% if not cat.is_main_category %}<option value="{{ cat.id }}">{{ cat }}</option>{% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="datetime-local"
+                                           name="send_at"
+                                           class="form-control send_at"
+                                           onfocus="this.oldValue = this.value;"
+                                           onchange="on_date_change(event);this.oldValue = this.value;"
+                                           name="send_at">
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="is_sent">
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="delete-category[]">
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
