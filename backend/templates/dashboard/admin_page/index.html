@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% load my_tags %}
+{% block title %}דאשבורד - ניהול אדמין{% endblock %}
+{% block extra_head %}
+{% endblock extra_head %}
+{% block content %}
+    <div class="container">
+        <h1>ניהול אדמין</h1>
+        <div class="row">
+            <div class="col-md-12">
+                <form method="POST" action="{% url 'dashboard_admin_page' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="business">עסק</label>
+                        <select class="form-control" id="business" name="business">
+                            {% for business in businesses %}
+                                <option value="{{ business.id }}"
+                                        {% if business.id == request.user.profile.biz.id %}selected{% endif %}>{{ business.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mt-3">
+                        <button type="submit" class="btn btn-primary">שמור</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

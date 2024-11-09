@@ -4,16 +4,6 @@
     </div>
     <div class="card-body">
         <form action method="get">
-            <div class="mb-3">
-                <label for="business" class="form-label">עסק</label>
-                <select name="business" id="business" class="form-select">
-                    <option value>כל העסקים</option>
-                    {% for biz in businesses %}
-                        <option value="{{ biz.id }}"
-                                {% if request.GET.business == biz.id|stringformat:"s" %}selected{% endif %}>{{ biz.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
             <button type="submit" class="btn btn-primary">סנן</button>
             <button type="button"
                     class="btn btn-secondary"

@@ -1,0 +1,64 @@
+{% comment %} returning_chats = [
+    {
+        "date": "2024-10-06",
+        "count": 1
+    },
+    {
+        "date": "2024-10-27",
+        "count": 17
+    },
+    {
+        "date": "2024-10-20",
+        "count": 15
+    },
+    {
+        "date": "2024-10-13",
+        "count": 10
+    }
+] {% endcomment %}
+<div class="container">
+    <h2>גרף מספר שיחות חוזרות בוואצאפ לפי תאריך</h2>
+    <canvas id="returningChatsChart"></canvas>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        init_returning_chats_chart();
+
+    });
+
+
+    function init_returning_chats_chart() {
+        const returning_chats_ctx = document.getElementById('returningChatsChart').getContext('2d');
+
+        // data= [1, 17, 15, 10], labels= ["2024-10-06", "2024-10-27", "2024-10-20", "2024-10-13"]
+        // we need to order the data by date in returning_messages
+
+
+        const returning_chats_sorted = returning_messages;
+
+        const dates = returning_chats_sorted.map(item => item.date);
+        const data = returning_chats_sorted.map(item => item.count);
+
+        const chart = new Chart(returning_chats_ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'מספר הודעות חוזרות',
+                    data: data,
+                    borderWidth: 3,
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+</script>

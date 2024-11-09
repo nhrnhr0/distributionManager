@@ -40,7 +40,6 @@ class MessageCategory(models.Model):
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>עסק</th>
                                     <th>הודעה</th>
                                     <th>קטגוריות</th>
                                     <th>תאריך שליחה</th>
@@ -54,7 +53,6 @@ class MessageCategory(models.Model):
                                         <td>
                                             <a href="{% url 'message_edit' message.uid %}">{{ message.uid }}</a>
                                         </td>
-                                        <td>{{ message.business }}</td>
                                         <td>{{ message.messageTxt }}</td>
                                         <td>
                                             <ul>

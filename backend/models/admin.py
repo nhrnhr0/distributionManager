@@ -182,7 +182,6 @@ class MessageLinkClickAdmin(admin.ModelAdmin):
     pass
 admin.site.register(MessageLinkClick, MessageLinkClickAdmin)
 
-
 class CallAdmin(admin.ModelAdmin):
     list_display = ['caller_id','call_status','call_length','time_started','own_number_friendly',]
     pass

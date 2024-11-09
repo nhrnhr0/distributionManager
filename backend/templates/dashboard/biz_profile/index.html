@@ -10,6 +10,7 @@
         <form method="post" action="{% url 'dashboard_biz_profile' %}">
             {% csrf_token %}
             <!-- phone -->
+            <button type="submit" class="btn btn-primary">שמור</button>
             <div class="form-group">
                 <label for="phone">טלפון</label>
                 <input type="text"
@@ -25,7 +26,15 @@
                           id="telegram_fotter"
                           name="telegram_fotter"
                           rows="3">{{ biz.telegram_fotter | default_if_none:"" }}</textarea>
-                <button type="submit" class="btn btn-primary">שמור</button>
-            </form>
-        </div>
-    {% endblock %}
+            </div>
+            <div class="form-group">
+                <label for="ai_system_prompt">AI preprompt</label>
+                <textarea class="form-control"
+                          id="ai_system_prompt"
+                          name="ai_system_prompt"
+                          rows="12">{{ biz.get_ai_system_prompt | default_if_none:"" }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">שמור</button>
+        </form>
+    </div>
+{% endblock %}

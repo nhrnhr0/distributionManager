@@ -1,7 +1,12 @@
 {% load my_tags %}
 {% load custom_tags %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'dashboard_index' %}">{{ request.user }}</a>
+    <a class="navbar-brand" href="{% url 'dashboard_index' %}">
+        {% comment %} user name and biz {% endcomment %}
+        {% if request.user.is_authenticated %}
+            {{ request.user }}<span style="font-size: smaller">({{ request.user.profile.biz }})</span>
+        {% endif %}
+    </a>
     <button class="navbar-toggler"
             type="button"
             data-toggle="collapse"
@@ -30,7 +35,7 @@
                 {% url 'dashboard_messages' as dashboard_messages_url %}
                 <a class="nav-link
                           {% if request.path|startswith:dashboard_messages_url %}active{% endif %}"
-                   href="{{ dashboard_messages_url }}">הודעות</a>
+                   href="{{ dashboard_messages_url }}">יצירת הודעות</a>
             </li>
             <li class="nav-item">
                 {% url 'dashboard_messages_calendar' as dashboard_calendar_url %}
@@ -58,6 +63,14 @@
                           {% if request.path|startswith:dashboard_biz_profile_url %}active{% endif %}"
                    href="{{ dashboard_biz_profile_url }}">פרופיל עסק</a>
             </li>
+            {% if request.user.is_superuser %}
+                <li class="nav-item">
+                    {% url 'dashboard_admin_page' as dashboard_admin_page %}
+                    <a class="nav-link
+                              {% if request.path|startswith:dashboard_admin_page %}active{% endif %}"
+                       href="{{ dashboard_admin_page }}">ניהול אדמין</a>
+                </li>
+            {% endif %}
         </ul>
         <ul class="navbar-nav">
             {% if request.user.is_authenticated %}

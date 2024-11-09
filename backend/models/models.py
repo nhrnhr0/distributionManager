@@ -45,6 +45,9 @@ class Business(models.Model):
     favicon = models.ImageField(_('favicon'), upload_to='businesses/', blank=True, null=True)
     phone = models.CharField(_('phone'), max_length=100, blank=True, null=True)
     telegram_fotter = models.CharField(_('telegram footer'), max_length=2500, blank=True, null=True)
+    
+    ai_system_prompt = models.CharField(_('AI message prompt'), max_length=10000, blank=True, null=True)
+    
     def __str__(self) -> str:
         return self.name
     
@@ -54,6 +57,29 @@ class Business(models.Model):
     class Meta:
         verbose_name = _('business')
         verbose_name_plural = _('businesses')
+        
+        
+    def get_ai_system_prompt(self):
+        return self.ai_system_prompt or """
+אתה עוזר שיווקי דובר עברית, המתמחה בכתיבת הודעות מכירה קצרות וברורות, בעברית תקינה וללא שגיאות כתיב.
+השתמש רק במילים יומיומיות וברורות, והימנע ממילים נדירות או יוצאות דופן.
+הודעות אלו צריכות להיות מקצועיות, מזמינות וממוקדות בפרטים שסופקו בלבד.
+
+צור הודעת מכירה בסגנון ניטרלי וברור.
+ההודעה צריכה להיות קצרה, מושכת, וברורה,ומבוססת על פרטי המידע שסופקו בלבד– אך נכתבת מחדש באופן יצירתי כך שלא תשכפל את התיאור שהוזן,
+אלא תציג אותו במילים חדשות ומכירתיות.
+במידה ולא הוכנס מידע על המחיר או קופון אל תכליל מחיר או קופון שלא יהיה משהו שיקרי. תתייחס כמו שצריך לקלט ולא להמציא שום דבר.
+בנוסף חשוב לי שיהיה  אימוג'ים מתאימים להודעה.
+קישור להצטרפות לעוד קבוצות שלנו חובה שיופיע בהודעה בתור טקסט רגיל שנראה ככה בדיוק: 'gm.bizbiz.co.il/join/ג-חיון/?c=0fa45f'
+חשוב מאוד! אם קיימים "קישורים להזמנה" צריך להכיס אותם אחד לאחד כמו שהם מופיעים במקור, כלומר [link:מזהה הקישו]
+מבנה ההודעה:
+1. פתיחה קלילה ומזמינה, שמסבירה את יתרונות המוצר מבלי לחזור במדויק על התיאור שסופק.
+2. תיאור ייחודי וקצר של המוצר, המדגיש את הערך העיקרי עבור הלקוח (כמו נוחות, הגנה, כיף).
+3. ציון ברור של המחיר כולל מע"מ, כך שיהיה בולט ומשתלם.
+4. קריאה לפעולה להזמנה עם קישור לרכישה.
+5. פנייה שירותית לסיום עם מספר טלפון ליצירת קשר, בסגנון כמו "לשירותכם", "נשמח לעזור" או "לייעוץ והכוונה".
+מתחת מופיע פרטי ההודעה, המידע צריך להיות מוצג בהודעה בצורה מדוייקת וברורה, תתעלם ממידע ריק
+"""
 
 class BusinessQRCategories(models.Model):
     name = models.CharField(_('name'), max_length=100)
@@ -233,8 +259,8 @@ class Category(models.Model):
     is_main_category = models.BooleanField(_('is main category'), default=False)
     the_order = models.PositiveIntegerField(_('order'), default=0)
     
-    ai_message_tone = models.CharField(_('AI message tone'), max_length=1000, blank=True, null=True)
-    ai_message_example = models.CharField(_('AI message example'), max_length=1000, blank=True, null=True)
+    # ai_message_tone = models.CharField(_('AI message tone'), max_length=1000, blank=True, null=True)
+    # ai_message_example = models.CharField(_('AI message example'), max_length=1000, blank=True, null=True)
     
     def __str__(self) -> str:
         return self.name + ' - ' + self.business.name

@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             tippy(info.el, {
                 content: info.event.extendedProps.description,
+                allowHTML: true,
             });
         },
         headerToolbar: {
@@ -126,13 +127,13 @@ function init_events() {
         {
             var event = {
                 is_sent: msgs[i].is_sent,
-                title: msgs[i].message.substring(0, 30),
+                title: msgs[i].message.substring(0, 15) + " | " + msgs[i].category,
                 start: msgs[i].send_at,
                 allDay: false,
                 color: hashStringToColor(msgs[i].category),
                 msg_uid: msgs[i].message_uid,
                 obj_id: msgs[i].id,
-                description: msgs[i].category + " | " + msgs[i].message
+                description: '<b><u>' + msgs[i].category + '</u></b>' + " | " + msgs[i].message
             };
             events.push(event);
         }
@@ -149,13 +150,13 @@ function init_unscheduled_events() {
         {
             unscheduledEvents.push({
                 is_sent: msgs[i].is_sent,
-                title: msgs[i].message.substring(0, 30),
+                title: msgs[i].message.substring(0, 15) + " | " + msgs[i].category,
                 color: hashStringToColor(msgs[i].category),
                 category: msgs[i].category,
                 message: msgs[i].message,
                 msg_uid: msgs[i].message_uid,
                 obj_id: msgs[i].id,
-                description: msgs[i].category + " | " + msgs[i].message
+                description: '<b><u>' + msgs[i].category + '</u></b>' + " | " + msgs[i].message
             });
         }
     }
@@ -179,6 +180,10 @@ function renderUnscheduledEvents(events, container) {
             is_sent: event.is_sent,
         }));
         container.appendChild(eventEl);
+        tippy(eventEl, {
+            content: event.description,
+            allowHTML: true,
+        });
     });
 
 

@@ -13,15 +13,32 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from counting.models import DaylyGroupSizeCount, WhatsappGroupSizeCount, TelegramGroupSizeCount
-from django.db.models import Min
+from django.db.models import Min, Sum
+from django.contrib import messages
+
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
+@admin_required
+def dashboard_admin_page(reqeust):
+    businesses = Business.objects.all()
+    if reqeust.method == 'POST':
+        data = reqeust.POST
+        reqeust.user.profile.biz = Business.objects.get(id=data['business'])
+        reqeust.user.profile.save()
+        return redirect('dashboard_admin_page')
+    return render(reqeust, 'dashboard/admin_page/index.html', {
+        'businesses': businesses,
+    })
+
+@admin_required
 def dashboard_biz_profile(request):
     if request.method == 'POST':
         data = request.POST
         biz = request.user.profile.biz
         biz.phone = data['phone']
         biz.telegram_fotter = data['telegram_fotter']
+        biz.ai_system_prompt = data['ai_system_prompt']
+        messages.add_message(request, messages.SUCCESS, 'הפרטים נשמרו בהצלחה')
         biz.save()
         return redirect('dashboard_biz_profile')
     return render(request, 'dashboard/biz_profile/index.html', {'biz': request.user.profile.biz})
@@ -53,9 +70,9 @@ def dashboard_counting_group_size_detail(request, id):
         'obj': obj,
     })
 
-def craete_group_size_count(request):
-    data = request.POST
-    business = Business.objects.get(id=data['business'])
+def craete_group_size_count(biz: Business):
+    # data = request.POST
+    business = Business.objects.get(id=biz.id)
 
     obj = DaylyGroupSizeCount.objects.create(business=business)
     for category in business.categories.all():
@@ -69,19 +86,16 @@ def craete_group_size_count(request):
 
 @admin_required
 def dashboard_counting_group_size(request):
+    biz = request.user.profile.biz
     if request.method == 'POST':
-        return craete_group_size_count(request)
-    businesses = Business.objects.all()
+        return craete_group_size_count(biz)
+    # businesses = Business.objects.all()
     
     counts = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
-
-    business = request.GET.get('business', None)
-    
-    if business:
-        counts = counts.filter(business__id=business)
+    counts = counts.filter(business=biz)
     
     return render(request, 'dashboard/counting/group_size/index.html', {
-        'businesses': businesses,
+        # 'businesses': businesses,
         'counts': counts,
     })
 
@@ -125,6 +139,8 @@ def dashboard_message_send_edit(request, uid):
 @admin_required
 def dashboard_message_send(request):
     messages_cats = MessageCategory.objects.select_related('message', 'category', 'message__business').all()
+    biz = request.user.profile.biz
+    messages_cats = messages_cats.filter(message__business=biz)
     # order by, first the ones that are not sent, then the ones that are sent
     # and then by the send_at date, as close as possible to now and blank dates last
     messages_cats = messages_cats.order_by('is_sent', 'send_at')
@@ -136,7 +152,7 @@ def dashboard_message_send(request):
 @admin_required
 def dashboard_message_edit(request, uid):
     message = BizMessages.objects.get(uid=uid)
-    businesses = Business.objects.all()
+    # businesses = Business.objects.all()
     categories = Category.objects.all()
     categories = categories.filter(business=message.business)
     
@@ -195,6 +211,7 @@ def dashboard_message_edit(request, uid):
         
         cats = []
         for i in range(len(categories_list)):
+            # TODO: Should we allow empty categories? No: how to show it in the calendar? Yes: What if a date is set and no category, ignore it?
             if not categories_list[i]:
                 continue
             cat = {
@@ -253,22 +270,22 @@ def dashboard_message_edit(request, uid):
     
     return render(request, 'dashboard/messages/edit.html', {
         'message': message,
-        'businesses': businesses,
+        # 'businesses': businesses,
         'categories': categories,
     })
 
 
 @admin_required
 def dashboard_messages(request):
-    businesses = Business.objects.all()
+    # businesses = Business.objects.all()
     all_messages = BizMessages.objects.select_related('business').prefetch_related('categories', 'links', 'categories__category').all()
-    
-    selected_busines = request.GET.get('business', None)
-    if selected_busines:
-        all_messages = all_messages.filter(business__id=selected_busines)
+    biz = request.user.profile.biz
+    # selected_busines = request.GET.get('business', None)
+    # if selected_busines:
+    all_messages = all_messages.filter(business__id=biz.id)
         
     return render(request, 'dashboard/messages/index.html', {
-        'businesses': businesses,
+        # 'businesses': businesses,
         'all_messages': all_messages,
     })
 
@@ -287,22 +304,30 @@ from counting.models import CallsResponsesCount, MessagesResponsesCount
 from models.models import MessageLinkClick
 @admin_required
 def dashboard_leads_out(request):
-    businesses = Business.objects.all()
+    # businesses = Business.objects.all()
 
-    selected_busines = request.GET.get('business', None)
+    # selected_busines = request.GET.get('business', None)
+    biz = request.user.profile.biz
     start_date = request.GET.get('start_date', None)
     end_date = request.GET.get('end_date', None)
     
+    start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+    end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+    
+    if end_date:
+        end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
+    
     calls = CallsResponsesCount.objects.all()
     messages = MessagesResponsesCount.objects.all()
-    links_clicks = MessageLinkClick.objects.all()
+    links_clicks = MessageLinkClick.objects.all().prefetch_related('msg', 'category', 'link', 'msg__business')
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     
-    if selected_busines:
-        calls = calls.filter(business__id=selected_busines)
-        messages = messages.filter(business__id=selected_busines)
-        links_clicks = links_clicks.filter(msg__business__id=selected_busines)
-        group_size_count = group_size_count.filter(business__id=selected_busines)
+    
+    if biz:
+        calls = calls.filter(business__id=biz.id)
+        messages = messages.filter(business__id=biz.id)
+        links_clicks = links_clicks.filter(msg__business__id=biz.id)
+        group_size_count = group_size_count.filter(business__id=biz.id)
         
     if start_date:
         calls = calls.filter(date__gte=start_date)
@@ -316,32 +341,34 @@ def dashboard_leads_out(request):
         links_clicks = links_clicks.filter(created_at__lte=end_date)
         group_size_count = group_size_count.filter(date__lte=end_date)
 
-    if calls.count() > 1:
-        calls_info = {
-            'amount': calls.last().count - calls.first().count,
-            'growth': (calls.last().count - calls.first().count) / (calls.last().date - calls.first().date).days,
-            'counts': calls.count(),
-        }
-    else:
-        calls_info = {
-            'amount': 0,
-            'growth': 0,
-            'counts': 0,
-        }
+    # if calls.count() > 1:
+    #     calls_info = {
+    #         'amount': calls.last().count - calls.first().count,
+    #         'growth': (calls.last().count - calls.first().count) / (calls.last().date - calls.first().date).days,
+    #         'counts': calls.count(),
+    #     }
+    # else:
+    #     calls_info = {
+    #         'amount': 0,
+    #         'growth': 0,
+    #         'counts': 0,
+    #     }
         
-    if messages.count() > 1:
-        chats_info = {
-            'amount': messages.last().count - messages.first().count,
-            'growth': (messages.last().count - messages.first().count) / (messages.last().date - messages.first().date).days,
-            'counts': messages.count(),
-        }
-    else:
-        chats_info = {
-            'amount': 0,
-            'growth': 0,
-            'counts': 0,
-        }
-    
+    # if messages.count() > 1:
+    #     chats_info = {
+    #         'amount': messages.last().count - messages.first().count,
+    #         'growth': (messages.last().count - messages.first().count) / (messages.last().date - messages.first().date).days,
+    #         'counts': messages.count(),
+    #     }
+    # else:
+    #     chats_info = {
+    #         'amount': 0,
+    #         'growth': 0,
+    #         'counts': 0,
+    #     }
+    # chats_info = {amount: <sum of all counts>, counts: <count of all messages>}
+    chats_info = messages.aggregate(amount=Sum('count'), counts=Count('id'))
+    calls_info = calls.aggregate(amount=Sum('count'), counts=Count('id'))
     
     links_clicks_json = []
     for link in links_clicks:
@@ -368,12 +395,19 @@ def dashboard_leads_out(request):
         growth[1] = 'T ' + growth[1]
     all_growth = whatsapp_growth + telegram_growth
     all_growth= json.dumps(all_growth, default=str)
+    # group by date and sum the counts [{'date', 'count'}]
+    returning_messages_vals = messages.values('date').annotate(count=Sum('count')).order_by('date')
+    returning_calls_vals = calls.values('date').annotate(count=Sum('count')).order_by('date')
+    returning_messages = json.dumps(list(returning_messages_vals), default=str)
+    returning_calls = json.dumps(list(returning_calls_vals), default=str)
     ctx = {
-        'businesses': businesses,
+        # 'businesses': businesses,
         'calls_info': calls_info,
         'chats_info': chats_info,
         'links_clicks_json': links_clicks_json,
-        'all_growth': all_growth
+        'all_growth': all_growth,
+        'returning_messages': returning_messages,
+        'returning_calls': returning_calls,
     }
     return render(request, 'dashboard/leads-out/index.html', ctx)
 
@@ -420,19 +454,19 @@ def dashboard_messages_calendar_set_date(request):
 
 @admin_required
 def dashboard_messages_calendar(request):
-    businesses = Business.objects.all()
+    # businesses = Business.objects.all()
     messages_to_send = MessageCategory.objects.select_related('category','message').filter(category__isnull=False)
-    selected_busines = request.GET.get('business', None)
-    
-    if selected_busines:
-        messages_to_send = messages_to_send.filter(message__business__id=selected_busines)
+    # selected_busines = request.GET.get('business', None)
+    biz = request.user.profile.biz
+    # if selected_busines:
+    messages_to_send = messages_to_send.filter(message__business__id=biz.id)
         
     # remove the messages for the main category
     messages_to_send = messages_to_send.exclude(category__is_main_category=True)
     
     msgs = messages_qs_to_json(messages_to_send)
     return render(request, 'dashboard/calender/index.html', {
-        'businesses': businesses,
+        # 'businesses': businesses,
         'msgs': msgs,
         
     })
@@ -442,10 +476,11 @@ from datetime import datetime, timedelta
 
 @admin_required
 def dashboard_leads_in(request):
-    businesses = Business.objects.all()
+    # businesses = Business.objects.all()
     
     # queryparams filters
-    busines = request.GET.get('business', None)
+    # busines = request.GET.get('business', None)
+    biz = request.user.profile.biz
     start_date = request.GET.get('start_date', None)
     end_date = request.GET.get('end_date', None)
     qrs = request.GET.getlist('qrs', [])
@@ -461,11 +496,11 @@ def dashboard_leads_in(request):
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related('whatsappgroupsizecount_set', 'telegramgroupsizecount_set').all()
     qrs_list = BusinessQR.objects.all()
     sent_messages = MessageCategory.objects.select_related('category').filter(is_sent=True).filter(category__isnull=False)
-    if busines:
-        leads = leads.filter(business__id=busines)
-        qrs_list = qrs_list.filter(business__id=busines)
-        categories_clicks = categories_clicks.filter(business__id=busines)
-        group_size_count = group_size_count.filter(business__id=busines)
+    if biz:
+        leads = leads.filter(business__id=biz.id)
+        qrs_list = qrs_list.filter(business__id=biz.id)
+        categories_clicks = categories_clicks.filter(business__id=biz.id)
+        group_size_count = group_size_count.filter(business__id=biz.id)
     if start_date:
         leads = leads.filter(created_at__gte=start_date)
         categories_clicks = categories_clicks.filter(created_at__gte=start_date)
@@ -554,7 +589,7 @@ def dashboard_leads_in(request):
     categories_clicks_json = json.dumps(categories_clicks_json, default=str)
     return render(request, 'dashboard/leads-in/index.html', {
         # filters options qs
-        'businesses': businesses,
+        # 'businesses': businesses,
         'qrs_list': qrs_list,
         
         # results
