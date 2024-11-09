@@ -283,6 +283,8 @@ class MessageCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='messages', verbose_name=_('category'), blank=True, null=True)
     send_at = models.DateTimeField(_('send at'), default=timezone.now, blank=True, null=True)
     is_sent = models.BooleanField(_('is sent'), default=False)
+    reminder_sent = models.BooleanField(_('reminder sent'), default=False)
+
     class Meta:
         verbose_name = _('message category')
         verbose_name_plural = _('message categories')

@@ -12,34 +12,73 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
-
+import logging.config
 from environs import Env
-
 
 
 env = Env()
 env.read_env()  # read .env file, if it exists
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-BACKEND_DOMAIN = env.str('BACKEND_DOMAIN', default='')
+BACKEND_DOMAIN = env.str("BACKEND_DOMAIN", default="")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
+# LOGGING CONFIGURATION
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",  # DEBBUG/INFO
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",  # (DEBUG, INFO, WARNING)
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "test": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-trgynxv69d^o5u0!-qzaeqv*!0ual(-#6b_ey$_4#1g!e28zct'
+SECRET_KEY = "django-insecure-trgynxv69d^o5u0!-qzaeqv*!0ual(-#6b_ey$_4#1g!e28zct"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=True)
-BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT = BACKEND_DOMAIN.split('//')[-1].split(':')[0]
+DEBUG = env.bool("DEBUG", default=True)
+BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT = BACKEND_DOMAIN.split("//")[-1].split(
+    ":"
+)[0]
 # ALLOWED_HOSTS = [BACKEND_DOMAIN_WITHOUT_PROTOCOL_WITHOUT_PORT,]
-ALLOWED_HOSTS = ['0.0.0.0', '192.168.50.73']
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.50.73"]
 
-CSRF_TRUSTED_ORIGINS = [BACKEND_DOMAIN,]
+CSRF_TRUSTED_ORIGINS = [
+    BACKEND_DOMAIN,
+]
 
 # Added telegram bot token with ENV
-TELEGRAM_BOT_TOKEN = env.str('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = env.str('TELEGRAM_CHAT_ID')
+TELEGRAM_BOT_TOKEN = env.str("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = env.str("TELEGRAM_CHAT_ID")
 
 
 # Application definition
@@ -47,41 +86,34 @@ TELEGRAM_CHAT_ID = env.str('TELEGRAM_CHAT_ID')
 INSTALLED_APPS = [
     "django_admin_index",
     "ordered_model",
-    
-    
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
-    
-    'debug_toolbar',
-    'storages',
-    'adminsortable2',
-    'import_export',
-    
-    'core',
-    'models',
-    'admin_dashboard',
-    'counting',
-    'dashboard',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "debug_toolbar",
+    "storages",
+    "adminsortable2",
+    "import_export",
+    "core",
+    "models",
+    "admin_dashboard",
+    "counting",
+    "dashboard",
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    'core.middleware.BreadcrumbsMiddleware',
-    'core.middleware.NonHtmlDebugToolbarMiddleware',
-
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.BreadcrumbsMiddleware",
+    "core.middleware.NonHtmlDebugToolbarMiddleware",
 ]
 
 
@@ -90,53 +122,53 @@ if DEBUG is False:
     del MIDDLEWARE[0]
 
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
+WSGI_APPLICATION = "backend.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASE_TYPE = env.str('DATABASE_TYPE')
-DATABASE_NAME = env.str('DATABASE_NAME', default='')
-DATABASE_USER = env.str('DATABASE_USER', default='')
-DATABASE_PASSWORD = env.str('DATABASE_PASSWORD', default='')
-DATABASE_HOST = env.str('DATABASE_HOST', default='')
-DATABASE_PORT = env.str('DATABASE_PORT', default='')
+DATABASE_TYPE = env.str("DATABASE_TYPE")
+DATABASE_NAME = env.str("DATABASE_NAME", default="")
+DATABASE_USER = env.str("DATABASE_USER", default="")
+DATABASE_PASSWORD = env.str("DATABASE_PASSWORD", default="")
+DATABASE_HOST = env.str("DATABASE_HOST", default="")
+DATABASE_PORT = env.str("DATABASE_PORT", default="")
 
-if DATABASE_TYPE == 'postgresql':
+if DATABASE_TYPE == "postgresql":
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DATABASE_NAME,
-            'USER': DATABASE_USER,
-            'PASSWORD': DATABASE_PASSWORD,
-            'HOST': DATABASE_HOST,
-            'PORT': DATABASE_PORT,
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": DATABASE_NAME,
+            "USER": DATABASE_USER,
+            "PASSWORD": DATABASE_PASSWORD,
+            "HOST": DATABASE_HOST,
+            "PORT": DATABASE_PORT,
         }
     }
-elif DATABASE_TYPE == 'sqlite':
+elif DATABASE_TYPE == "sqlite":
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -153,16 +185,16 @@ elif DATABASE_TYPE == 'sqlite':
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -170,21 +202,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'he'
+LANGUAGE_CODE = "he"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 USE_TZ = True
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 USE_I18N = True
@@ -193,7 +223,7 @@ USE_L10N = True
 
 # use timezone
 
-TIME_ZONE = 'Israel'
+TIME_ZONE = "Israel"
 USE_TZ = True
 
 
@@ -201,23 +231,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 
-LOCALE_PATHS = [
-    os.path.join(BASE_DIR, 'locale')
-]
+LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
 
 # when changed, change allso templates location
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static_cdn"),
 ]
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media_root/')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(STATIC_ROOT, "media_root/")
 
 
-LOGIN_REDIRECT_URL = '/admin-dashboard/messages/'
-LOGIN_URL = '/admin/login/'
-LOGOUT_REDIRECT_URL = '/admin/login/?next=' + LOGIN_REDIRECT_URL
+LOGIN_REDIRECT_URL = "/admin-dashboard/messages/"
+LOGIN_URL = "/admin/login/"
+LOGOUT_REDIRECT_URL = "/admin/login/?next=" + LOGIN_REDIRECT_URL
 
 
 # AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
