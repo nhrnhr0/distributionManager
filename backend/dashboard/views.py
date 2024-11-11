@@ -144,12 +144,47 @@ def dashboard_message_send(request):
 def monitor_telegram_notifications():
     now = timezone.now()
     messages_to_send = MessageCategory.objects.filter(
-        is_sent=False, reminder_sent=False, send_at__lte=now
+        is_sent=False,
+        reminder_sent=False,
+        send_at__lte=now,
+        category__open_telegram_url__isnull=True,  # ודא שהקטגוריה מקושרת לקבוצת טלגרם
     )
     for msg in messages_to_send:
         send_telegram_notification(msg.uid)
-        msg.reminder_sent = True
+        # msg.is_sent = True  # עדכון סטטוס להודעה שנשלחה
+        msg.reminder_sent = True  # תיעוד שההודעה נשלחה
         msg.save()
+
+
+def send_scheduled_telegram_messages():
+    now = timezone.now()
+    messages_to_send = MessageCategory.objects.filter(
+        is_sent=False,
+        send_at__lte=now,
+        category__open_telegram_url__isnull=False,  # בדיקה שההודעה מיועדת לטלגרם
+    )
+
+    for msg in messages_to_send:
+        logger.info(
+            f"Preparing to send scheduled message UID {msg.uid} scheduled for {msg.send_at}."
+        )
+        try:
+            chat_id = settings.TELEGRAM_CHAT_ID  # קבלת ה-chat_id של קבוצת הטלגרם
+            message_text = (
+                msg.get_generated_message_telegram()
+            )  # יצירת תוכן ההודעה לטלגרם
+            send_telegram_messege(message_text, chat_id)  # שליחה לטלגרם
+
+            # עדכון הסטטוס להודעה שנשלחה
+            msg.is_sent = True
+            msg.save()
+            logger.info(
+                f"Scheduled message with UID {msg.uid} sent successfully to Telegram."
+            )
+        except AttributeError:
+            logger.error(f"Chat ID not found for message UID {msg.uid}.")
+        except Exception as e:
+            logger.error(f"Error sending scheduled message UID {msg.uid}: {str(e)}")
 
 
 def check_group_count_threshold():
@@ -275,6 +310,15 @@ def setup_scheduler():
         logger.info("Scheduled 'check_group_count_threshold' job.")
     else:
         logger.info("'check_group_count_threshold' job already exists.")
+
+    if not scheduler.get_job("send_scheduled_telegram_messages"):
+        scheduler.add_job(
+            send_scheduled_telegram_messages,
+            "interval",
+            minutes=1,  # בדיקה כל דקה, ניתן לשנות לפי הצורך
+            id="send_scheduled_telegram_messages",
+        )
+    logger.info("Scheduled 'send_scheduled_telegram_messages' job.")
 
     # Log all scheduled jobs
     for job in scheduler.get_jobs():
