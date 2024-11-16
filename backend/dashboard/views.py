@@ -47,56 +47,65 @@ logger = logging.getLogger(__name__)
 scheduler = BackgroundScheduler(timezone="Asia/Jerusalem")
 scheduler.start()
 
+
 @admin_required
 def dashboard_admin_page(reqeust):
     businesses = Business.objects.all()
-    if reqeust.method == 'POST':
+    if reqeust.method == "POST":
         data = reqeust.POST
-        reqeust.user.profile.biz = Business.objects.get(id=data['business'])
+        reqeust.user.profile.biz = Business.objects.get(id=data["business"])
         reqeust.user.profile.save()
-        return redirect('dashboard_admin_page')
-    return render(reqeust, 'dashboard/admin_page/index.html', {
-        'businesses': businesses,
-    })
+        return redirect("dashboard_admin_page")
+    return render(
+        reqeust,
+        "dashboard/admin_page/index.html",
+        {
+            "businesses": businesses,
+        },
+    )
+
 
 @admin_required
 def dashboard_biz_profile(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = request.POST
         biz = request.user.profile.biz
-        biz.phone = data['phone']
-        biz.telegram_fotter = data['telegram_fotter']
-        biz.ai_system_prompt = data['ai_system_prompt']
-        messages.add_message(request, messages.SUCCESS, 'הפרטים נשמרו בהצלחה')
+        biz.phone = data["phone"]
+        biz.telegram_fotter = data["telegram_fotter"]
+        biz.ai_system_prompt = data["ai_system_prompt"]
+        messages.add_message(request, messages.SUCCESS, "הפרטים נשמרו בהצלחה")
         biz.save()
-        return redirect('dashboard_biz_profile')
-    return render(request, 'dashboard/biz_profile/index.html', {'biz': request.user.profile.biz})
+        return redirect("dashboard_biz_profile")
+    return render(
+        request, "dashboard/biz_profile/index.html", {"biz": request.user.profile.biz}
+    )
 
 
 @admin_required
 def dashboard_counting_group_size_detail(request, id):
     obj = DaylyGroupSizeCount.objects.prefetch_related(
-        "whatsappgroupsizecount_set__group__whatsapp_categories", "telegramgroupsizecount_set__group__telegram_categories"
+        "whatsappgroupsizecount_set__group__whatsapp_categories",
+        "telegramgroupsizecount_set__group__telegram_categories",
     ).get(id=id)
-    if request.method == 'POST':
+    if request.method == "POST":
         data = request.POST
-        obj.date = data['date']
+        obj.date = data["date"]
         print(data)
         for wac in obj.whatsappgroupsizecount_set.all():
-            cnt = data.get(f'whatsappgroupsizecount_set-{wac.id}', '')
+            cnt = data.get(f"whatsappgroupsizecount_set-{wac.id}", "")
             cnt = cnt if cnt else None
             wac.count = cnt
             wac.save()
         for tgc in obj.telegramgroupsizecount_set.all():
-            cnt = data.get(f'telegramgroupsizecount_set-{tgc.id}', '')
+            cnt = data.get(f"telegramgroupsizecount_set-{tgc.id}", "")
             cnt = cnt if cnt else None
             tgc.count = cnt
             tgc.save()
         obj.save()
-        return redirect('dashboard_counting_group_size_detail', id=obj.id)
-    if request.method == 'DELETE':
+        return redirect("dashboard_counting_group_size_detail", id=obj.id)
+    if request.method == "DELETE":
         obj.delete()
-        return JsonResponse({'status': 'ok'})
+        return JsonResponse({"status": "ok"})
     return render(
         request,
         "dashboard/counting/group_size/detail.html",
@@ -116,8 +125,7 @@ def craete_group_size_count(request):
             obj.whatsappgroupsizecount_set.create(group=wa_group)
         for tg_group in category.all_telegram_urls.all():
             obj.telegramgroupsizecount_set.create(group=tg_group)
-    
-    
+
     return redirect("dashboard_counting_group_size_detail", id=obj.id)
 
 
@@ -154,12 +162,13 @@ def dashboard_message_new(request):
         biz = request.user.profile.biz
         message.business = biz
         # add the main category to the message
-        main_category = Category.objects.filter(business=biz, is_main_category=True).first()
+        main_category = Category.objects.filter(
+            business=biz, is_main_category=True
+        ).first()
         if main_category:
             cat = MessageCategory(message=message, category=main_category)
             cat.save()
-            
-            
+
         message.save()
         return redirect("message_edit", uid=message.uid)
 
@@ -397,125 +406,129 @@ def dashboard_message_edit(request, uid):
     # businesses = Business.objects.all()
     categories = Category.objects.all()
     categories = categories.filter(business=message.business)
-    
-    if request.method == 'POST':
+
+    if request.method == "POST":
         data = request.POST
         # first delete all links with id and isDeleted = True
-        link_ids = data.getlist('link_id')
-        descriptions = data.getlist('description')
-        urls = data.getlist('url')
+        link_ids = data.getlist("link_id")
+        descriptions = data.getlist("description")
+        urls = data.getlist("url")
         # is_deleted = data.getlist('delete-link')
-        
+
         # ai fields:
-        message.product_metadata = data.get('product_metadata', '')
-        message.product_name= data.get('product_name', '')
-        message.product_ = data.get('product_description', '')
-        message.price = data.get('price', '')
-        message.coupon_code = data.get('coupon_code', '')
-        
-        
-        
+        message.product_metadata = data.get("product_metadata", "")
+        message.product_name = data.get("product_name", "")
+        message.product_ = data.get("product_description", "")
+        message.price = data.get("price", "")
+        message.coupon_code = data.get("coupon_code", "")
+
         links = []
         for i in range(len(descriptions)):
-            lnk ={
-                'id': link_ids[i] if i < len(link_ids) else None,
-                'description': descriptions[i] if i < len(descriptions) else '',
-                'url': urls[i] if i < len(urls) else '',
+            lnk = {
+                "id": link_ids[i] if i < len(link_ids) else None,
+                "description": descriptions[i] if i < len(descriptions) else "",
+                "url": urls[i] if i < len(urls) else "",
                 # 'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
             }
-            if lnk['id']:
-                lnk['isDeleted'] = data.get(f'delete-link-{lnk["id"]}', '') == 'on'
+            if lnk["id"]:
+                lnk["isDeleted"] = data.get(f'delete-link-{lnk["id"]}', "") == "on"
             else:
-                lnk['isDeleted'] = False
+                lnk["isDeleted"] = False
             links.append(lnk)
-        
+
         for link in links:
-            if link.get('id') and link['isDeleted']:
-                message.links.get(id=link['id']).delete()
-        
-        
+            if link.get("id") and link["isDeleted"]:
+                message.links.get(id=link["id"]).delete()
+
         for link in links:
-            if link.get('id') and not link['isDeleted']:
-                l = {'description': link['description'], 'url': link['url']}
-                message.links.filter(id=link['id']).update(**l)
-            elif not link['isDeleted']:
-                l = {'description': link['description'], 'url': link['url']}
+            if link.get("id") and not link["isDeleted"]:
+                l = {"description": link["description"], "url": link["url"]}
+                message.links.filter(id=link["id"]).update(**l)
+            elif not link["isDeleted"]:
+                l = {"description": link["description"], "url": link["url"]}
                 message.links.create(**l)
 
-        
-        
         # first delete all categories with id and isDeleted = True
-        categories_ids = data.getlist('category_id')
-        categories_list = data.getlist('category')
-        send_ats = data.getlist('send_at')
+        categories_ids = data.getlist("category_id")
+        categories_list = data.getlist("category")
+        send_ats = data.getlist("send_at")
         # is_sents = data.getlist('is_sent')
-        #is_deleted = data.getlist('delete-category[]')
-        
+        # is_deleted = data.getlist('delete-category[]')
+
         cats = []
         for i in range(len(categories_list)):
             # TODO: Should we allow empty categories? No: how to show it in the calendar? Yes: What if a date is set and no category, ignore it?
             if not categories_list[i]:
                 continue
             cat = {
-                'id': categories_ids[i] if i < len(categories_ids) else None,
-                'category': categories_list[i] if i < len(categories_list) else None,
-                'sendAt': send_ats[i] if i < len(send_ats) else None,
+                "id": categories_ids[i] if i < len(categories_ids) else None,
+                "category": categories_list[i] if i < len(categories_list) else None,
+                "sendAt": send_ats[i] if i < len(send_ats) else None,
                 #'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
                 #'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
             }
-            if cat['id']:
-                cat['isDeleted'] = data.get(f'delete-category-{cat["id"]}', '') == 'on'
-                cat['isSent'] = data.get(f'is_sent-{cat["id"]}', '') == 'on'
+            if cat["id"]:
+                cat["isDeleted"] = data.get(f'delete-category-{cat["id"]}', "") == "on"
+                cat["isSent"] = data.get(f'is_sent-{cat["id"]}', "") == "on"
             else:
-                cat['isDeleted'] = False
-                cat['isSent'] = False
+                cat["isDeleted"] = False
+                cat["isSent"] = False
             cats.append(cat)
-            
+
         print(cats)
-            
-        
-        
-        
-        for category in cats:
-            if category.get('id') and category['isDeleted']:
-                message.categories.get(id=category['id']).delete()
-        # then update or create the rest
-        tz = pytz.timezone('Asia/Jerusalem')
 
         for category in cats:
-            if category.get('id') and not category['isDeleted']:
-                if category['sendAt']:
-                    category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
-                    aware_dt = tz.localize(category['sendAt'])
-                    category['sendAt'] = aware_dt
-                c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
-                message.categories.filter(id=category['id']).update(**c)
-            elif not category['isDeleted']:
-                if category['sendAt']:
-                    category['sendAt'] =  datetime.strptime(category['sendAt'].replace('T', ' '), '%Y-%m-%d %H:%M')
-                    aware_dt = tz.localize(category['sendAt'])
-                    category['sendAt'] = aware_dt
-                    
-                c = {'category_id': category['category'], 'send_at': category['sendAt'] if category['sendAt'] else None, 'is_sent': category['isSent']}
+            if category.get("id") and category["isDeleted"]:
+                message.categories.get(id=category["id"]).delete()
+        # then update or create the rest
+        tz = pytz.timezone("Asia/Jerusalem")
+
+        for category in cats:
+            if category.get("id") and not category["isDeleted"]:
+                if category["sendAt"]:
+                    category["sendAt"] = datetime.strptime(
+                        category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
+                    )
+                    aware_dt = tz.localize(category["sendAt"])
+                    category["sendAt"] = aware_dt
+                c = {
+                    "category_id": category["category"],
+                    "send_at": category["sendAt"] if category["sendAt"] else None,
+                    "is_sent": category["isSent"],
+                }
+                message.categories.filter(id=category["id"]).update(**c)
+            elif not category["isDeleted"]:
+                if category["sendAt"]:
+                    category["sendAt"] = datetime.strptime(
+                        category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
+                    )
+                    aware_dt = tz.localize(category["sendAt"])
+                    category["sendAt"] = aware_dt
+
+                c = {
+                    "category_id": category["category"],
+                    "send_at": category["sendAt"] if category["sendAt"] else None,
+                    "is_sent": category["isSent"],
+                }
                 message.categories.create(**c)
                 logger.info(
                     "Category created without scheduling due to missing send_at."
-        # message.image = request.FILES.get('image') if request.FILES.get('image') else message.image
-        if request.FILES.get('image'):
-            message.image = request.FILES.get('image')
                 )
-    return redirect('message_edit', uid=message.uid)
-    if request.method == "DELETE":
-        message.delete()
-        return redirect("dashboard_messages")
+        # message.image = request.FILES.get('image') if request.FILES.get('image') else message.image
+        if request.FILES.get("image"):
+            message.image = request.FILES.get("image")
 
-    
+        return redirect("message_edit", uid=message.uid)
+        if request.method == "DELETE":
+            message.delete()
+            return redirect("dashboard_messages")
+
     return render(
         request,
         "dashboard/messages/edit.html",
         {
             "message": message,
-        #     "businesses": businesses,
+            #     "businesses": businesses,
             "categories": categories,
         },
     )
@@ -529,7 +542,7 @@ def dashboard_messages(request):
         .prefetch_related("categories", "links", "categories__category")
         .all()
     )
-biz = request.user.profile.biz
+    biz = request.user.profile.biz
     # selected_busines = request.GET.get("business", None)
     # if selected_busines:
     all_messages = all_messages.filter(business__id=biz.id)
@@ -538,7 +551,7 @@ biz = request.user.profile.biz
         request,
         "dashboard/messages/index.html",
         {
-        #     "businesses": businesses,
+            #     "businesses": businesses,
             "all_messages": all_messages,
         },
     )
@@ -562,20 +575,21 @@ def dashboard_leads_out(request):
     start_date = request.GET.get("start_date", None)
     end_date = request.GET.get("end_date", None)
 
-    start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
-    end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
-    
+    start_date = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
+    end_date = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
+
     if end_date:
         end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
-    
+
     calls = CallsResponsesCount.objects.all()
     messages = MessagesResponsesCount.objects.all()
-    links_clicks = MessageLinkClick.objects.all().prefetch_related('msg', 'category', 'link', 'msg__business')
+    links_clicks = MessageLinkClick.objects.all().prefetch_related(
+        "msg", "category", "link", "msg__business"
+    )
     group_size_count = DaylyGroupSizeCount.objects.prefetch_related(
         "whatsappgroupsizecount_set", "telegramgroupsizecount_set"
     ).all()
 
-    
     if biz:
         calls = calls.filter(business__id=biz.id)
         messages = messages.filter(business__id=biz.id)
@@ -658,8 +672,12 @@ def dashboard_leads_out(request):
     all_growth = whatsapp_growth + telegram_growth
     all_growth = json.dumps(all_growth, default=str)
     # group by date and sum the counts [{'date', 'count'}]
-    returning_messages_vals = messages.values('date').annotate(count=Sum('count')).order_by('date')
-    returning_calls_vals = calls.values('date').annotate(count=Sum('count')).order_by('date')
+    returning_messages_vals = (
+        messages.values("date").annotate(count=Sum("count")).order_by("date")
+    )
+    returning_calls_vals = (
+        calls.values("date").annotate(count=Sum("count")).order_by("date")
+    )
     returning_messages = json.dumps(list(returning_messages_vals), default=str)
     returning_calls = json.dumps(list(returning_calls_vals), default=str)
     ctx = {
@@ -667,9 +685,9 @@ def dashboard_leads_out(request):
         "calls_info": calls_info,
         "chats_info": chats_info,
         "links_clicks_json": links_clicks_json,
-        "all_growth": all_growth,,
-        'returning_messages': returning_messages,
-        'returning_calls': returning_calls,
+        "all_growth": all_growth,
+        "returning_messages": returning_messages,
+        "returning_calls": returning_calls,
     }
     return render(request, "dashboard/leads-out/index.html", ctx)
 
@@ -699,7 +717,7 @@ def dashboard_messages_calendar_set_date(request):
         data = json.loads(request.body)
         message = MessageCategory.objects.get(id=data["id"])
         message.send_at = data["new_date"]
-        
+
         message.save()
         # if it was not a main category, set the message of the main category to the min date of all the categories
         if not message.category.is_main_category:
@@ -707,12 +725,15 @@ def dashboard_messages_calendar_set_date(request):
             all_messages = biz_message.categories.all()
             main_category = all_messages.filter(category__is_main_category=True).first()
             if main_category:
-                all_categories_without_main = all_messages.exclude(category__is_main_category=True)
-                min_date = all_categories_without_main.aggregate(Min('send_at'))['send_at__min']
+                all_categories_without_main = all_messages.exclude(
+                    category__is_main_category=True
+                )
+                min_date = all_categories_without_main.aggregate(Min("send_at"))[
+                    "send_at__min"
+                ]
                 main_category.send_at = min_date
                 main_category.save()
-                
-        
+
         return JsonResponse({"status": "ok"})
     pass
 
@@ -735,12 +756,14 @@ def dashboard_messages_calendar(request):
         request,
         "dashboard/calender/index.html",
         {
-        #     "businesses": businesses,
+            #     "businesses": businesses,
             "msgs": msgs,
         },
     )
 
+
 from datetime import datetime, timedelta
+
 
 @admin_required
 def dashboard_leads_in(request):
@@ -752,10 +775,10 @@ def dashboard_leads_in(request):
     start_date = request.GET.get("start_date", None)
     end_date = request.GET.get("end_date", None)
     qrs = request.GET.getlist("qrs", [])
-    
-    start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
-    end_date = datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
-    
+
+    start_date = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
+    end_date = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
+
     if end_date:
         end_date = end_date + timedelta(days=1) - timedelta(seconds=1)
 
@@ -880,7 +903,7 @@ def dashboard_leads_in(request):
         "dashboard/leads-in/index.html",
         {
             # filters options qs
-        #     "businesses": businesses,
+            #     "businesses": businesses,
             "qrs_list": qrs_list,
             # results
             "leads_clicks_json": leads_clicks_json,

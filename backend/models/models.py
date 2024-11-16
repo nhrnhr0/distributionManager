@@ -15,7 +15,7 @@ import os
 import requests
 from io import BytesIO
 from django.core.files import File
-from core.utils import generate_small_uuid,generate_unique_uid
+from core.utils import generate_small_uuid, generate_unique_uid
 
 
 class Call(models.Model):
@@ -28,7 +28,7 @@ class Call(models.Model):
     def __str__(self):
         return f"Call {self.caller_id} - Status: {self.call_status}"
 
-    
+
 class SysUser(models.Model):
     name = models.CharField(_("name"), max_length=100)
     user = models.OneToOneField(
@@ -63,10 +63,14 @@ class Business(models.Model):
     favicon = models.ImageField(
         _("favicon"), upload_to="businesses/", blank=True, null=True
     )
-    phone = models.CharField(_('phone'), max_length=100, blank=True, null=True)
-    telegram_fotter = models.CharField(_('telegram footer'), max_length=2500, blank=True, null=True)
-    
-    ai_system_prompt = models.CharField(_('AI message prompt'), max_length=10000, blank=True, null=True)
+    phone = models.CharField(_("phone"), max_length=100, blank=True, null=True)
+    telegram_fotter = models.CharField(
+        _("telegram footer"), max_length=2500, blank=True, null=True
+    )
+
+    ai_system_prompt = models.CharField(
+        _("AI message prompt"), max_length=10000, blank=True, null=True
+    )
 
     def __str__(self) -> str:
         return self.name
@@ -78,10 +82,10 @@ class Business(models.Model):
         verbose_name = _("business")
         verbose_name_plural = _("businesses")
 
-        
-        
     def get_ai_system_prompt(self):
-        return self.ai_system_prompt or """
+        return (
+            self.ai_system_prompt
+            or """
 אתה עוזר שיווקי דובר עברית, המתמחה בכתיבת הודעות מכירה קצרות וברורות, בעברית תקינה וללא שגיאות כתיב.
 השתמש רק במילים יומיומיות וברורות, והימנע ממילים נדירות או יוצאות דופן.
 הודעות אלו צריכות להיות מקצועיות, מזמינות וממוקדות בפרטים שסופקו בלבד.
@@ -101,6 +105,8 @@ class Business(models.Model):
 5. פנייה שירותית לסיום עם מספר טלפון ליצירת קשר, בסגנון כמו "לשירותכם", "נשמח לעזור" או "לייעוץ והכוונה".
 מתחת מופיע פרטי ההודעה, המידע צריך להיות מוצג בהודעה בצורה מדוייקת וברורה, תתעלם ממידע ריק
 """
+        )
+
 
 class BusinessQRCategories(models.Model):
     name = models.CharField(_("name"), max_length=100)
@@ -145,7 +151,8 @@ class LeadsClicks(models.Model):
         blank=True,
         verbose_name=_("QR"),
     )
-referrer = models.CharField(_('referrer'), max_length=1000, blank=True, null=True)
+    referrer = models.CharField(_("referrer"), max_length=1000, blank=True, null=True)
+
     class Meta:
         verbose_name = _("leads click")
         verbose_name_plural = _("leads clicks")
@@ -186,7 +193,8 @@ class CategoriesClicks(models.Model):
         choices=CATEGORY_GROUP,
         default=CATEGORY_GROUP_WHATSAPP,
     )
-    referrer = models.CharField(_('referrer'), max_length=1000, blank=True, null=True)
+    referrer = models.CharField(_("referrer"), max_length=1000, blank=True, null=True)
+
     class Meta:
         verbose_name = _("categories click")
         verbose_name_plural = _("categories clicks")
@@ -407,13 +415,12 @@ class Category(models.Model):
         related_name="telegram_categories",
         verbose_name=_("all Telegram URLs"),
     )
-    is_main_category = models.BooleanField(_('is main category'), default=False)
+    is_main_category = models.BooleanField(_("is main category"), default=False)
     the_order = models.PositiveIntegerField(_("order"), default=0)
 
-    
     # ai_message_tone = models.CharField(_('AI message tone'), max_length=1000, blank=True, null=True)
     # ai_message_example = models.CharField(_('AI message example'), max_length=1000, blank=True, null=True)
-    
+
     def __str__(self) -> str:
         return self.name + " - " + self.business.name
 
@@ -512,9 +519,7 @@ class MessageCategory(models.Model):
         blank=True,
         null=True,
     )
-    send_at = models.DateTimeField(
-        _("send at"), blank=True, null=True
-    )
+    send_at = models.DateTimeField(_("send at"), blank=True, null=True)
     is_sent = models.BooleanField(_("is sent"), default=False)
     reminder_sent = models.BooleanField(_("reminder sent"), default=False)
     platform = models.CharField(
@@ -559,7 +564,7 @@ class MessageCategory(models.Model):
             message = message.replace(f"[link:{link.description}]", new_link)
         telegram_fotter = self.category.business.telegram_fotter
         if telegram_fotter:
-            message += '\n' + telegram_fotter
+            message += "\n" + telegram_fotter
         return message
 
 
@@ -620,4 +625,4 @@ class MessageLinkClick(models.Model):
     )
     ip = models.GenericIPAddressField(_("IP"), blank=True, null=True)
     user_agent = models.TextField(_("user agent"), blank=True, null=True)
-referrer = models.CharField(_('referrer'), max_length=1000, blank=True, null=True)
+    referrer = models.CharField(_("referrer"), max_length=1000, blank=True, null=True)
