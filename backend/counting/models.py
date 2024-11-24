@@ -5,23 +5,34 @@ from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 
+
 class DaylyGroupSizeCount(models.Model):
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, verbose_name=_("Business"))
+    business = models.ForeignKey(
+        Business, on_delete=models.CASCADE, verbose_name=_("Business")
+    )
     date = models.DateTimeField(default=timezone.now, verbose_name=_("Date"))
+    notification_sent = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("Dayly Group Size Count")
         verbose_name_plural = _("Dayly Group Size Counts")
-        ordering = ['-date']
+        ordering = ["-date"]
 
 
 class WhatsappGroupSizeCount(models.Model):
-    group = models.ForeignKey(WhatsappGroup, on_delete=models.CASCADE, verbose_name=_("Whatsapp Group"))
+    group = models.ForeignKey(
+        WhatsappGroup, on_delete=models.CASCADE, verbose_name=_("Whatsapp Group")
+    )
     count = models.IntegerField(verbose_name=_("Count"), blank=True, null=True)
-    session = models.ForeignKey(DaylyGroupSizeCount, on_delete=models.CASCADE, verbose_name=_("Session"), related_name='whatsappgroupsizecount_set')
+    session = models.ForeignKey(
+        DaylyGroupSizeCount,
+        on_delete=models.CASCADE,
+        verbose_name=_("Session"),
+        related_name="whatsappgroupsizecount_set",
+    )
 
     def __str__(self):
-        return f'{self.group.name} - {self.count}'
+        return f"{self.group.name} - {self.count}"
 
     class Meta:
         verbose_name = _("Whatsapp Group Size Count")
@@ -29,12 +40,19 @@ class WhatsappGroupSizeCount(models.Model):
 
 
 class TelegramGroupSizeCount(models.Model):
-    group = models.ForeignKey(TelegramGroup, on_delete=models.CASCADE, verbose_name=_("Telegram Group"))
+    group = models.ForeignKey(
+        TelegramGroup, on_delete=models.CASCADE, verbose_name=_("Telegram Group")
+    )
     count = models.IntegerField(verbose_name=_("Count"), blank=True, null=True)
-    session = models.ForeignKey(DaylyGroupSizeCount, on_delete=models.CASCADE, verbose_name=_("Session"), related_name='telegramgroupsizecount_set')
+    session = models.ForeignKey(
+        DaylyGroupSizeCount,
+        on_delete=models.CASCADE,
+        verbose_name=_("Session"),
+        related_name="telegramgroupsizecount_set",
+    )
 
     def __str__(self):
-        return f'{self.group.name} - {self.count}'
+        return f"{self.group.name} - {self.count}"
 
     class Meta:
         verbose_name = _("Telegram Group Size Count")
@@ -42,28 +60,29 @@ class TelegramGroupSizeCount(models.Model):
 
 
 class MessagesResponsesCount(models.Model):
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, verbose_name=_("Business"))
+    business = models.ForeignKey(
+        Business, on_delete=models.CASCADE, verbose_name=_("Business")
+    )
     date = models.DateField(default=timezone.now, verbose_name=_("Date"))
     count = models.IntegerField(verbose_name=_("Count"))
 
     def __str__(self):
-        return f'{self.business} - {self.count}'
+        return f"{self.business} - {self.count}"
 
     class Meta:
         verbose_name = _("Messages Responses Count")
         verbose_name_plural = _("Messages Responses Counts")
         ordering = ['-date']
 
-
-
-
 class CallsResponsesCount(models.Model):
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, verbose_name=_("Business"))
+    business = models.ForeignKey(
+        Business, on_delete=models.CASCADE, verbose_name=_("Business")
+    )
     date = models.DateField(default=timezone.now, verbose_name=_("Date"))
     count = models.IntegerField(verbose_name=_("Count"))
     rel = models.ForeignKey('models.Call', on_delete=models.CASCADE, verbose_name=_("Call"), blank=True, null=True)
     def __str__(self):
-        return f'{self.business} - {self.count}'
+        return f"{self.business} - {self.count}"
 
     class Meta:
         verbose_name = _("Calls Responses Count")

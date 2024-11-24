@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Telegram Message</title>
+</head>
+<body>
+    <h1>Send a Telegram Message</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+</body>
+</html>
