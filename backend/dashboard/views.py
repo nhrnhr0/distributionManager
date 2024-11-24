@@ -418,7 +418,7 @@ def dashboard_message_edit(request, uid):
         # ai fields:
         message.product_metadata = data.get("product_metadata", "")
         message.product_name = data.get("product_name", "")
-        message.product_ = data.get("product_description", "")
+        message.product_description = data.get("product_description", "")
         message.price = data.get("price", "")
         message.coupon_code = data.get("coupon_code", "")
 
@@ -514,14 +514,16 @@ def dashboard_message_edit(request, uid):
                 logger.info(
                     "Category created without scheduling due to missing send_at."
                 )
+        message.business_id = data['business']
+        message.messageTxt = data['messageTxt']
         # message.image = request.FILES.get('image') if request.FILES.get('image') else message.image
         if request.FILES.get("image"):
             message.image = request.FILES.get("image")
-
+        message.save()
         return redirect("message_edit", uid=message.uid)
-        if request.method == "DELETE":
-            message.delete()
-            return redirect("dashboard_messages")
+    if request.method == "DELETE":
+        message.delete()
+        return redirect("dashboard_messages")
 
     return render(
         request,

@@ -471,23 +471,18 @@ def update_open_groups(sender, instance, **kwargs):
 
 # message we send, the admin can insert the message with links (inserted in the message placeholders) and categories the message need to be sent to, each with the date we need to send the message
 class BizMessages(models.Model):
-    uid = models.CharField(
-        _("uid"),
-        max_length=100,
-        default=generate_small_uuid,
-        unique=True,
-        editable=False,
-    )
-    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
-    business = models.ForeignKey(
-        Business,
-        on_delete=models.CASCADE,
-        related_name="messages",
-        verbose_name=_("business"),
-        blank=True,
-        null=True,
-    )
-    messageTxt = models.TextField(_("message"), max_length=20000)
+    uid = models.CharField(_('uid'), max_length=100, default=generate_unique_uid, unique=True, editable=False)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='messages', verbose_name=_('business'), blank=True, null=True)
+    messageTxt = models.TextField(_('message'), max_length=20000)
+    image = models.ImageField(_('image'), upload_to='messages/', blank=True, null=True)
+    
+    
+    product_metadata = models.CharField(_('product metadata'), max_length=1000, default='')
+    product_name = models.CharField(_('product name'), max_length=500, default='')
+    product_description = models.CharField(_('description'), max_length=1000, default='')
+    price = models.CharField(_('price'), max_length=100, default='')
+    coupon_code = models.CharField(_('coupon code'), max_length=100, default='')
 
     def __str__(self) -> str:
         return self.messageTxt
