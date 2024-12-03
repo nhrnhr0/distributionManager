@@ -231,7 +231,6 @@ def monitor_telegram_notifications():
         msg.reminder_sent = True  # תיעוד שההודעה נשלחה
         msg.save()
 
-
 def send_scheduled_telegram_messages():
     now = timezone.now()
     messages_to_send = MessageCategory.objects.filter(
@@ -246,10 +245,13 @@ def send_scheduled_telegram_messages():
         )
         try:
             chat_id = settings.TELEGRAM_CHAT_ID  # קבלת ה-chat_id של קבוצת הטלגרם
-            message_text = (
-                msg.get_generated_message_telegram()
-            )  # יצירת תוכן ההודעה לטלגרם
-            send_telegram_messege(message_text, chat_id)  # שליחה לטלגרם
+            message_text = msg.get_generated_message_telegram()  # יצירת תוכן ההודעה לטלגרם
+            
+            # בדיקה אם יש תמונה מצורפת להודעה
+            image_path = msg.message.image.path if msg.message.image else None
+
+            # שליחה לטלגרם (עם או בלי תמונה)
+            send_telegram_messege(message_text, chat_id, image_path=image_path)
 
             # עדכון הסטטוס להודעה שנשלחה
             msg.is_sent = True
@@ -261,6 +263,37 @@ def send_scheduled_telegram_messages():
             logger.error(f"Chat ID not found for message UID {msg.uid}.")
         except Exception as e:
             logger.error(f"Error sending scheduled message UID {msg.uid}: {str(e)}")
+
+
+# def send_scheduled_telegram_messages():
+#     now = timezone.now()
+#     messages_to_send = MessageCategory.objects.filter(
+#         is_sent=False,
+#         send_at__lte=now,
+#         category__open_telegram_url__isnull=False,  # בדיקה שההודעה מיועדת לטלגרם
+#     )
+
+#     for msg in messages_to_send:
+#         logger.info(
+#             f"Preparing to send scheduled message UID {msg.uid} scheduled for {msg.send_at}."
+#         )
+#         try:
+#             chat_id = settings.TELEGRAM_CHAT_ID  # קבלת ה-chat_id של קבוצת הטלגרם
+#             message_text = (
+#                 msg.get_generated_message_telegram()
+#             )  # יצירת תוכן ההודעה לטלגרם
+#             send_telegram_messege(message_text, chat_id)  # שליחה לטלגרם
+
+#             # עדכון הסטטוס להודעה שנשלחה
+#             msg.is_sent = True
+#             msg.save()
+#             logger.info(
+#                 f"Scheduled message with UID {msg.uid} sent successfully to Telegram."
+#             )
+#         except AttributeError:
+#             logger.error(f"Chat ID not found for message UID {msg.uid}.")
+#         except Exception as e:
+#             logger.error(f"Error sending scheduled message UID {msg.uid}: {str(e)}")
 
 
 def check_group_count_threshold():
@@ -321,21 +354,42 @@ def send_telegram_notification(msg_uid):
 
     send_telegram_messege(message, chat_id)
 
-
-def send_telegram_messege(msg_txt, chat_id):
-    payload = {"chat_id": chat_id, "text": msg_txt}
-
-    response = requests.post(
-        f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
-        json=payload,
-    )
+def send_telegram_messege(msg_txt, chat_id, image_path=None):
+    if image_path:
+        with open(image_path, 'rb') as image_file:
+            response = requests.post(
+                f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendPhoto",
+                data={"chat_id": chat_id, "caption": msg_txt},
+                files={"photo": image_file}
+            )
+    else:
+        response = requests.post(
+            f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
+            json={"chat_id": chat_id, "text": msg_txt},
+        )
 
     if response.status_code != 200:
         logger.error(
-            f"Failed to send reminder to Telegram: {response.status_code} - {response.text}"
+            f"Failed to send message to Telegram: {response.status_code} - {response.text}"
         )
     else:
-        logger.info("Message sent succusfully.")
+        logger.info("Message sent successfully.")
+
+
+# def send_telegram_messege(msg_txt, chat_id):
+#     payload = {"chat_id": chat_id, "text": msg_txt}
+
+#     response = requests.post(
+#         f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
+#         json=payload,
+#     )
+
+#     if response.status_code != 200:
+#         logger.error(
+#             f"Failed to send reminder to Telegram: {response.status_code} - {response.text}"
+#         )
+#     else:
+#         logger.info("Message sent succusfully.")
 
 
 def setup_scheduler():
