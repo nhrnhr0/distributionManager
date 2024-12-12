@@ -28,3 +28,32 @@
         </form>
     </div>
 </div>
+
+<style>
+    .card {
+        position: sticky; /* תיבה דביקה */
+        top: 80px; /* מרחק מהחלק העליון */
+        z-index: 1030; /* תצוגה מעל אלמנטים אחרים */
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 1px solid rgba(0, 0, 0, .125);
+        border-radius: .25rem;
+    }
+
+    .card-header {
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-align: center;
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .card-body .btn {
+        margin-top: 10px;
+    }
+</style>
