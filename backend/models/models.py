@@ -324,53 +324,74 @@ def init_whatsapp_group_members_first_count(sender, instance, **kwargs):
     instance.init_whatsapp_group_members_first_count()
 
 
+# class TelegramGroup(models.Model):
+#     name = models.CharField(_("name"), max_length=120, blank=True, null=True)
+#     chat_id = models.CharField(_("chat ID"), max_length=120)
+#     business = models.ForeignKey(
+#         "Business",  # קשר לעסק
+#         on_delete=models.CASCADE,
+#         related_name="telegram_groups",  # קשר הפוך (לשליפת קבוצות לפי עסק)
+#         null=True,
+#         blank=True
+#     )
+
+#     def get_link(self):
+#         return "https://t.me/" + self.chat_id
+
+#     def save(self, *args, **kwargs):  # עדכון ה-`save` כדי לטפל ב-`chat_id`
+#         if self.chat_id.startswith("https://t.me/"):
+#             self.chat_id = self.chat_id.replace("https://t.me/", "")
+#         return super().save(*args, **kwargs)
+
+#     def __str__(self) -> str:
+#         return f"{self.name} ({self.business.name if self.business else 'Global'})"
+
+#     class Meta:
+#         verbose_name = _("Telegram group")
+#         verbose_name_plural = _("Telegram groups")
+
+#     def init_telegram_group_members_first_count(self):
+#         from counting.models import TelegramGroupSizeCount, DaylyGroupSizeCount
+
+#         if not self.telegram_categories.first():
+#             return
+#         if TelegramGroupSizeCount.objects.filter(group=self).exists():
+#             return
+#         # create new TelegramGroupSizeCount and add it to the last session of this business
+#         session = DaylyGroupSizeCount.objects.filter(
+#             business=self.telegram_categories.first().business
+#         ).first()
+#         if not session:
+#             session = DaylyGroupSizeCount.objects.create(
+#                 business=self.telegram_categories.first().business
+#             )
+#         TelegramGroupSizeCount.objects.create(group=self, count=1, session=session)
+
+
+# def init_telegram_group_members_first_count(sender, instance, **kwargs):
+#     instance.init_telegram_group_members_first_count()
+
 class TelegramGroup(models.Model):
     name = models.CharField(_("name"), max_length=120, blank=True, null=True)
     chat_id = models.CharField(_("chat ID"), max_length=120)
-    business = models.ForeignKey(
-        "Business",  # קשר לעסק
-        on_delete=models.CASCADE,
-        related_name="telegram_groups",  # קשר הפוך (לשליפת קבוצות לפי עסק)
-        null=True,
-        blank=True
-    )
+    # last_members_count = models.PositiveIntegerField(_('last members count'), default=0)
+    # last_members_check = models.DateTimeField(_('last members check'), blank=True, null=True)
 
     def get_link(self):
         return "https://t.me/" + self.chat_id
 
-    def save(self, *args, **kwargs):  # עדכון ה-`save` כדי לטפל ב-`chat_id`
+    def save(self):
         if self.chat_id.startswith("https://t.me/"):
             self.chat_id = self.chat_id.replace("https://t.me/", "")
-        return super().save(*args, **kwargs)
+        return super().save()
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.business.name if self.business else 'Global'})"
-
-    class Meta:
-        verbose_name = _("Telegram group")
-        verbose_name_plural = _("Telegram groups")
-
-    def init_telegram_group_members_first_count(self):
-        from counting.models import TelegramGroupSizeCount, DaylyGroupSizeCount
-
-        if not self.telegram_categories.first():
-            return
-        if TelegramGroupSizeCount.objects.filter(group=self).exists():
-            return
-        # create new TelegramGroupSizeCount and add it to the last session of this business
-        session = DaylyGroupSizeCount.objects.filter(
-            business=self.telegram_categories.first().business
-        ).first()
-        if not session:
-            session = DaylyGroupSizeCount.objects.create(
-                business=self.telegram_categories.first().business
-            )
-        TelegramGroupSizeCount.objects.create(group=self, count=1, session=session)
-
-
-def init_telegram_group_members_first_count(sender, instance, **kwargs):
-    instance.init_telegram_group_members_first_count()
-
+        return (
+            self.name
+            + " - ("
+            + ("".join([c.name for c in self.telegram_categories.all()]))
+            + ")"
+        )
 
 class Category(models.Model):
     uid = models.CharField(

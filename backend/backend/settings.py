@@ -78,8 +78,6 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Added telegram bot token with ENV
 TELEGRAM_BOT_TOKEN = env.str("TELEGRAM_BOT_TOKEN")
-# TELEGRAM_CHAT_ID = env.str("TELEGRAM_CHAT_ID")
-TELEGRAM_ALERTS_GROUP_NAME = "התראות"
 
 
 # Application definition
