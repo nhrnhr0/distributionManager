@@ -8,6 +8,7 @@ from models.models import (
     BizMessages,
     Category,
     MessageCategory,
+    TelegramGroup,
 )
 from counting.models import (
     DaylyGroupSizeCount,
@@ -28,17 +29,14 @@ from core.decoretors import admin_required
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from counting.models import (
-    DaylyGroupSizeCount,
-    WhatsappGroupSizeCount,
-    TelegramGroupSizeCount,
-)
 from django.conf import settings
 from django.utils import timezone
 from apscheduler.triggers.cron import CronTrigger
-
+from counting.models import CallsResponsesCount, MessagesResponsesCount
+from models.models import MessageLinkClick
 from django.db.models import Min, Sum
 from django.contrib import messages
+import os
 
 # from models.forms import BizMessagesForm, MessageCategoryFormSet
 # Create your views here.
@@ -113,6 +111,42 @@ def dashboard_counting_group_size_detail(request, id):
             "obj": obj,
         },
     )
+def get_telegram_chat_id(business=None, group_suffix="התראות"):
+    """
+    מחפש את ה-Chat ID של קבוצת התראות עבור עסק מסוים.
+
+    Args:
+        business (Business, optional): העסק עבורו מחפשים את הקבוצה. ברירת מחדל: None.
+        group_suffix (str, optional): סיומת לשם הקבוצה (לדוגמה: "התראות"). ברירת מחדל: 'התראות'.
+
+    Returns:
+        str: ה-Chat ID של הקבוצה אם נמצא, אחרת None.
+    """
+    logger = logging.getLogger(__name__)
+    try:
+        # אם יש עסק, חפש קבוצה הקשורה אליו
+        if business:
+            group = TelegramGroup.objects.filter(name__startswith=group_suffix, business=business).first()
+        else:
+            # אם אין עסק, חפש קבוצה כללית
+            group = TelegramGroup.objects.filter(name__startswith=group_suffix).first()
+
+        if group and group.chat_id:
+            logger.info(f"Found chat ID for group '{group.name}': {group.chat_id}")
+            return group.chat_id
+        else:
+            logger.warning(f"No valid Chat ID found for group '{group_suffix}'.")
+            return None
+
+    except TelegramGroup.DoesNotExist:
+        logger.error(f"Telegram group '{group_suffix}' not found.")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error in get_telegram_chat_id: {str(e)}")
+        return None
+
+
+
 
 
 def craete_group_size_count(request):
@@ -218,82 +252,118 @@ def dashboard_message_send(request):
 
 
 def monitor_telegram_notifications():
+    """
+    Handles Telegram notifications and creates alerts for WhatsApp messages.
+    """
     now = timezone.now()
     messages_to_send = MessageCategory.objects.filter(
-        is_sent=False,
-        reminder_sent=False,
-        send_at__lte=now,
-        category__open_telegram_url__isnull=True,  # ודא שהקטגוריה מקושרת לקבוצת טלגרם
-    )
-    for msg in messages_to_send:
-        send_telegram_notification(msg.uid)
-        # msg.is_sent = True  # עדכון סטטוס להודעה שנשלחה
-        msg.reminder_sent = True  # תיעוד שההודעה נשלחה
-        msg.save()
-
-def send_scheduled_telegram_messages():
-    now = timezone.now()
-    messages_to_send = MessageCategory.objects.filter(
-        is_sent=False,
-        send_at__lte=now,
-        category__open_telegram_url__isnull=False,  # בדיקה שההודעה מיועדת לטלגרם
+        is_sent=False, reminder_sent=False, send_at__lte=now
     )
 
     for msg in messages_to_send:
-        logger.info(
-            f"Preparing to send scheduled message UID {msg.uid} scheduled for {msg.send_at}."
-        )
         try:
-            chat_id = settings.TELEGRAM_CHAT_ID  # קבלת ה-chat_id של קבוצת הטלגרם
-            message_text = msg.get_generated_message_telegram()  # יצירת תוכן ההודעה לטלגרם
-            
-            # בדיקה אם יש תמונה מצורפת להודעה
-            image_path = msg.message.image.path if msg.message.image else None
+            # הודעות לוואטסאפ - יצירת התראה
+            if msg.category.open_whatsapp_url:
+                alert_text = (
+                    f"הודעה זו מיועדת לקבוצת WhatsApp:\n"
+                    f"{msg.get_generated_message_whatsapp()}\n"
+                    f"קישור לניהול ההודעה: http://127.0.0.1:8000/dashboard/messages-send/{msg.uid}/\n"
+                    f"קישור לקבוצת WhatsApp: {msg.category.open_whatsapp_url}"
+                )
+                create_whatsapp_alert(alert_text)
+                msg.reminder_sent = True
+                msg.save()
 
-            # שליחה לטלגרם (עם או בלי תמונה)
-            send_telegram_messege(message_text, chat_id, image_path=image_path)
+            # הודעות ל-Telegram - שליחה אוטומטית
+            elif msg.category.open_telegram_url:
+                success = send_telegram_notification(msg.uid)
+                if success:
+                    msg.reminder_sent = True
+                    msg.save()
 
-            # עדכון הסטטוס להודעה שנשלחה
-            msg.is_sent = True
-            msg.save()
-            logger.info(
-                f"Scheduled message with UID {msg.uid} sent successfully to Telegram."
-            )
-        except AttributeError:
-            logger.error(f"Chat ID not found for message UID {msg.uid}.")
         except Exception as e:
-            logger.error(f"Error sending scheduled message UID {msg.uid}: {str(e)}")
+            logger.error(f"Error processing message UID {msg.uid}: {str(e)}")
 
 
-# def send_scheduled_telegram_messages():
-#     now = timezone.now()
-#     messages_to_send = MessageCategory.objects.filter(
-#         is_sent=False,
-#         send_at__lte=now,
-#         category__open_telegram_url__isnull=False,  # בדיקה שההודעה מיועדת לטלגרם
-#     )
 
-#     for msg in messages_to_send:
-#         logger.info(
-#             f"Preparing to send scheduled message UID {msg.uid} scheduled for {msg.send_at}."
-#         )
-#         try:
-#             chat_id = settings.TELEGRAM_CHAT_ID  # קבלת ה-chat_id של קבוצת הטלגרם
-#             message_text = (
-#                 msg.get_generated_message_telegram()
-#             )  # יצירת תוכן ההודעה לטלגרם
-#             send_telegram_messege(message_text, chat_id)  # שליחה לטלגרם
+def create_whatsapp_alert(alert_text, msg):
+    """
+    Creates an alert for WhatsApp messages that require manual sending.
+    """
+    # מקבל את ה-Chat ID של קבוצת ההתראות
+    chat_id = get_telegram_chat_id(group_suffix="התראות")
+    if not chat_id:
+        logger.error("Chat ID for alerts not found. Skipping WhatsApp alert.")
+        return False
 
-#             # עדכון הסטטוס להודעה שנשלחה
-#             msg.is_sent = True
-#             msg.save()
-#             logger.info(
-#                 f"Scheduled message with UID {msg.uid} sent successfully to Telegram."
-#             )
-#         except AttributeError:
-#             logger.error(f"Chat ID not found for message UID {msg.uid}.")
-#         except Exception as e:
-#             logger.error(f"Error sending scheduled message UID {msg.uid}: {str(e)}")
+    # שליחת ההתראה לטלגרם
+    success = send_telegram_messege(msg_txt=alert_text, chat_id=chat_id)
+    if success:
+        # עדכון סטטוס שזוהתה שליחה מוצלחת
+        msg.reminder_sent = True
+        msg.save()
+        logger.info(f"WhatsApp alert created successfully for message UID {msg.uid}.")
+        return True
+
+    logger.error(f"Failed to send WhatsApp alert for message UID {msg.uid}.")
+    return False
+
+
+
+
+def send_scheduled_messages():
+    """
+    Handles sending scheduled messages to Telegram and creates alerts for WhatsApp.
+    """
+    now = timezone.now()
+    messages_to_send = MessageCategory.objects.filter(is_sent=False, send_at__lte=now)
+
+    for msg in messages_to_send:
+        try:
+            # אם ההודעה מיועדת לטלגרם - שליחה אוטומטית
+            if msg.category.open_telegram_url:
+                logger.info(f"Preparing to send Telegram message UID {msg.uid}.")
+                chat_id = get_telegram_chat_id()
+                if not chat_id:
+                    logger.error(f"Chat ID not found for message UID {msg.uid}. Skipping.")
+                    continue
+
+                # יצירת תוכן ההודעה
+                message_text = msg.get_generated_message_telegram()
+                image_path = None
+                if msg.message.image and hasattr(msg.message.image, 'path'):
+                    image_path = msg.message.image.path
+                    if not (os.path.isfile(image_path) and image_path.lower().endswith(('.png', '.jpg', '.jpeg'))):
+                        logger.error(f"Invalid image path for UID {msg.uid}. Skipping image.")
+                        image_path = None
+
+                # שליחה
+                if send_telegram_messege(msg_txt=message_text, chat_id=chat_id, image_path=image_path):
+                    msg.is_sent = True
+                    msg.save()
+                    logger.info(f"Message UID {msg.uid} sent successfully to Telegram.")
+                else:
+                    logger.error(f"Failed to send Telegram message UID {msg.uid}.")
+
+            # אם ההודעה מיועדת לוואטסאפ - יצירת התראה
+            elif msg.category.open_whatsapp_url:
+                if not msg.reminder_sent:  # שליחת התראה רק אם היא טרם נשלחה
+                    logger.info(f"Creating WhatsApp alert for message UID {msg.uid}.")
+                    alert_text = (
+                        f"הודעה זו מיועדת לקבוצת WhatsApp:\n"
+                        f"קישור לניהול ההודעה: http://127.0.0.1:8000/dashboard/messages-send/{msg.uid}/\n"
+                        f"קישור לקבוצת WhatsApp: {msg.category.open_whatsapp_url}"
+                    )
+                    # יצירת ההתראה לוואטסאפ
+                    create_whatsapp_alert(alert_text, msg)
+                else:
+                    logger.info(f"WhatsApp alert already sent for message UID {msg.uid}. Skipping.")
+
+        except Exception as e:
+            logger.error(f"Error processing message UID {msg.uid}: {str(e)}")
+
+
+
 
 
 def check_group_count_threshold():
@@ -318,7 +388,10 @@ def check_group_count_threshold():
             )
         )
         message = f"ספירת קבוצות ווטסאפ של '{group.business.name}' {groups_str} עברה את הסף של בקבוצה {threshold}!"
-        chat_id = settings.TELEGRAM_CHAT_ID
+        chat_id = get_telegram_chat_id()
+        if not chat_id:
+            logger.error("Chat ID not found. Skipping notification.")
+            return # פונקציה מחזירה את ה-chat_id בלבד
         send_telegram_messege(message, chat_id)
 
         # עדכון השדה לאחר שליחת ההתרעה
@@ -333,7 +406,10 @@ def check_group_count_threshold():
 def send_daily_group_count_reminder():
     """Send daily reminder at 9:00 AM for group counting"""
     message = "בצע ספירת קבוצות יומית"
-    chat_id = settings.TELEGRAM_CHAT_ID
+    chat_id = get_telegram_chat_id()
+    if not chat_id:
+        logger.error("Chat ID not found. Skipping notification.")
+        return
     send_telegram_messege(message, chat_id)
     logger.info("Sent daily group count reminder")
 
@@ -341,55 +417,70 @@ def send_daily_group_count_reminder():
 def send_weekly_whatsapp_call_reminder():
     """Send weekly reminder at 9:00 AM on Sundays for WhatsApp call counting"""
     message = "בצע ספירת שיחות וואטצאפ שבועית"
-    chat_id = settings.TELEGRAM_CHAT_ID
-    send_telegram_messege(message, chat_id)
+    chat_id = get_telegram_chat_id()
+    if not chat_id:
+        logger.error("Chat ID not found. Skipping notification.")
+        return    send_telegram_messege(message, chat_id)
     logger.info("Sent weekly WhatsApp call count reminder")
 
 
+def send_telegram_messege(msg_txt, image_path=None, chat_id=None):
+    """
+    Sends a message to Telegram.
+    """
+    if not chat_id:
+        chat_id = get_telegram_chat_id()
+        if not chat_id:
+            logger.error("Chat ID not found. Cannot send message.")
+            return False
+
+    try:
+        # שליחת הודעה עם תמונה
+        if image_path:
+            if not (os.path.isfile(image_path) and image_path.lower().endswith(('.png', '.jpg', '.jpeg'))):
+                logger.error(f"Invalid image path or file type: {image_path}")
+                return False
+
+            with open(image_path, 'rb') as image_file:
+                response = requests.post(
+                    f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendPhoto",
+                    data={"chat_id": chat_id, "caption": msg_txt},
+                    files={"photo": image_file}
+                )
+        # שליחת הודעה ללא תמונה
+        else:
+            response = requests.post(
+                f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
+                json={"chat_id": chat_id, "text": msg_txt},
+            )
+
+        # בדיקת תגובת ה-API
+        if response.status_code != 200:
+            logger.error(f"Failed to send message: {response.status_code} - {response.text}")
+            return False
+
+        logger.info("Message sent successfully.")
+        return True
+
+    except Exception as e:
+        logger.error(f"Unexpected error while sending Telegram message: {str(e)}")
+        return False
+
+
+
+
 def send_telegram_notification(msg_uid):
-    chat_id = settings.TELEGRAM_CHAT_ID
+    chat_id = get_telegram_chat_id()
+    if not chat_id:
+        logger.error("Chat ID not found. Skipping notification.")
+        return
     backend_domain = settings.BACKEND_DOMAIN
     message = "הודעה זו צריכה להישלח\n"
     message += f"{backend_domain}/dashboard/messages-send/{msg_uid}/"
 
     send_telegram_messege(message, chat_id)
 
-def send_telegram_messege(msg_txt, chat_id, image_path=None):
-    if image_path:
-        with open(image_path, 'rb') as image_file:
-            response = requests.post(
-                f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendPhoto",
-                data={"chat_id": chat_id, "caption": msg_txt},
-                files={"photo": image_file}
-            )
-    else:
-        response = requests.post(
-            f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
-            json={"chat_id": chat_id, "text": msg_txt},
-        )
 
-    if response.status_code != 200:
-        logger.error(
-            f"Failed to send message to Telegram: {response.status_code} - {response.text}"
-        )
-    else:
-        logger.info("Message sent successfully.")
-
-
-# def send_telegram_messege(msg_txt, chat_id):
-#     payload = {"chat_id": chat_id, "text": msg_txt}
-
-#     response = requests.post(
-#         f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
-#         json=payload,
-#     )
-
-#     if response.status_code != 200:
-#         logger.error(
-#             f"Failed to send reminder to Telegram: {response.status_code} - {response.text}"
-#         )
-#     else:
-#         logger.info("Message sent succusfully.")
 
 
 def setup_scheduler():
@@ -443,7 +534,7 @@ def setup_scheduler():
 
     if not scheduler.get_job("send_scheduled_telegram_messages"):
         scheduler.add_job(
-            send_scheduled_telegram_messages,
+            send_scheduled_messages,
             "interval",
             minutes=1,  # בדיקה כל דקה, ניתן לשנות לפי הצורך
             id="send_scheduled_telegram_messages",
@@ -616,10 +707,6 @@ def dashboard_messages(request):
 @admin_required
 def dashboard_index(request):
     return render(request, "dashboard/index.html", {})
-
-
-from counting.models import CallsResponsesCount, MessagesResponsesCount
-from models.models import MessageLinkClick
 
 
 @admin_required

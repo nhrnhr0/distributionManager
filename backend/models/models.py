@@ -327,24 +327,24 @@ def init_whatsapp_group_members_first_count(sender, instance, **kwargs):
 class TelegramGroup(models.Model):
     name = models.CharField(_("name"), max_length=120, blank=True, null=True)
     chat_id = models.CharField(_("chat ID"), max_length=120)
-    # last_members_count = models.PositiveIntegerField(_('last members count'), default=0)
-    # last_members_check = models.DateTimeField(_('last members check'), blank=True, null=True)
+    business = models.ForeignKey(
+        "Business",  # קשר לעסק
+        on_delete=models.CASCADE,
+        related_name="telegram_groups",  # קשר הפוך (לשליפת קבוצות לפי עסק)
+        null=True,
+        blank=True
+    )
 
     def get_link(self):
         return "https://t.me/" + self.chat_id
 
-    def save(self):
+    def save(self, *args, **kwargs):  # עדכון ה-`save` כדי לטפל ב-`chat_id`
         if self.chat_id.startswith("https://t.me/"):
             self.chat_id = self.chat_id.replace("https://t.me/", "")
-        return super().save()
+        return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return (
-            self.name
-            + " - ("
-            + ("".join([c.name for c in self.telegram_categories.all()]))
-            + ")"
-        )
+        return f"{self.name} ({self.business.name if self.business else 'Global'})"
 
     class Meta:
         verbose_name = _("Telegram group")

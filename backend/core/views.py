@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks, MessageLink, MessageLinkClick, Call
+from models.models import Business, Category, BusinessQR, LeadsClicks, CategoriesClicks, MessageLink, MessageLinkClick, Call, TelegramGroup
 from counting.models import CallsResponsesCount
 from django.http import JsonResponse
 from .decoretors import admin_required
@@ -123,6 +123,22 @@ from django.http import HttpResponse
 from django.http import HttpResponse, HttpResponseBadRequest
 
 
+def get_telegram_chat_id(group_name=None):
+    try:
+        if group_name:
+            group = TelegramGroup.objects.get(name=group_name)
+        else:
+            group = TelegramGroup.objects.first()
+
+        if group and group.chat_id:
+            return group.chat_id
+        else:
+            print("No valid Chat ID found in the database.")
+            return None
+    except TelegramGroup.DoesNotExist:
+        print(f"Telegram group '{group_name}' not found.")
+        return None
+
 
 
 def send_telegram_message(request):
@@ -136,7 +152,7 @@ def send_telegram_message(request):
         
         # Payload
         payload = {
-            'chat_id': settings.TELEGRAM_CHAT_ID,
+            'chat_id': get_telegram_chat_id(),
             'text': message
         }
         
