@@ -285,28 +285,46 @@ def monitor_telegram_notifications():
             logger.error(f"Error processing message UID {msg.uid}: {str(e)}")
 
 
-
 def create_whatsapp_alert(alert_text, msg):
     """
     Creates an alert for WhatsApp messages that require manual sending.
     """
-    # מקבל את ה-Chat ID של קבוצת ההתראות
-    chat_id = get_telegram_chat_id(group_suffix="התראות")
+    chat_id = get_telegram_chat_id(group_suffix="התראות")  # קבוצת התראות בטלגרם
     if not chat_id:
         logger.error("Chat ID for alerts not found. Skipping WhatsApp alert.")
         return False
 
-    # שליחת ההתראה לטלגרם
     success = send_telegram_messege(msg_txt=alert_text, chat_id=chat_id)
     if success:
-        # עדכון סטטוס שזוהתה שליחה מוצלחת
-        msg.reminder_sent = True
+        msg.reminder_sent = True  # עדכון סטטוס שההתראה נשלחה
         msg.save()
-        logger.info(f"WhatsApp alert created successfully for message UID {msg.uid}.")
         return True
-
-    logger.error(f"Failed to send WhatsApp alert for message UID {msg.uid}.")
     return False
+
+
+
+
+# def create_whatsapp_alert(alert_text, msg):
+#     """
+#     Creates an alert for WhatsApp messages that require manual sending.
+#     """
+#     # מקבל את ה-Chat ID של קבוצת ההתראות
+#     chat_id = get_telegram_chat_id(group_suffix="התראות")
+#     if not chat_id:
+#         logger.error("Chat ID for alerts not found. Skipping WhatsApp alert.")
+#         return False
+
+#     # שליחת ההתראה לטלגרם
+#     success = send_telegram_messege(msg_txt=alert_text, chat_id=chat_id)
+#     if success:
+#         # עדכון סטטוס שזוהתה שליחה מוצלחת
+#         msg.reminder_sent = True
+#         msg.save()
+#         logger.info(f"WhatsApp alert created successfully for message UID {msg.uid}.")
+#         return True
+
+#     logger.error(f"Failed to send WhatsApp alert for message UID {msg.uid}.")
+#     return False
 
 
 
@@ -548,24 +566,15 @@ def setup_scheduler():
 
 def dashboard_message_edit(request, uid):
     message = BizMessages.objects.get(uid=uid)
-    # businesses = Business.objects.all()
-    categories = Category.objects.all()
-    categories = categories.filter(business=message.business)
+    categories = Category.objects.filter(business=message.business)
 
     if request.method == "POST":
         data = request.POST
-        # first delete all links with id and isDeleted = True
+
+        # ניהול לינקים
         link_ids = data.getlist("link_id")
         descriptions = data.getlist("description")
         urls = data.getlist("url")
-        # is_deleted = data.getlist('delete-link')
-
-        # ai fields:
-        message.product_metadata = data.get("product_metadata", "")
-        message.product_name = data.get("product_name", "")
-        message.product_description = data.get("product_description", "")
-        message.price = data.get("price", "")
-        message.coupon_code = data.get("coupon_code", "")
 
         links = []
         for i in range(len(descriptions)):
@@ -573,7 +582,6 @@ def dashboard_message_edit(request, uid):
                 "id": link_ids[i] if i < len(link_ids) else None,
                 "description": descriptions[i] if i < len(descriptions) else "",
                 "url": urls[i] if i < len(urls) else "",
-                # 'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
             }
             if lnk["id"]:
                 lnk["isDeleted"] = data.get(f'delete-link-{lnk["id"]}', "") == "on"
@@ -584,33 +592,28 @@ def dashboard_message_edit(request, uid):
         for link in links:
             if link.get("id") and link["isDeleted"]:
                 message.links.get(id=link["id"]).delete()
-
-        for link in links:
-            if link.get("id") and not link["isDeleted"]:
-                l = {"description": link["description"], "url": link["url"]}
-                message.links.filter(id=link["id"]).update(**l)
+            elif link.get("id") and not link["isDeleted"]:
+                message.links.filter(id=link["id"]).update(
+                    description=link["description"], url=link["url"]
+                )
             elif not link["isDeleted"]:
-                l = {"description": link["description"], "url": link["url"]}
-                message.links.create(**l)
+                message.links.create(
+                    description=link["description"], url=link["url"]
+                )
 
-        # first delete all categories with id and isDeleted = True
+        # ניהול קטגוריות
         categories_ids = data.getlist("category_id")
         categories_list = data.getlist("category")
         send_ats = data.getlist("send_at")
-        # is_sents = data.getlist('is_sent')
-        # is_deleted = data.getlist('delete-category[]')
 
         cats = []
         for i in range(len(categories_list)):
-            # TODO: Should we allow empty categories? No: how to show it in the calendar? Yes: What if a date is set and no category, ignore it?
             if not categories_list[i]:
                 continue
             cat = {
                 "id": categories_ids[i] if i < len(categories_ids) else None,
                 "category": categories_list[i] if i < len(categories_list) else None,
                 "sendAt": send_ats[i] if i < len(send_ats) else None,
-                #'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
-                #'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
             }
             if cat["id"]:
                 cat["isDeleted"] = data.get(f'delete-category-{cat["id"]}', "") == "on"
@@ -620,52 +623,49 @@ def dashboard_message_edit(request, uid):
                 cat["isSent"] = False
             cats.append(cat)
 
-        print(cats)
+        tz = pytz.timezone("Asia/Jerusalem")
 
         for category in cats:
             if category.get("id") and category["isDeleted"]:
                 message.categories.get(id=category["id"]).delete()
-        # then update or create the rest
-        tz = pytz.timezone("Asia/Jerusalem")
+            elif category.get("id") and not category["isDeleted"]:
+                db_category = message.categories.get(id=category["id"])
+                previous_send_at = db_category.send_at
+                new_send_at = datetime.strptime(
+                    category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
+                ) if category["sendAt"] else None
 
-        for category in cats:
-            if category.get("id") and not category["isDeleted"]:
-                if category["sendAt"]:
-                    category["sendAt"] = datetime.strptime(
-                        category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
-                    )
-                    aware_dt = tz.localize(category["sendAt"])
-                    category["sendAt"] = aware_dt
-                c = {
-                    "category_id": category["category"],
-                    "send_at": category["sendAt"] if category["sendAt"] else None,
-                    "is_sent": category["isSent"],
-                }
-                message.categories.filter(id=category["id"]).update(**c)
+                # אם תאריך השתנה, אפס את reminder_sent
+                if previous_send_at != new_send_at:
+                    db_category.reminder_sent = False
+
+                db_category.send_at = tz.localize(new_send_at) if new_send_at else None
+                db_category.is_sent = category["isSent"]
+                db_category.save()
+
             elif not category["isDeleted"]:
-                if category["sendAt"]:
-                    category["sendAt"] = datetime.strptime(
-                        category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
-                    )
-                    aware_dt = tz.localize(category["sendAt"])
-                    category["sendAt"] = aware_dt
+                new_send_at = datetime.strptime(
+                    category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
+                ) if category["sendAt"] else None
 
-                c = {
-                    "category_id": category["category"],
-                    "send_at": category["sendAt"] if category["sendAt"] else None,
-                    "is_sent": category["isSent"],
-                }
-                message.categories.create(**c)
-                logger.info(
-                    "Category created without scheduling due to missing send_at."
+                new_category = message.categories.create(
+                    category_id=category["category"],
+                    send_at=tz.localize(new_send_at) if new_send_at else None,
+                    is_sent=category["isSent"],
+                    reminder_sent=False,  # חדש, איפוס ההתראה
                 )
-        message.business_id = data['business']
-        message.messageTxt = data['messageTxt']
-        # message.image = request.FILES.get('image') if request.FILES.get('image') else message.image
+                logger.info("Category created with reminder_sent reset.")
+
+        # שמירת שדות כלליים
+        message.business_id = data["business"]
+        message.messageTxt = data["messageTxt"]
+
         if request.FILES.get("image"):
             message.image = request.FILES.get("image")
+
         message.save()
         return redirect("message_edit", uid=message.uid)
+
     if request.method == "DELETE":
         message.delete()
         return redirect("dashboard_messages")
@@ -675,10 +675,146 @@ def dashboard_message_edit(request, uid):
         "dashboard/messages/edit.html",
         {
             "message": message,
-            #     "businesses": businesses,
             "categories": categories,
         },
     )
+
+
+
+
+# def dashboard_message_edit(request, uid):
+#     message = BizMessages.objects.get(uid=uid)
+#     # businesses = Business.objects.all()
+#     categories = Category.objects.all()
+#     categories = categories.filter(business=message.business)
+
+#     if request.method == "POST":
+#         data = request.POST
+#         # first delete all links with id and isDeleted = True
+#         link_ids = data.getlist("link_id")
+#         descriptions = data.getlist("description")
+#         urls = data.getlist("url")
+#         # is_deleted = data.getlist('delete-link')
+
+#         # ai fields:
+#         message.product_metadata = data.get("product_metadata", "")
+#         message.product_name = data.get("product_name", "")
+#         message.product_description = data.get("product_description", "")
+#         message.price = data.get("price", "")
+#         message.coupon_code = data.get("coupon_code", "")
+
+#         links = []
+#         for i in range(len(descriptions)):
+#             lnk = {
+#                 "id": link_ids[i] if i < len(link_ids) else None,
+#                 "description": descriptions[i] if i < len(descriptions) else "",
+#                 "url": urls[i] if i < len(urls) else "",
+#                 # 'isDeleted': is_deleted[i] if i < len(is_deleted) else False,
+#             }
+#             if lnk["id"]:
+#                 lnk["isDeleted"] = data.get(f'delete-link-{lnk["id"]}', "") == "on"
+#             else:
+#                 lnk["isDeleted"] = False
+#             links.append(lnk)
+
+#         for link in links:
+#             if link.get("id") and link["isDeleted"]:
+#                 message.links.get(id=link["id"]).delete()
+
+#         for link in links:
+#             if link.get("id") and not link["isDeleted"]:
+#                 l = {"description": link["description"], "url": link["url"]}
+#                 message.links.filter(id=link["id"]).update(**l)
+#             elif not link["isDeleted"]:
+#                 l = {"description": link["description"], "url": link["url"]}
+#                 message.links.create(**l)
+
+#         # first delete all categories with id and isDeleted = True
+#         categories_ids = data.getlist("category_id")
+#         categories_list = data.getlist("category")
+#         send_ats = data.getlist("send_at")
+#         # is_sents = data.getlist('is_sent')
+#         # is_deleted = data.getlist('delete-category[]')
+
+#         cats = []
+#         for i in range(len(categories_list)):
+#             # TODO: Should we allow empty categories? No: how to show it in the calendar? Yes: What if a date is set and no category, ignore it?
+#             if not categories_list[i]:
+#                 continue
+#             cat = {
+#                 "id": categories_ids[i] if i < len(categories_ids) else None,
+#                 "category": categories_list[i] if i < len(categories_list) else None,
+#                 "sendAt": send_ats[i] if i < len(send_ats) else None,
+#                 #'isSent': is_sents[i] == 'on' if i < len(is_sents) else False,
+#                 #'isDeleted': is_deleted[i] == 'on' if i < len(is_deleted) else False,
+#             }
+#             if cat["id"]:
+#                 cat["isDeleted"] = data.get(f'delete-category-{cat["id"]}', "") == "on"
+#                 cat["isSent"] = data.get(f'is_sent-{cat["id"]}', "") == "on"
+#             else:
+#                 cat["isDeleted"] = False
+#                 cat["isSent"] = False
+#             cats.append(cat)
+
+#         print(cats)
+
+#         for category in cats:
+#             if category.get("id") and category["isDeleted"]:
+#                 message.categories.get(id=category["id"]).delete()
+#         # then update or create the rest
+#         tz = pytz.timezone("Asia/Jerusalem")
+
+#         for category in cats:
+#             if category.get("id") and not category["isDeleted"]:
+#                 if category["sendAt"]:
+#                     category["sendAt"] = datetime.strptime(
+#                         category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
+#                     )
+#                     aware_dt = tz.localize(category["sendAt"])
+#                     category["sendAt"] = aware_dt
+#                 c = {
+#                     "category_id": category["category"],
+#                     "send_at": category["sendAt"] if category["sendAt"] else None,
+#                     "is_sent": category["isSent"],
+#                 }
+#                 message.categories.filter(id=category["id"]).update(**c)
+#             elif not category["isDeleted"]:
+#                 if category["sendAt"]:
+#                     category["sendAt"] = datetime.strptime(
+#                         category["sendAt"].replace("T", " "), "%Y-%m-%d %H:%M"
+#                     )
+#                     aware_dt = tz.localize(category["sendAt"])
+#                     category["sendAt"] = aware_dt
+
+#                 c = {
+#                     "category_id": category["category"],
+#                     "send_at": category["sendAt"] if category["sendAt"] else None,
+#                     "is_sent": category["isSent"],
+#                 }
+#                 message.categories.create(**c)
+#                 logger.info(
+#                     "Category created without scheduling due to missing send_at."
+#                 )
+#         message.business_id = data['business']
+#         message.messageTxt = data['messageTxt']
+#         # message.image = request.FILES.get('image') if request.FILES.get('image') else message.image
+#         if request.FILES.get("image"):
+#             message.image = request.FILES.get("image")
+#         message.save()
+#         return redirect("message_edit", uid=message.uid)
+#     if request.method == "DELETE":
+#         message.delete()
+#         return redirect("dashboard_messages")
+
+#     return render(
+#         request,
+#         "dashboard/messages/edit.html",
+#         {
+#             "message": message,
+#             #     "businesses": businesses,
+#             "categories": categories,
+#         },
+#     )
 
 
 @admin_required
